@@ -1,0 +1,1 @@
+https://api.coingecko.com/api/v3/simple/price?ids=wrapped-bitcoin%2Cethereum%2Cdai%2Clusd%2Cusd-coin%2Ctether%2C1inch%2Caave%2Cbalancer%2Ccoinbase-wrapped-staked-eth%2Cconvex-crv%2Cethereum-name-service%2Clido-dao%2Cchainlink%2Cmaker%2Crocket-pool-eth%2Chavven%2Cuniswap%2Cweth%2Cwrapped-steth&vs_currencies=usd
