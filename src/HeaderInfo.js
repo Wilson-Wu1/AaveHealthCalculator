@@ -1,8 +1,11 @@
 import {useEffect, useState} from 'react';
+import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
 
 const HeaderInfo = () => {
 
     const [chain, setChain] = useState("Ethereum")
+    const [modalSupplyVisible, setSupplyModalVisible] = useState(false);
+    const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
 
     /* When the user clicks on the button,
     toggle between hiding and showing the dropdown content */
@@ -22,42 +25,68 @@ const HeaderInfo = () => {
                 }
             }
         }
-        const modal = document.getElementById('modal');
+        
     }
 
+
+    function openSupplyModal() {
+        setSupplyModalVisible(true);
+    }
+    
+    function closeSupplyModal() {
+        setSupplyModalVisible(false);
+    }
+
+    function openBorrowModal() {
+        setBorrowModalVisible(true);
+    }
+    
+    function closeBorrowModal() {
+        setBorrowModalVisible(false);
+    }
 
 
     
-
-    function openModal(){
-        const modal = document.getElementById('modal');
-        modal.style.display = 'flex';
-    }
-
-    function closeModal(){
-        const modal = document.getElementById('modal');
-        modal.style.display = 'none';
-    }
-
-
     
     return ( 
         <div className='headerInfo'>
 
-            <div className = "modal" id = "modal">
-                <div className = "modal_content">
+            <div className={`modal_supply ${modalSupplyVisible ? 'visible' : ''}`} id="modal_supply">
+                <div className = "modal_supply_content">
 
-                    <div className="modal_content_header">
+
+                    <div className="modal_supply_content_header">
                         <p>Assets to Supply</p>
-                        <button className="modal_close_btn" onClick = {closeModal}>Close</button>
+                        <ExitSymbol className = "modal_supply_exit" onClick = {closeSupplyModal}/>
                     </div>
 
-                    <div className="modal_content_assets">
-                        <div className="modal_content_assets_labels">
+                    <div className="modal_supply_content_assets">
+                        <div className="modal_supply_content_assets_labels">
                             <p>Assets</p>
                             <p>Amount</p>
                         </div>
-                        <div className="modal_content_assets_grid">
+                        <div className="modal_supply_content_assets_grid">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div className={`modal_borrow ${modalBorrowVisible ? 'visible' : ''}`} id="modal_borrow">
+                <div className = "modal_borrow_content">
+
+
+                    <div className="modal_borrow_content_header">
+                        <p>Assets to Borrow</p>
+                        <ExitSymbol className = "modal_borrow_exit" onClick = {closeBorrowModal}/>
+                    </div>
+
+                    <div className="modal_borrow_content_assets">
+                        <div className="modal_borrow_content_assets_labels">
+                            <p>Assets</p>
+                            <p>Amount</p>
+                        </div>
+                        <div className="modal_borrow_content_assets_grid">
                         </div>
                     </div>
 
@@ -85,11 +114,11 @@ const HeaderInfo = () => {
                 <div className = "b_s_container">
                     <div className = "b_s_container_supply">
                         <p className = "b_s_container_supply_text">Add tokens being supplied</p>
-                        <button className = "b_s_container_supply_btn" onClick = {openModal}>Supply</button>
+                        <button className = "b_s_container_supply_btn" onClick = {openSupplyModal}>Supply</button>
                     </div>
                     <div className = "b_s_container_borrow">
                         <p className = "b_s_container_borrow_text">Add tokens being borrowed</p>
-                        <button className = "b_s_container_borrow_btn">Borrow</button>
+                        <button className = "b_s_container_borrow_btn" onClick = {openBorrowModal}>Borrow</button>
                     </div>
                 </div>
 
