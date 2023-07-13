@@ -1,7 +1,5 @@
 const  BorrowAndSupply = () => {
 
-    function 
-
     return ( 
         <div className ="b_s">
             <div className = "b_s_container">

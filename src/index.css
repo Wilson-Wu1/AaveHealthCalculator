@@ -5,6 +5,21 @@
   font-weight: 400;
 }
 
+.navbar{
+  display:flex;
+  align-items: center;
+}
+.navbar h1{
+  margin:0;
+  margin-left:10px;
+  font-size: xx-large;
+  background: linear-gradient(90deg, rgb(46,186,198) 16%, rgba(182, 80, 158, 1) 91%);
+  -webkit-background-clip: text; /* For Safari */
+  -webkit-text-fill-color: transparent; /* For Safari */
+  background-clip: text;
+  
+}
+
 .dropbtn{
   margin: 0;
   
@@ -117,6 +132,7 @@
 .b_s_container_supply_text, .b_s_container_borrow_text{
   background-color: rgb(41, 46, 65);
   padding:10px;
+  
 }
 
 .b_s_container_borrow_btn{
@@ -147,22 +163,27 @@
   background-color: rgb(41, 46, 65);
   border: 1px solid rgba(235, 235, 239, 0.08);
   border-radius: 4px;
-  height:125px;
+  min-height:125px;
   margin-right: 20px;
   width:35%;
+  
+  
 }
 .assets_borrow{
   padding:10px;
   background-color: rgb(41, 46, 65);
   border: 1px solid rgba(235, 235, 239, 0.08);
   border-radius: 4px;
-  height:125px;
+  min-height:125px;
   width:35%;
 }
 
 .assets_supply_nothing, .assets_borrow_nothing{
   padding:10px;
   background-color: rgb(41, 46, 65);
+
+  margin-left:-10px;
+  margin-right:-10px;
 }
 
 .modal_supply, .modal_borrow{
@@ -180,6 +201,7 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s, visibility 0s linear 0.3s;
+  
 }
 
 .modal_supply.visible {
@@ -197,7 +219,7 @@
 }
 
 .modal_supply_content, .modal_borrow_content{
-  width: 30%;
+  width: 50%;
   height: 90%;
   background-color: rgb(41, 46, 65);
   border: 1px solid rgba(235, 235, 239, 0.08);
@@ -240,13 +262,18 @@
   
   
 }
+
 .modal_supply_content_assets_labels, .modal_borrow_content_assets_labels{
   background-color:rgb(41, 46, 65);
   display: grid;
   grid-template-columns: 1fr 1fr;
   place-items: start;
-
   border-bottom: 1px solid rgba(235, 235, 239, 0.08);
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+.modal_supply_content_assets_grid{
   margin-left: -10px;
   margin-right: -10px;
 }
@@ -260,4 +287,160 @@
 .modal_borrow_content_assets p{
   background-color:rgb(41, 46, 65);
   padding-left:10px;
+}
+
+.modal_supply_content_scrollable, .modal_borrow_content_scrollable {
+  overflow: auto;
+  background-color:rgb(41, 46, 65);
+  height: 500px;
+  border-bottom: 1px solid rgba(235, 235, 239, 0.08);
+}
+
+.modal_supply_content_scrollable_list, .modal_borrow_content_scrollable_list{
+  background-color:rgb(41, 46, 65);
+  list-style-type: none;
+  padding:0;
+  margin:0;
+}
+
+.modal_supply_content_scrollable_list li{
+  background-color:rgb(41, 46, 65);
+}
+
+.modal_borrow_content_scrollable_list li{
+  background-color:rgb(41, 46, 65);
+}
+
+.modal_supply_content_scrollable_list div{
+  background-color:rgb(41, 46, 65);
+  display:flex;
+  border-bottom: 1px solid rgba(235, 235, 239, 0.08);
+  padding:30px;
+  align-items: center;
+
+}
+
+.modal_borrow_content_scrollable_list div{
+  background-color:rgb(41, 46, 65);
+  display:flex;
+  border-bottom: 1px solid rgba(235, 235, 239, 0.08);
+  padding:30px;
+  align-items: center;
+
+}
+
+.modal_supply_content_scrollable_list div button{
+  font-size:medium;
+  background-color: rgb(56, 61, 81);
+  border-radius: 4px;
+  border: 1px solid rgba(235, 235, 239, 0.08);
+}
+
+.modal_borrow_content_scrollable_list div button{
+  font-size:medium;
+  background-color: rgb(56, 61, 81);
+  border-radius: 4px;
+  border: 1px solid rgba(235, 235, 239, 0.08);
+}
+
+.modal_supply_content_scrollable_list div button:hover{
+  background-color: rgb(84, 92, 122);
+}
+
+.modal_borrow_content_scrollable_list div button:hover{
+  background-color: rgb(84, 92, 122);
+}
+
+.modal_borrow_content_scrollable_list li{
+  background-color:rgb(41, 46, 65);
+}
+
+.modal_supply_content_assets_bottom{
+  background-color:rgb(41, 46, 65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top:15px;
+  
+}
+
+.modal_borrow_content_assets_bottom{
+  background-color:rgb(41, 46, 65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top:15px;
+  
+}
+
+.modal_supply_content_assets_bottom_btn{
+  background-color:rgb(41, 46, 65);
+  font-size:x-large;
+  background: rgb(56, 61, 81);
+  border-radius: 4px;
+  border: 1px solid rgba(235, 235, 239, 0.08);
+
+}
+
+.modal_borrow_content_assets_bottom_btn{
+  background-color:rgb(41, 46, 65);
+  font-size:x-large;
+  background: rgb(56, 61, 81);
+  border-radius: 4px;
+  border: 1px solid rgba(235, 235, 239, 0.08);
+
+}
+
+
+.assets_supply_tokens_list{
+  padding:0;
+
+}
+
+
+.assets_borrow_tokens_list{
+  padding:0;
+
+}
+
+.assets_supply_tokens_list div{
+  background-color:rgb(41, 46, 65);
+  display:flex;
+  padding:30px;
+  border-top: 1px solid rgba(235, 235, 239, 0.08);
+  margin-left:-10px;
+  margin-right:-10px;
+}
+
+.assets_borrow_tokens_list div{
+  background-color:rgb(41, 46, 65);
+  display:flex;
+  padding:30px;
+  border-top: 1px solid rgba(235, 235, 239, 0.08);
+  margin-left:-10px;
+  margin-right:-10px;
+}
+
+.assets_supply_tokens_list li{
+  background-color:rgb(41, 46, 65);
+  display:flex;
+}
+.assets_borrow_tokens_list li{
+  background-color:rgb(41, 46, 65);
+  display:flex;
+}
+
+.values{
+  margin-top:20px;
+  display: flex;
+  justify-content: center;
+}
+.values_container{
+  padding:10px;
+  background-color: rgb(41, 46, 65);
+  border: 1px solid rgba(235, 235, 239, 0.08);
+  border-radius: 4px;
+  
+  
+  
 }
