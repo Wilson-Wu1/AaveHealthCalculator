@@ -441,6 +441,22 @@
   border: 1px solid rgba(235, 235, 239, 0.08);
   border-radius: 4px;
   
+}
+
+.values_container_list{
+  background-color:rgb(41, 46, 65);
+}
+
+.values_container_list li{
+  background-color:rgb(41, 46, 65);
+  list-style-type: none;
+}
+
+
+.values_container_list div{
+  background-color:rgb(41, 46, 65);
+  display:flex;
   
-  
+  border-top: 1px solid rgba(235, 235, 239, 0.08);
+
 }

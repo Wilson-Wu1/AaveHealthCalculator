@@ -9,6 +9,19 @@ const HeaderInfo = (props) => {
     const [modalSupplyVisible, setSupplyModalVisible] = useState(false);
     const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
     
+    function setSupplyModalVisibilityFalse(){
+        setSupplyModalVisible(false); 
+    }
+    function setSupplyModalVisibilityTrue(){
+        setSupplyModalVisible(true);      
+    }
+    function setBorrowModalVisibilityTrue(){
+        setBorrowModalVisible(true);
+    }
+    function setBorrowModalVisibilityFalse(){
+        setBorrowModalVisible(false);   
+    }
+
     // When the user clicks on the button, toggle between hiding and showing the dropdown content
     function showDropDown() {
         document.getElementById("myDropdown").classList.toggle("show");
@@ -68,6 +81,7 @@ const HeaderInfo = (props) => {
 
     const [supplyTokensArray, setSupplyTokensArray] = useState([]);
     const [borrowTokensArray, setBorrowTokensArray] = useState([]);
+    const [sliderTokensArray, setSliderTokensArray] = useState([]);
 
     // Add tokens that are being selected in the supply modal
     function tempAddSupplySide(tokenToAdd, thisBtn){
@@ -76,19 +90,26 @@ const HeaderInfo = (props) => {
         // Find the index of the item in the array
         const index = tempSupplyArray.indexOf(tokenToAdd);
 
-        // Check if the item exists in the array
+        // Item already exists in the array
         if (index !== -1) {
             // Remove the item from the array
             tempSupplyArray.splice(index, 1);
             thisBtn.style.backgroundColor = "rgb(56, 61, 81)";
             thisBtn.textContent = "Supply Asset"
+            setSupplyTokensArray(tempSupplyArray);
+            removeSlider(tokenToAdd);
+            
         }
+        // Item does not exist in the array
         else{
             tempSupplyArray.push(tokenToAdd);
             thisBtn.style.backgroundColor = "#547a5c";
             thisBtn.textContent = "Supplied"
+            setSupplyTokensArray(tempSupplyArray);
+            displaySlider(tokenToAdd);
         }
-        setSupplyTokensArray(tempSupplyArray);
+        
+        
     }
 
 
@@ -105,13 +126,16 @@ const HeaderInfo = (props) => {
             tempBorrowArray.splice(index, 1);
             thisBtn.style.backgroundColor = "rgb(56, 61, 81)";
             thisBtn.textContent = "Borrow Asset"
+            setBorrowTokensArray(tempBorrowArray);
+            removeSlider(tokenToAdd);
         }
         else{
             tempBorrowArray.push(tokenToAdd);
             thisBtn.style.backgroundColor = "#547a5c";
             thisBtn.textContent = "Borrowed"
+            setBorrowTokensArray(tempBorrowArray);
+            displaySlider(tokenToAdd);
         }
-        setBorrowTokensArray(tempBorrowArray);
     }
     
     // Add tokens to the supply side from the selected tokens
@@ -134,15 +158,6 @@ const HeaderInfo = (props) => {
                 liElement.textContent = token.symbol.toUpperCase();
                 outerDiv.appendChild(liElement);
 
-                // Add value slider to div
-                // const inputElement = document.createElement("input");
-                // inputElement.type = "range";
-                // inputElement.min = "0";
-                // inputElement.max = "100";
-                // inputElement.value = "value";
-                // inputElement.onChange = "handleSliderChange()";
-                //outerDiv.appendChild(inputElement);
-
                 // Add amount input ot div
                 const amountElement = document.createElement("input");
                 outerDiv.appendChild(amountElement);
@@ -153,56 +168,86 @@ const HeaderInfo = (props) => {
         setSupplyModalVisible(false);
     }
 
-        // Add tokens to the borrow side from the selected tokens
-        function addBorrowSide() {
-            const ulElement = document.getElementById("assets_borrow_tokens_list");
-            const pTag = document.getElementById("assets_borrow_nothing");
-            // Clear the existing list
-            ulElement.innerHTML = ''; 
-    
-            if(borrowTokensArray.length == 0){
-                pTag.textContent = "Nothing supplied yet"
-            }
-            else{
-                pTag.textContent = "Supplied Assets"
-                for (const token of borrowTokensArray) {
-                    // Create outer div
-                    const outerDiv = document.createElement("div");
-                    // Add li element to div
-                    const liElement = document.createElement("li");
-                    liElement.textContent = token.symbol.toUpperCase();
-                    outerDiv.appendChild(liElement);
-    
-                    // Add value slider to div
-                    // const inputElement = document.createElement("input");
-                    // inputElement.type = "range";
-                    // inputElement.min = "0";
-                    // inputElement.max = "100";
-                    // inputElement.value = "value";
-                    // inputElement.onChange = "handleSliderChange()";
-                    //outerDiv.appendChild(inputElement);
-    
-                    // Add amount input ot div
-                    const amountElement = document.createElement("input");
-                    outerDiv.appendChild(amountElement);
-                    // Finally add the outer div element to the ul element
-                    ulElement.appendChild(outerDiv);
-                }
-            }
-            setBorrowModalVisible(false);
-        }
+    // Add tokens to the borrow side from the selected tokens
+    function addBorrowSide() {
+        const ulElement = document.getElementById("assets_borrow_tokens_list");
+        const pTag = document.getElementById("assets_borrow_nothing");
+        // Clear the existing list
+        ulElement.innerHTML = ''; 
 
-    function setSupplyModalVisibilityFalse(){
-        setSupplyModalVisible(false);      
-    }
-    function setSupplyModalVisibilityTrue(){
-        setSupplyModalVisible(true);      
-    }
-    function setBorrowModalVisibilityTrue(){
-        setBorrowModalVisible(true);
-    }
-    function setBorrowModalVisibilityFalse(){
+        if(borrowTokensArray.length == 0){
+            pTag.textContent = "Nothing supplied yet"
+        }
+        else{
+            pTag.textContent = "Supplied Assets"
+            for (const token of borrowTokensArray) {
+                // Create outer div
+                const outerDiv = document.createElement("div");
+                // Add li element to div
+                const liElement = document.createElement("li");
+                liElement.textContent = token.symbol.toUpperCase();
+                outerDiv.appendChild(liElement);
+                // Add amount input ot div
+                const amountElement = document.createElement("input");
+                outerDiv.appendChild(amountElement);
+                // Finally add the outer div element to the ul element
+                ulElement.appendChild(outerDiv);
+            }
+        }
         setBorrowModalVisible(false);
+        
+    }
+
+    
+    function removeSlider(token){
+        const sliderToRemove = document.getElementById(token.id);
+        var tempArray = sliderTokensArray;
+        var tempArray1 = supplyTokensArray;
+        var tempArray2 = borrowTokensArray;
+        const index = tempArray.indexOf(token);
+        const index1 = tempArray1.indexOf(token);
+        const index2 = tempArray2.indexOf(token);
+        console.log(tempArray, tempArray1, tempArray2);
+        console.log(index, index1, index2)
+        if (index1 == -1 && index2 == -1) {
+            tempArray.splice(index, 1);
+            setSliderTokensArray(tempArray);
+            sliderToRemove.remove();
+        }
+    }
+    
+    function displaySlider(token){
+        var tempArray = sliderTokensArray;
+        const index = tempArray.indexOf(token);
+
+        if (index == -1) {
+            // Concat the borrow and supply arrays
+            const sliderList = document.getElementById("values_container_list");
+
+            // Create outer div
+            const outerDiv = document.createElement("div");
+            outerDiv.id = token.id;
+
+            // Add li element to div
+            const liElement = document.createElement("li");
+            
+            liElement.textContent = token.symbol.toUpperCase();
+            outerDiv.appendChild(liElement);
+            // Add value slider to div
+            const inputElement = document.createElement("input");
+            inputElement.type = "range";
+            inputElement.min = "0";
+            inputElement.max = "100";
+            inputElement.value = "value";
+            inputElement.onChange = "handleSliderChange()";
+           
+            outerDiv.appendChild(inputElement);
+            // Finally add the outer div element to the sliderList 
+            sliderList.appendChild(outerDiv);
+
+            tempArray.push(token);
+            setSliderTokensArray(tempArray);
+        }
     }
 
     useEffect(() => {
@@ -215,18 +260,15 @@ const HeaderInfo = (props) => {
             sliderDiv.style.width = `${supplyDiv + borrowDiv}px`;
             
         }
-      
-          // Attach the event listener for window resize
-          window.addEventListener('resize', handleResize);
-      
-          // Clean up the event listener when the component unmounts
-          return () => {
+        // Attach the event listener for window resize
+        window.addEventListener('resize', handleResize);
+        // Clean up the event listener when the component unmounts
+        return () => {
             window.removeEventListener('resize', handleResize);
-          };
-
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
         }, []
-      );
+    );
 
 
     return ( 
