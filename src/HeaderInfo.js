@@ -82,6 +82,7 @@ const HeaderInfo = (props) => {
     const [supplyTokensArray, setSupplyTokensArray] = useState([]);
     const [borrowTokensArray, setBorrowTokensArray] = useState([]);
     const [sliderTokensArray, setSliderTokensArray] = useState([]);
+    const [healthFactor, setHealthFactor] = useState(0);
 
     // Add tokens that are being selected in the supply modal
     function tempAddSupplySide(tokenToAdd, thisBtn){
@@ -153,13 +154,15 @@ const HeaderInfo = (props) => {
             for (const token of supplyTokensArray) {
                 // Create outer div
                 const outerDiv = document.createElement("div");
+                
                 // Add li element to div
                 const liElement = document.createElement("li");
                 liElement.textContent = token.symbol.toUpperCase();
                 outerDiv.appendChild(liElement);
 
-                // Add amount input ot div
+                // Add amount input to div
                 const amountElement = document.createElement("input");
+                amountElement.id = "supply_input_"+token.id;
                 outerDiv.appendChild(amountElement);
                 // Finally add the outer div element to the ul element
                 ulElement.appendChild(outerDiv);
@@ -189,6 +192,7 @@ const HeaderInfo = (props) => {
                 outerDiv.appendChild(liElement);
                 // Add amount input ot div
                 const amountElement = document.createElement("input");
+                amountElement.id = "borrow_input_"+token.id;
                 outerDiv.appendChild(amountElement);
                 // Finally add the outer div element to the ul element
                 ulElement.appendChild(outerDiv);
@@ -215,7 +219,11 @@ const HeaderInfo = (props) => {
             sliderToRemove.remove();
         }
     }
-    
+    function handleSliderChange(asdf) {
+        const sliderValue = asdf.value;
+        console.log("Slider value changed:", sliderValue);
+        // Perform any further operations with the slider value
+      }
     function displaySlider(token){
         var tempArray = sliderTokensArray;
         const index = tempArray.indexOf(token);
@@ -233,21 +241,59 @@ const HeaderInfo = (props) => {
             
             liElement.textContent = token.symbol.toUpperCase();
             outerDiv.appendChild(liElement);
+
             // Add value slider to div
-            const inputElement = document.createElement("input");
-            inputElement.type = "range";
-            inputElement.min = "0";
-            inputElement.max = "100";
-            inputElement.value = "value";
-            inputElement.onChange = "handleSliderChange()";
-           
-            outerDiv.appendChild(inputElement);
+            const valueInputElement = document.createElement("input");
+            valueInputElement.type = "range";
+            valueInputElement.min = "0";
+            valueInputElement.max = token.current_price*2;
+            valueInputElement.value = token.current_price;
+            valueInputElement.id = "slider_input_"+token.id;
+            outerDiv.appendChild(valueInputElement);
+            console.log( token.current_price);
+
+
+            const thresholdInputElement = document.createElement("input");
+            thresholdInputElement.type = "number";
+            thresholdInputElement.min = 0;
+            thresholdInputElement.max = 100;
+            thresholdInputElement.step = 1;
+            thresholdInputElement.value = 75;
+            thresholdInputElement.id = "threshold_input_"+token.id;
+            outerDiv.appendChild(thresholdInputElement);
+
             // Finally add the outer div element to the sliderList 
             sliderList.appendChild(outerDiv);
 
             tempArray.push(token);
             setSliderTokensArray(tempArray);
         }
+    }
+
+    function calculateCurrentHealthValue(){
+        var denominator = 0;
+        // Calculate the Denominator: ∑ ( Collateral[ith] × LiquidationThreshold[ith] )
+        for(var i = 0; i < supplyTokensArray.length; i++){
+            const token = supplyTokensArray[i];
+            const inputAmount = document.getElementById("supply_input_"+token.id).value;
+            const currentPrice = document.getElementById("slider_input_"+token.id).value;
+            const liquidationThreshold = document.getElementById("threshold_input_"+token.id).value/100;
+            console.log(token.id,inputAmount,currentPrice,liquidationThreshold );
+            console.log(inputAmount,currentPrice,liquidationThreshold);
+            denominator += (currentPrice * inputAmount) * liquidationThreshold;
+        }
+        // Calculate the Numerator: Total Borrows
+        var totalBorrowValue = 0;
+        for(var j = 0; j < borrowTokensArray.length; j++){
+            const token = borrowTokensArray[j];
+            const inputAmount = document.getElementById("borrow_input_"+token.id).value;
+            const currentPrice = document.getElementById("slider_input_"+token.id).value;
+            totalBorrowValue += (inputAmount * currentPrice);
+            console.log(inputAmount, currentPrice);
+        }
+        setHealthFactor(denominator/totalBorrowValue);
+        console.log(healthFactor);
+        
     }
 
     useEffect(() => {
@@ -269,6 +315,7 @@ const HeaderInfo = (props) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         }, []
     );
+
 
 
     return ( 
@@ -383,6 +430,8 @@ const HeaderInfo = (props) => {
 
                 
             </div>
+            <button onClick = {calculateCurrentHealthValue}>CALCULATE</button>
+            <div>{healthFactor}</div>
         </div>
 
         
