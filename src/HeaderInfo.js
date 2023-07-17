@@ -109,10 +109,7 @@ const HeaderInfo = (props) => {
             setSupplyTokensArray(tempSupplyArray);
             displaySlider(tokenToAdd);
         }
-        
-        
     }
-
 
     // Add tokens that are being selected in the borrow modal
     function tempAddBorrowSide(tokenToAdd, thisBtn){
@@ -143,14 +140,17 @@ const HeaderInfo = (props) => {
     function addSupplySide() {
         const ulElement = document.getElementById("assets_supply_tokens_list");
         const pTag = document.getElementById("assets_supply_nothing");
+        const headerTag = document.getElementById("assets_supply_header");
         // Clear the existing list
         ulElement.innerHTML = ''; 
 
         if(supplyTokensArray.length == 0){
-            pTag.textContent = "Nothing supplied yet"
+            pTag.style.display = "flex";
+            headerTag.style.display = "none";
         }
         else{
-            pTag.textContent = "Supplied Assets"
+            headerTag.style.display = "grid";
+            pTag.style.display = "none";
             for (const token of supplyTokensArray) {
                 // Create outer div
                 const outerDiv = document.createElement("div");
@@ -163,7 +163,23 @@ const HeaderInfo = (props) => {
                 // Add amount input to div
                 const amountElement = document.createElement("input");
                 amountElement.id = "supply_input_"+token.id;
+                amountElement.addEventListener("input", calculateCurrentHealthValue);
+                amountElement.addEventListener("input", function() {calculateTokenValue(token.id);});
+                amountElement.addEventListener("input", function() {displayPrice(token.id);});
                 outerDiv.appendChild(amountElement);
+
+                // Add price div
+                const priceElement = document.createElement("p");
+                priceElement.id = "supply_price_"+token.id;
+                priceElement.value = 0;
+                outerDiv.appendChild(priceElement);
+
+                // Add Value div (Price * Amount)
+                const valueElement = document.createElement("p");
+                valueElement.id = "supply_value_"+token.id;
+                valueElement.value = 0;
+                outerDiv.appendChild(valueElement);
+
                 // Finally add the outer div element to the ul element
                 ulElement.appendChild(outerDiv);
             }
@@ -175,14 +191,17 @@ const HeaderInfo = (props) => {
     function addBorrowSide() {
         const ulElement = document.getElementById("assets_borrow_tokens_list");
         const pTag = document.getElementById("assets_borrow_nothing");
+        const headerTag = document.getElementById("assets_supply_header");
         // Clear the existing list
         ulElement.innerHTML = ''; 
 
         if(borrowTokensArray.length == 0){
-            pTag.textContent = "Nothing supplied yet"
+            pTag.style.display = "flex";
+            headerTag.style.display = "none";
         }
         else{
-            pTag.textContent = "Supplied Assets"
+            headerTag.style.display = "grid";
+            pTag.style.display = "none";
             for (const token of borrowTokensArray) {
                 // Create outer div
                 const outerDiv = document.createElement("div");
@@ -190,16 +209,16 @@ const HeaderInfo = (props) => {
                 const liElement = document.createElement("li");
                 liElement.textContent = token.symbol.toUpperCase();
                 outerDiv.appendChild(liElement);
-                // Add amount input ot div
+                // Add amount input to div
                 const amountElement = document.createElement("input");
                 amountElement.id = "borrow_input_"+token.id;
+                amountElement.addEventListener("input", calculateCurrentHealthValue);
                 outerDiv.appendChild(amountElement);
                 // Finally add the outer div element to the ul element
                 ulElement.appendChild(outerDiv);
             }
         }
         setBorrowModalVisible(false);
-        
     }
 
     
@@ -211,19 +230,13 @@ const HeaderInfo = (props) => {
         const index = tempArray.indexOf(token);
         const index1 = tempArray1.indexOf(token);
         const index2 = tempArray2.indexOf(token);
-        console.log(tempArray, tempArray1, tempArray2);
-        console.log(index, index1, index2)
         if (index1 == -1 && index2 == -1) {
             tempArray.splice(index, 1);
             setSliderTokensArray(tempArray);
             sliderToRemove.remove();
         }
     }
-    function handleSliderChange(asdf) {
-        const sliderValue = asdf.value;
-        console.log("Slider value changed:", sliderValue);
-        // Perform any further operations with the slider value
-      }
+
     function displaySlider(token){
         var tempArray = sliderTokensArray;
         const index = tempArray.indexOf(token);
@@ -249,17 +262,22 @@ const HeaderInfo = (props) => {
             valueInputElement.max = token.current_price*2;
             valueInputElement.value = token.current_price;
             valueInputElement.id = "slider_input_"+token.id;
+            valueInputElement.addEventListener("input", calculateCurrentHealthValue);
+            valueInputElement.addEventListener("input", function() {calculateTokenValue(token.id);});
+            valueInputElement.addEventListener("input", function() {displayPrice(token.id);});
+            // Display the initial price;
+            
             outerDiv.appendChild(valueInputElement);
-            console.log( token.current_price);
-
-
+            
             const thresholdInputElement = document.createElement("input");
             thresholdInputElement.type = "number";
             thresholdInputElement.min = 0;
             thresholdInputElement.max = 100;
             thresholdInputElement.step = 1;
             thresholdInputElement.value = 75;
+            thresholdInputElement.addEventListener("input", calculateCurrentHealthValue);
             thresholdInputElement.id = "threshold_input_"+token.id;
+           
             outerDiv.appendChild(thresholdInputElement);
 
             // Finally add the outer div element to the sliderList 
@@ -267,9 +285,27 @@ const HeaderInfo = (props) => {
 
             tempArray.push(token);
             setSliderTokensArray(tempArray);
+            
         }
+        
     }
 
+    // Calculate the Value of a borrow/supply, and update the display
+    function calculateTokenValue(tokenID){
+        const amount = document.getElementById("supply_input_"+tokenID).value;
+        const price = document.getElementById("slider_input_"+tokenID).value;
+        const valueElement = document.getElementById("supply_value_"+tokenID);
+
+        valueElement.textContent = amount*price + " USD";
+    }
+
+    function displayPrice(tokenID){
+        const price = document.getElementById("slider_input_"+tokenID).value;
+        const priceElement = document.getElementById("supply_price_"+tokenID);
+        priceElement.textContent = price + " USD";
+    }
+
+    // Calculate the current health value
     function calculateCurrentHealthValue(){
         var denominator = 0;
         // Calculate the Denominator: ∑ ( Collateral[ith] × LiquidationThreshold[ith] )
@@ -278,8 +314,8 @@ const HeaderInfo = (props) => {
             const inputAmount = document.getElementById("supply_input_"+token.id).value;
             const currentPrice = document.getElementById("slider_input_"+token.id).value;
             const liquidationThreshold = document.getElementById("threshold_input_"+token.id).value/100;
-            console.log(token.id,inputAmount,currentPrice,liquidationThreshold );
-            console.log(inputAmount,currentPrice,liquidationThreshold);
+            //console.log(token.id,inputAmount,currentPrice,liquidationThreshold );
+            //console.log(inputAmount,currentPrice,liquidationThreshold);
             denominator += (currentPrice * inputAmount) * liquidationThreshold;
         }
         // Calculate the Numerator: Total Borrows
@@ -292,7 +328,7 @@ const HeaderInfo = (props) => {
             console.log(inputAmount, currentPrice);
         }
         setHealthFactor(denominator/totalBorrowValue);
-        console.log(healthFactor);
+        //console.log(healthFactor);
         
     }
 
@@ -303,7 +339,9 @@ const HeaderInfo = (props) => {
             const supplyDiv = document.getElementById("assets_supply").offsetWidth;
             const borrowDiv = document.getElementById("assets_borrow").offsetWidth;
             const sliderDiv = document.getElementById("values_container");
+            const infoDiv = document.getElementById("info_container");
             sliderDiv.style.width = `${supplyDiv + borrowDiv}px`;
+            infoDiv.style.width = `${supplyDiv + borrowDiv}px`;
             
         }
         // Attach the event listener for window resize
@@ -315,7 +353,6 @@ const HeaderInfo = (props) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         }, []
     );
-
 
 
     return ( 
@@ -349,8 +386,6 @@ const HeaderInfo = (props) => {
 
             <div className={`modal_borrow ${modalBorrowVisible ? 'visible' : ''}`} id="modal_borrow">
                 <div className = "modal_borrow_content">
-
-
                     <div className="modal_borrow_content_header">
                         <p>Assets to Borrow</p>
                         <ExitSymbol className = "modal_borrow_exit" onClick = {setBorrowModalVisibilityFalse}/>
@@ -388,32 +423,53 @@ const HeaderInfo = (props) => {
                     <a href="#" onClick={ () => setChain("Metis") }>Metis</a>
                 </div>
             </div>
+
             <div>
                 <p>Net Worth</p>
                 <div>$ 0</div>
             </div>
+
             <div className ="b_s">
-                <div className = "b_s_container">
-                    <div className = "b_s_container_supply">
-                        <p className = "b_s_container_supply_text">Add tokens being supplied</p>
-                        <button className = "b_s_container_supply_btn" onClick = {setSupplyModalVisibilityTrue}>Supply</button>
-                    </div>
-                    <div className = "b_s_container_borrow">
-                        <p className = "b_s_container_borrow_text">Add tokens being borrowed</p>
-                        <button className = "b_s_container_borrow_btn" onClick = {setBorrowModalVisibilityTrue}>Borrow</button>
+                <div className='info'>
+                    <div className = "info_container" id='info_container'>
+                        <p>Position Information</p>
+
+        
+                        <div>Health Factor: {healthFactor}</div>
                     </div>
                 </div>
 
                 <div className = "assets">
                     <div className = "assets_supply" id="assets_supply">
+                        <div className = "assets_supply_top">
+                            <p className = "assets_supply_top_header">Supplies</p>
+                            <button className = "b_s_container_supply_btn" onClick = {setSupplyModalVisibilityTrue}>Supply</button>
+                        </div>
                         <p className = "assets_supply_nothing" id = "assets_supply_nothing">Nothing supplied yet</p>
+                        <div className = "assets_supply_header" id ="assets_supply_header">
+                            <h3>Asset</h3>
+                            <h3>Amount</h3>
+                            <h3>Price</h3>
+                            <h3>Value</h3>
+                        </div>
                         <div className="assets_supply_tokens">
                             <ul id = "assets_supply_tokens_list" className = "assets_supply_tokens_list"></ul>
                         </div>
+                        
                     </div>
 
                     <div className = "assets_borrow" id="assets_borrow">
+                        <div className = "assets_borrow_top">
+                            <p className = "assets_borrow_top_header">Borrows</p>
+                            <button className = "b_s_container_borrow_btn" onClick = {setBorrowModalVisibilityTrue}>Borrow</button>
+                        </div>
                         <p className = "assets_borrow_nothing" id = "assets_borrow_nothing">Nothing borrowed yet</p>
+                        <div className = "assets_borrow_header" id = "assets_borrow_header">
+                            <h3>Asset</h3>
+                            <h3>Amount</h3>
+                            <h3>Price</h3>
+                            <h3>Value</h3>
+                        </div>
                         <div className="assets_borrow_tokens">
                             <ul id = "assets_borrow_tokens_list" className = "assets_borrow_tokens_list"></ul>
                         </div>
@@ -431,7 +487,7 @@ const HeaderInfo = (props) => {
                 
             </div>
             <button onClick = {calculateCurrentHealthValue}>CALCULATE</button>
-            <div>{healthFactor}</div>
+            
         </div>
 
         
