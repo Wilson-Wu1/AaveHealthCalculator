@@ -670,13 +670,8 @@ const HeaderInfo = (props) => {
                     
                     </div>
                 </div>
-
-                
             </div>
-            
-            
         </div>
-
         
      );
 }

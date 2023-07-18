@@ -2,6 +2,7 @@ import './App.css';
 import {useEffect, useState} from 'react';
 import Navbar from './navbar';
 import HeaderInfo from './HeaderInfo';
+import Bottom from './bottom';
 
 
 
@@ -610,6 +611,7 @@ function App() {
     <div className="App">
       <Navbar/>
       {cryptoData && <HeaderInfo cryptoData = {cryptoData}/>}
+      <Bottom/>
     </div>
   );
 }

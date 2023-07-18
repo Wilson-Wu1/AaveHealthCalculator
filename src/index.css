@@ -8,6 +8,11 @@
 .navbar{
   display:flex;
   align-items: center;
+  border-bottom: 1.5px solid rgba(235, 235, 239, 0.2);
+  padding-top:8px;
+  padding-bottom:8px;
+  margin-left:-10px;
+  margin-right:-10px;
 }
 .navbar h1{
   margin:0;
@@ -22,7 +27,7 @@
 
 .dropbtn{
   margin: 0;
-  
+  display:none;
   font-weight: 700;
   letter-spacing: 0.015625rem;
   line-height: 123.5%;
@@ -102,11 +107,15 @@
   100% { opacity: 0; }
 }
 
+.headerInfo{
+  padding-bottom:60px;
+}
 
 .info{
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-top:50px;
 }
 
 .info_container{
@@ -659,4 +668,40 @@
   background-color: rgb(41, 46, 65);
   font-size: 0.75rem;
   color:rgb(165, 168, 182);
+}
+
+.bottom_info{
+  padding:40px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  border-top: 1.5px solid rgba(235, 235, 239, 0.2);
+  margin-left:-10px;
+  margin-right:-10px;
+}
+
+.bottom_socials{
+  list-style: none; /* Remove the default bullet points */
+  padding: 0; /* Remove any default padding */
+  margin: 0; /* Remove any default margin */
+  
+
+}
+
+.bottom_socials li {
+  margin-bottom: 12px; /* Adjust the vertical spacing between list items */
+}
+
+.bottom_socials li a {
+  text-decoration: none; /* Remove underline from links */
+  color: #ffffff; /* Set the color of the links */
+}
+
+.bottom_socials li a:hover {
+  color: #e3e3e3; /* Set the color of the links on hover */
+}
+
+.bottom_info_address p{
+  margin:0;
+  padding:4px;
 }
