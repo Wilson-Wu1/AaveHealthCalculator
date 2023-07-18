@@ -462,6 +462,7 @@ const HeaderInfo = (props) => {
 
     // Calculate the current health value
     function calculateCurrentHealthValue(){
+        console.log('here');
         var denominator = 0;
         // Calculate the Denominator: ∑ ( Collateral[ith] × LiquidationThreshold[ith] )
         for(var i = 0; i < supplyTokensArray.length; i++){
@@ -482,7 +483,14 @@ const HeaderInfo = (props) => {
             totalBorrowValue += (inputAmount * currentPrice);
             
         }
-        setHealthFactor(denominator/totalBorrowValue);
+        const healthFactor = (denominator/totalBorrowValue).toFixed(2);
+        if(isNaN(healthFactor)){
+            setHealthFactor(0);
+        }
+        else{
+            setHealthFactor(healthFactor);
+        }
+        
         //console.log(healthFactor);
         
     }
@@ -495,8 +503,8 @@ const HeaderInfo = (props) => {
             const borrowDiv = document.getElementById("assets_borrow").offsetWidth;
             const sliderDiv = document.getElementById("values_container");
             const infoDiv = document.getElementById("info_container");
-            sliderDiv.style.width = `${supplyDiv + borrowDiv}px`;
-            infoDiv.style.width = `${supplyDiv + borrowDiv}px`;
+            sliderDiv.style.width = `${supplyDiv + borrowDiv-7}px`;
+            infoDiv.style.width = `${supplyDiv + borrowDiv+15}px`;
             
         }
         // Attach the event listener for window resize
@@ -523,7 +531,7 @@ const HeaderInfo = (props) => {
                     <div className="modal_supply_content_assets">
                         <div className="modal_supply_content_assets_labels">
                             <p>Assets</p>
-                            <p>Amount</p>
+                            <p>Supply</p>
                         </div>
                         <div className="modal_supply_content_assets_grid">
                             <div className="modal_supply_content_scrollable">
@@ -549,7 +557,7 @@ const HeaderInfo = (props) => {
                     <div className="modal_borrow_content_assets">
                         <div className="modal_borrow_content_assets_labels">
                             <p>Assets</p>
-                            <p>Amount</p>
+                            <p>Borrow</p>
                         </div>
                         <div className="modal_borrow_content_assets_grid">
                             <div className="modal_borrow_content_scrollable">
@@ -579,18 +587,36 @@ const HeaderInfo = (props) => {
                 </div>
             </div>
 
-            <div>
-                <p>Net Worth</p>
-                <div>$ 0</div>
-            </div>
-
             <div className ="b_s">
                 <div className='info'>
+                
                     <div className = "info_container" id='info_container'>
-                        <p>Position Information</p>
+                        <p className = "info_container_title">Position Information</p>
+                        <div className ="info_container_border"></div>
 
-        
-                        <div>Health Factor: {healthFactor}</div>
+                        <div className = "info_container_top">        
+                            <p>Health Factor</p>
+                            <p>Net Worth</p>                     
+                            <p>Total Supplied</p>                     
+                            
+                        </div>
+                        <div className = "info_container_bottom">
+                            <div>{healthFactor}</div>
+                            <div className="info_container_bottom_netWorth">0</div>
+                            <div className="info_container_bottom_totalSupplied">0</div>
+                        </div>
+                        <div className = "info_container_top_1">                         
+                            <p>Total Borrowed</p>
+                            <p>Current LTV</p>
+                            <p>Borrowing Power Used</p>
+                        </div>
+                        <div className = "info_container_bottom_1">        
+                            <div className="info_container_bottom_totalBorrowed">0</div>
+                            <div className="info_container_bottom_ltv">0</div> 
+                            <div className="info_container_bottom_borrowPower">0</div>
+                        </div>
+                        
+
                     </div>
                 </div>
 

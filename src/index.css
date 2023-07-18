@@ -110,21 +110,57 @@
 }
 
 .info_container{
-  padding:10px;
+  padding-top:10px;
+  padding-bottom:10px;
   background-color: rgb(41, 46, 65);
   border: 1px solid rgba(235, 235, 239, 0.08);
   border-radius: 4px;
-  height:150px;
+  height:250px;
   width:35%;
+  display:block;
+}
 
+.info_container_title{
+  
+  margin:0;
+
+  padding:15px;
+  padding-left:20px;
+}
+
+.info_container_border{
+  
+  height:2px;
+  background-image: linear-gradient(90deg, rgb(46, 186, 198) 16%, rgba(182, 80, 158, 1) 91%);
+
+  width:100%;
+  
+}
+
+.info_container_top, .info_container_bottom, .info_container_bottom_1, .info_container_top_1{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px; /* Adjust the gap between grid items */
+  background-color:  rgb(41, 46, 65);
+  padding-left:20px;
+  
+}
+.info_container_top_1{
+  padding-top:10px;
+}
+
+.info_container_bottom div{
+  background-color: rgb(41, 46, 65);
+}
+
+.info_container_bottom_1 div{
+  background-color: rgb(41, 46, 65);
 }
 
 .info_container p{
-  padding:10px;
   background-color: rgb(41, 46, 65);
-  font-size: large;
-  
 }
+
 
 
 
@@ -135,7 +171,13 @@
   border: 1px solid rgba(235, 235, 239, 0.08);
   padding:5px;
   width:100px;
+  cursor: pointer;
+  transition: border 0.2s;
   
+}
+
+.b_s_container_supply_btn:hover, .b_s_container_borrow_btn:hover{
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 
@@ -152,7 +194,7 @@
   border: 1px solid rgba(235, 235, 239, 0.08);
   border-radius: 4px;
   min-height:125px;
-  margin-right: 20px;
+  margin-right: 15px;
   width:40%;
   padding-bottom:0;
   
@@ -292,35 +334,44 @@
   height:20px;
   padding:10px;
   background-color: inherit;
-  
-  
-  
 }
 
 .modal_supply_content_assets_labels, .modal_borrow_content_assets_labels{
   background-color:rgb(41, 46, 65);
   display: grid;
   grid-template-columns: 1fr 1fr;
-  place-items: start;
+  justify-items: center;
+  align-items: center;
   border-bottom: 1px solid rgba(235, 235, 239, 0.08);
   margin-left: -10px;
   margin-right: -10px;
+  
+}
+.modal_supply_content_assets_labels p{
+  font-size: 0.75rem;
+  color:rgb(165, 168, 182);
 }
 
-.modal_supply_content_assets_grid{
+.modal_borrow_content_assets_labels p{
+  font-size: 0.75rem;
+  color:rgb(165, 168, 182);
+}
+
+
+.modal_supply_content_assets_grid, .modal_borrow_content_assets_grid{
   margin-left: -10px;
   margin-right: -10px;
 }
 
 .modal_supply_content_assets p{
   background-color:rgb(41, 46, 65);
-  padding-left:10px;
+  
 }
 
 
 .modal_borrow_content_assets p{
   background-color:rgb(41, 46, 65);
-  padding-left:10px;
+  
 }
 
 .modal_supply_content_scrollable, .modal_borrow_content_scrollable {
@@ -347,20 +398,24 @@
 
 .modal_supply_content_scrollable_list div{
   background-color:rgb(41, 46, 65);
-  display:flex;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
   border-bottom: 1px solid rgba(235, 235, 239, 0.08);
-  padding:30px;
+  padding-top: 30px;
+  padding-bottom:30px;
+  justify-items: center;
   align-items: center;
-
 }
 
 .modal_borrow_content_scrollable_list div{
   background-color:rgb(41, 46, 65);
-  display:flex;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
   border-bottom: 1px solid rgba(235, 235, 239, 0.08);
-  padding:30px;
+  padding-top: 30px;
+  padding-bottom:30px;
+  justify-items: center;
   align-items: center;
-
 }
 
 .modal_supply_content_scrollable_list div button{
@@ -446,8 +501,8 @@
   margin-left:-10px;
   margin-right:-10px;
   border-top: 1px solid rgba(235, 235, 239, 0.08);
-  padding-top:10px;
-  padding-bottom:10px;
+  padding-top:15px;
+  padding-bottom:15px;
 
 }
 
@@ -473,14 +528,20 @@
 
 .assets_supply_tokens_list input{
   width:100px;
-  background-color:rgb(41, 46, 65);
-  border: 1px solid rgb(206, 206, 206); /* Set the border color */
+  background-color:rgb(56, 61, 81);
+  border: 1px solid rgba(235, 235, 239, 0.08); /* Set the border color */
   border-radius:4px;
-
+  
 }
+
+.assets_supply_tokens_list input:hover{
+  border: 1px solid rgba(255, 255, 255, 0.8); /* Set the border color */
+}
+
 .assets_supply_tokens_list p{
   background-color:rgb(41, 46, 65);
   font-size: 14px;
+
 }
 
 
@@ -491,11 +552,15 @@
 
 .assets_borrow_tokens_list input{
   width:100px;
-  background-color:rgb(41, 46, 65);
-  border: 1px solid rgb(206, 206, 206); /* Set the border color */
+  background-color:rgb(56, 61, 81);
+  border: 1px solid rgba(235, 235, 239, 0.08); /* Set the border color */
   border-radius:4px;
-
 }
+
+.assets_borrow_tokens_list input:hover{
+  border: 1px solid rgba(255, 255, 255, 0.8); /* Set the border color */
+}
+
 .assets_borrow_tokens_list p{
   background-color:rgb(41, 46, 65);
   font-size: 14px;
@@ -509,6 +574,7 @@
 }
 .values_container{
   padding:10px;
+  padding-bottom:0;
   background-color: rgb(41, 46, 65);
   border: 1px solid rgba(235, 235, 239, 0.08);
   border-radius: 4px;
@@ -538,6 +604,7 @@
   margin-left:-10px;
   margin-right:-10px;
   padding-top:35px;
+  padding-bottom:35px;
   border-top: 1px solid rgba(235, 235, 239, 0.08);
   
 
@@ -545,7 +612,7 @@
 
 .slider_input{
   width:100%;
-
+  
 }
 
 .slider_outer_div{
