@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
-
+import ReactSlider from 'react-slider';
 
 
 const HeaderInfo = (props) => {
@@ -79,6 +79,7 @@ const HeaderInfo = (props) => {
         }
     }
 
+    const [tempSupplyTokensArray, setTempSupplyTokensArray] = useState([]);
     const [supplyTokensArray, setSupplyTokensArray] = useState([]);
     const [borrowTokensArray, setBorrowTokensArray] = useState([]);
     const [sliderTokensArray, setSliderTokensArray] = useState([]);
@@ -99,6 +100,7 @@ const HeaderInfo = (props) => {
             thisBtn.textContent = "Supply Asset"
             setSupplyTokensArray(tempSupplyArray);
             removeSlider(tokenToAdd);
+            removeTokenInfo(tokenToAdd, true);
             
         }
         // Item does not exist in the array
@@ -126,6 +128,7 @@ const HeaderInfo = (props) => {
             thisBtn.textContent = "Borrow Asset"
             setBorrowTokensArray(tempBorrowArray);
             removeSlider(tokenToAdd);
+            removeTokenInfo(tokenToAdd, false);
         }
         else{
             tempBorrowArray.push(tokenToAdd);
@@ -135,14 +138,24 @@ const HeaderInfo = (props) => {
             displaySlider(tokenToAdd);
         }
     }
+
+    // Remove a token from the supply or borrow side
+    function removeTokenInfo(token, isSupplySide){
+        if(isSupplySide && document.getElementById("supply_outer_div_" + token.id)){
+            const outerDivToRemove = document.getElementById("supply_outer_div_" + token.id);
+            outerDivToRemove.remove();
+        }
+        else if (!isSupplySide && document.getElementById("borrow_outer_div_" + token.id)){
+            const outerDivToRemove = document.getElementById("borrow_outer_div_" + token.id);
+            outerDivToRemove.remove();
+        }
+    }
     
     // Add tokens to the supply side from the selected tokens
     function addSupplySide() {
         const ulElement = document.getElementById("assets_supply_tokens_list");
         const pTag = document.getElementById("assets_supply_nothing");
         const headerTag = document.getElementById("assets_supply_header");
-        // Clear the existing list
-        ulElement.innerHTML = ''; 
 
         if(supplyTokensArray.length == 0){
             pTag.style.display = "flex";
@@ -152,36 +165,48 @@ const HeaderInfo = (props) => {
             headerTag.style.display = "grid";
             pTag.style.display = "none";
             for (const token of supplyTokensArray) {
-                // Create outer div
-                const outerDiv = document.createElement("div");
-                
-                // Add li element to div
-                const liElement = document.createElement("li");
-                liElement.textContent = token.symbol.toUpperCase();
-                outerDiv.appendChild(liElement);
+                // Check if the token has already been added to the list. If it exists, no need to rerender it. 
+                // Otherwise it will lose past input values.
+                const divElement = document.getElementById("supply_outer_div_" + token.id);
+                if(!divElement){
+                    // Create outer div
+                    const outerDiv = document.createElement("div");
+                    outerDiv.id = "supply_outer_div_" + token.id;
+                        
+                    // Add li element to div
+                    const liElement = document.createElement("li");
+                    liElement.textContent = token.symbol.toUpperCase();
+                    outerDiv.appendChild(liElement);
 
-                // Add amount input to div
-                const amountElement = document.createElement("input");
-                amountElement.id = "supply_input_"+token.id;
-                amountElement.addEventListener("input", calculateCurrentHealthValue);
-                amountElement.addEventListener("input", function() {calculateTokenValue(token.id);});
-                amountElement.addEventListener("input", function() {displayPrice(token.id);});
-                outerDiv.appendChild(amountElement);
+                    // Add amount input to div
+                    const amountElement = document.createElement("input");
+                    amountElement.id = "supply_input_"+token.id;
+                    amountElement.addEventListener("input", calculateCurrentHealthValue);
+                    amountElement.addEventListener("input", function() {calculateTokenValue(token.id, 0);});
+                    amountElement.addEventListener("input", function() {displayPrice(token.id, 0);});
+                    outerDiv.appendChild(amountElement);
 
-                // Add price div
-                const priceElement = document.createElement("p");
-                priceElement.id = "supply_price_"+token.id;
-                priceElement.value = 0;
-                outerDiv.appendChild(priceElement);
+                    // Add price input div
+                    const priceElement = document.createElement("input");
+                    priceElement.id = "supply_price_"+token.id;
+                    priceElement.value = 0;
+                    priceElement.addEventListener("input", function() {adjustSliderValue(token.id, true);});
+                    priceElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
+                    outerDiv.appendChild(priceElement);
 
-                // Add Value div (Price * Amount)
-                const valueElement = document.createElement("p");
-                valueElement.id = "supply_value_"+token.id;
-                valueElement.value = 0;
-                outerDiv.appendChild(valueElement);
+                    // Add Value div (Price * Amount)
+                    const valueElement = document.createElement("p");
+                    valueElement.id = "supply_value_"+token.id;
+                    valueElement.value = 0;
+                    outerDiv.appendChild(valueElement);
 
-                // Finally add the outer div element to the ul element
-                ulElement.appendChild(outerDiv);
+                    // Finally add the outer div element to the ul element
+                    ulElement.appendChild(outerDiv);
+                    
+                }
+                displayPrice(token.id, 0);
+                calculateTokenValue(token.id, 0);
+  
             }
         }
         setSupplyModalVisible(false);
@@ -191,9 +216,7 @@ const HeaderInfo = (props) => {
     function addBorrowSide() {
         const ulElement = document.getElementById("assets_borrow_tokens_list");
         const pTag = document.getElementById("assets_borrow_nothing");
-        const headerTag = document.getElementById("assets_supply_header");
-        // Clear the existing list
-        ulElement.innerHTML = ''; 
+        const headerTag = document.getElementById("assets_borrow_header");
 
         if(borrowTokensArray.length == 0){
             pTag.style.display = "flex";
@@ -202,21 +225,49 @@ const HeaderInfo = (props) => {
         else{
             headerTag.style.display = "grid";
             pTag.style.display = "none";
+            
             for (const token of borrowTokensArray) {
-                // Create outer div
-                const outerDiv = document.createElement("div");
-                // Add li element to div
-                const liElement = document.createElement("li");
-                liElement.textContent = token.symbol.toUpperCase();
-                outerDiv.appendChild(liElement);
-                // Add amount input to div
-                const amountElement = document.createElement("input");
-                amountElement.id = "borrow_input_"+token.id;
-                amountElement.addEventListener("input", calculateCurrentHealthValue);
-                outerDiv.appendChild(amountElement);
-                // Finally add the outer div element to the ul element
-                ulElement.appendChild(outerDiv);
+                // Check if the token has already been added to the list. If it exists, no need to rerender it. 
+                // Otherwise it will lose past input values.
+                const divElement = document.getElementById("borrow_outer_div_" + token.id);
+                if(!divElement){
+                    // Create outer div
+                    const outerDiv = document.createElement("div");
+                    outerDiv.id = "borrow_outer_div_" + token.id;
+
+                    // Add li element to div
+                    const liElement = document.createElement("li");
+                    liElement.textContent = token.symbol.toUpperCase();
+                    outerDiv.appendChild(liElement);
+                    
+                    // Add amount input to div
+                    const amountElement = document.createElement("input");
+                    amountElement.id = "borrow_input_"+token.id;
+                    amountElement.addEventListener("input", calculateCurrentHealthValue);
+                    amountElement.addEventListener("input", function() {calculateTokenValue(token.id, 1);});
+                    amountElement.addEventListener("input", function() {displayPrice(token.id, 1);});
+                    outerDiv.appendChild(amountElement);
+
+                    // Add price div
+                    const priceElement = document.createElement("input");
+                    priceElement.id = "borrow_price_"+token.id;
+                    priceElement.value = 0;
+                    priceElement.addEventListener("input", function() {adjustSliderValue(token.id, false);});
+                    priceElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
+                    outerDiv.appendChild(priceElement);
+
+                    // Add Value div (Price * Amount)
+                    const valueElement = document.createElement("p");
+                    valueElement.id = "borrow_value_"+token.id;
+                    valueElement.value = 0;
+                    outerDiv.appendChild(valueElement);
+                    // Finally add the outer div element to the ul element
+                    ulElement.appendChild(outerDiv);
+                }
+                displayPrice(token.id, 1);
+                calculateTokenValue(token.id, 1);
             }
+
         }
         setBorrowModalVisible(false);
     }
@@ -247,6 +298,7 @@ const HeaderInfo = (props) => {
 
             // Create outer div
             const outerDiv = document.createElement("div");
+            outerDiv.classList.add('outer_div')
             outerDiv.id = token.id;
 
             // Add li element to div
@@ -255,19 +307,42 @@ const HeaderInfo = (props) => {
             liElement.textContent = token.symbol.toUpperCase();
             outerDiv.appendChild(liElement);
 
-            // Add value slider to div
+            // Create sliderOuterDiv
+            const sliderOuterDiv = document.createElement("div");
+            sliderOuterDiv.classList.add('slider_outer_div');
+
+            // Create value slider and add to sliderOuterDiv
             const valueInputElement = document.createElement("input");
             valueInputElement.type = "range";
             valueInputElement.min = "0";
-            valueInputElement.max = token.current_price*2;
+            valueInputElement.step="0.01"
+            valueInputElement.max = (token.current_price * 3);
             valueInputElement.value = token.current_price;
             valueInputElement.id = "slider_input_"+token.id;
+            valueInputElement.classList.add('slider_input');
             valueInputElement.addEventListener("input", calculateCurrentHealthValue);
-            valueInputElement.addEventListener("input", function() {calculateTokenValue(token.id);});
-            valueInputElement.addEventListener("input", function() {displayPrice(token.id);});
-            // Display the initial price;
+            valueInputElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
+            valueInputElement.addEventListener("input", function() {displayPrice(token.id, 2);});
+
+            // Create div below the slider
+            const sliderBottomDiv = document.createElement("div");
+            sliderBottomDiv.classList.add('slider_div_bottom');
+
+            // Create p tags for the min and max values
+            const lowValueText = document.createElement("p");
+            lowValueText.classList.add('slider_div_top_min');
+            lowValueText.textContent = 0;
+            const maxValueText = document.createElement("p");
+            maxValueText.classList.add('slider_div_top_max');
+            maxValueText.textContent = (token.current_price*3).toFixed(2);
+
+            sliderBottomDiv.appendChild(lowValueText);
+            sliderBottomDiv.appendChild(maxValueText);
             
-            outerDiv.appendChild(valueInputElement);
+
+            sliderOuterDiv.appendChild(valueInputElement);
+            sliderOuterDiv.appendChild(sliderBottomDiv);
+            outerDiv.appendChild(sliderOuterDiv);
             
             const thresholdInputElement = document.createElement("input");
             thresholdInputElement.type = "number";
@@ -291,18 +366,98 @@ const HeaderInfo = (props) => {
     }
 
     // Calculate the Value of a borrow/supply, and update the display
-    function calculateTokenValue(tokenID){
-        const amount = document.getElementById("supply_input_"+tokenID).value;
-        const price = document.getElementById("slider_input_"+tokenID).value;
-        const valueElement = document.getElementById("supply_value_"+tokenID);
+    function calculateTokenValue(tokenID, caller){
 
-        valueElement.textContent = amount*price + " USD";
+        // Get the price from the slider input 
+        const price = document.getElementById("slider_input_"+tokenID).value;
+
+        // Update supply side
+        if(caller == 0){
+            const amount = document.getElementById("supply_input_"+tokenID).value;
+            const valueElement = document.getElementById("supply_value_"+tokenID);
+            valueElement.textContent = (amount*price).toFixed(2) + " USD";
+        }
+        // Update borrow side
+        else if (caller == 1){
+            const amount = document.getElementById("borrow_input_"+tokenID).value;
+            const valueElement = document.getElementById("borrow_value_"+tokenID);
+            valueElement.textContent = (amount*price).toFixed(2)+ " USD";
+        }
+        
+        else if (caller == 2){
+            // Caller is from slider. Potentially update both sides.
+            // First check the supply/borrow divs exist first 
+            const supplyDiv= document.getElementById("supply_input_"+tokenID);
+            if(supplyDiv){
+                const valueElement = document.getElementById("supply_value_"+tokenID);
+                valueElement.textContent = (supplyDiv.value * price).toFixed(2) + " USD";
+
+            }
+            const borrowDiv = document.getElementById("borrow_input_"+tokenID);
+            if(borrowDiv){
+                const valueElement = document.getElementById("borrow_value_"+tokenID);
+                valueElement.textContent = (borrowDiv.value * price).toFixed(2) + " USD";
+            }
+        }
     }
 
-    function displayPrice(tokenID){
-        const price = document.getElementById("slider_input_"+tokenID).value;
-        const priceElement = document.getElementById("supply_price_"+tokenID);
-        priceElement.textContent = price + " USD";
+    // Update the token price in both or either the supply and borrow sides
+    function displayPrice(tokenID, caller){
+        if(caller == 0){
+            const price = document.getElementById("slider_input_"+tokenID).value;
+            const priceElement = document.getElementById("supply_price_"+tokenID);
+            priceElement.value = price;
+        }
+        else if (caller == 1){
+            const price = document.getElementById("slider_input_"+tokenID).value;
+            const priceElement = document.getElementById("borrow_price_"+tokenID);
+            priceElement.value = price;
+        }
+        else if (caller == 2){
+            const supplyDiv = document.getElementById("supply_price_"+tokenID);
+            if(supplyDiv){
+                const price = document.getElementById("slider_input_"+tokenID).value;
+                supplyDiv.value= price;
+            }
+            const borrowDiv = document.getElementById("borrow_price_"+tokenID);
+            if(borrowDiv){
+                const price = document.getElementById("slider_input_"+tokenID).value;
+                borrowDiv.value = price;
+            }
+        }
+
+    }
+
+    // Update the token price in the slider, and possibly the borrow/supply side
+    function adjustSliderValue(tokenID, isSupplySide){
+        const slider = document.getElementById("slider_input_"+tokenID);
+        const supply = document.getElementById("supply_price_"+tokenID);
+        const borrow = document.getElementById("borrow_price_"+tokenID);
+        var price;
+        if(isSupplySide){
+            price = supply.value;
+            if(price == ""){
+                price = 0;
+            }
+            if(borrow){
+                borrow.value = price;
+            }
+            slider.value = price;
+            
+        }
+        else{
+            price = borrow.value;
+            if(price == ""){
+                price = 0;
+            }
+            if(supply){
+                supply.value = price;
+            }
+            slider.value = price;
+            
+
+        }
+
     }
 
     // Calculate the current health value
@@ -325,7 +480,7 @@ const HeaderInfo = (props) => {
             const inputAmount = document.getElementById("borrow_input_"+token.id).value;
             const currentPrice = document.getElementById("slider_input_"+token.id).value;
             totalBorrowValue += (inputAmount * currentPrice);
-            console.log(inputAmount, currentPrice);
+            
         }
         setHealthFactor(denominator/totalBorrowValue);
         //console.log(healthFactor);
@@ -479,6 +634,12 @@ const HeaderInfo = (props) => {
 
                 <div className = "values" id ="values">
                     <div className = "values_container" id="values_container">
+                        <p className='values_container_title'>Token Prices & Liquidation Thresholds</p>
+                        <div className = "values_container_header" id = "values_container_header">
+                            <h3>Asset</h3>
+                            <h3>Price</h3>
+                            <h3>Liquidation Threshold %</h3>
+                        </div>
                         <ul id = "values_container_list" className = "values_container_list"></ul>
                     
                     </div>
@@ -486,7 +647,7 @@ const HeaderInfo = (props) => {
 
                 
             </div>
-            <button onClick = {calculateCurrentHealthValue}>CALCULATE</button>
+            
             
         </div>
 
