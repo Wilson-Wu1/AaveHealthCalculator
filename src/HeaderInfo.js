@@ -596,24 +596,26 @@ const HeaderInfo = (props) => {
 
                         <div className = "info_container_top">        
                             <p>Health Factor</p>
-                            <p>Net Worth</p>                     
-                            <p>Total Supplied</p>                     
+                            <p>Current LTV</p>
+                            <p>Borrowing Power Used</p>
+                                              
                             
                         </div>
                         <div className = "info_container_bottom">
                             <div>{healthFactor}</div>
-                            <div className="info_container_bottom_netWorth">0</div>
-                            <div className="info_container_bottom_totalSupplied">0</div>
-                        </div>
-                        <div className = "info_container_top_1">                         
-                            <p>Total Borrowed</p>
-                            <p>Current LTV</p>
-                            <p>Borrowing Power Used</p>
-                        </div>
-                        <div className = "info_container_bottom_1">        
-                            <div className="info_container_bottom_totalBorrowed">0</div>
                             <div className="info_container_bottom_ltv">0</div> 
                             <div className="info_container_bottom_borrowPower">0</div>
+                        </div>
+                        <div className = "info_container_top_1"> 
+                            <p>Net Worth</p>                          
+                            <p>Total Borrowed</p>                                         
+                            <p>Total Supplied</p>  
+                        </div>
+                        <div className = "info_container_bottom_1">   
+                            <div className="info_container_bottom_netWorth">0</div>     
+                            <div className="info_container_bottom_totalBorrowed">0</div>
+                            <div className="info_container_bottom_totalSupplied">0</div>
+                            
                         </div>
                         
 
