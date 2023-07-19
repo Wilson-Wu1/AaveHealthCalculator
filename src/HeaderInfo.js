@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
-import ReactSlider from 'react-slider';
+
 
 
 const HeaderInfo = (props) => {
@@ -46,6 +46,21 @@ const HeaderInfo = (props) => {
     function addTokensToLists(){
         const ulElementSupply = document.getElementById("modal_supply_content_scrollable_list");
         const ulElementBorrow = document.getElementById("modal_borrow_content_scrollable_list");
+        
+        // // Create outer div for custom token
+        // const outerDiv = document.createElement("div");
+        // // Add li element to div
+        // const liElement = document.createElement("li");
+        // liElement.textContent = `Custom Token`.toUpperCase();
+        // // Add button element to div
+        // const btnElement = document.createElement("button");
+        // btnElement.textContent = 'Supply Asset';
+        // btnElement.addEventListener('click', () => {tempAddSupplySide(item, btnElement)});
+        // outerDiv.appendChild(btnElement);
+        // // Finally add the outer div element to the ul element
+        // ulElementSupply.appendChild(outerDiv);
+
+        //outerDiv.appendChild(liElement);
         for (const key in props.cryptoData) {
             // Create outer div
             const outerDiv = document.createElement("div");
@@ -79,7 +94,6 @@ const HeaderInfo = (props) => {
         }
     }
 
-    const [tempSupplyTokensArray, setTempSupplyTokensArray] = useState([]);
     const [supplyTokensArray, setSupplyTokensArray] = useState([]);
     const [borrowTokensArray, setBorrowTokensArray] = useState([]);
     const [sliderTokensArray, setSliderTokensArray] = useState([]);
@@ -183,14 +197,14 @@ const HeaderInfo = (props) => {
                     amountElement.id = "supply_input_"+token.id;
                     amountElement.addEventListener("input", calculateCurrentHealthValue);
                     amountElement.addEventListener("input", function() {calculateTokenValue(token.id, 0);});
-                    amountElement.addEventListener("input", function() {displayPrice(token.id, 0);});
+                    amountElement.addEventListener("input", function() {displayPrice(token.id, 0, token.current_price);});
                     outerDiv.appendChild(amountElement);
 
                     // Add price input div
                     const priceElement = document.createElement("input");
                     priceElement.id = "supply_price_"+token.id;
                     priceElement.value = 0;
-                    priceElement.addEventListener("input", function() {adjustSliderValue(token.id, true);});
+                    priceElement.addEventListener("input", function() {adjustSliderValue(token.id, true, token.current_price);});
                     priceElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
                     outerDiv.appendChild(priceElement);
 
@@ -204,7 +218,7 @@ const HeaderInfo = (props) => {
                     ulElement.appendChild(outerDiv);
                     
                 }
-                displayPrice(token.id, 0);
+                displayPrice(token.id, 0, token.current_price);
                 calculateTokenValue(token.id, 0);
   
             }
@@ -245,14 +259,14 @@ const HeaderInfo = (props) => {
                     amountElement.id = "borrow_input_"+token.id;
                     amountElement.addEventListener("input", calculateCurrentHealthValue);
                     amountElement.addEventListener("input", function() {calculateTokenValue(token.id, 1);});
-                    amountElement.addEventListener("input", function() {displayPrice(token.id, 1);});
+                    amountElement.addEventListener("input", function() {displayPrice(token.id, 1, token.current_price);});
                     outerDiv.appendChild(amountElement);
 
                     // Add price div
                     const priceElement = document.createElement("input");
                     priceElement.id = "borrow_price_"+token.id;
                     priceElement.value = 0;
-                    priceElement.addEventListener("input", function() {adjustSliderValue(token.id, false);});
+                    priceElement.addEventListener("input", function() {adjustSliderValue(token.id, false, token.current_price);});
                     priceElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
                     outerDiv.appendChild(priceElement);
 
@@ -264,7 +278,7 @@ const HeaderInfo = (props) => {
                     // Finally add the outer div element to the ul element
                     ulElement.appendChild(outerDiv);
                 }
-                displayPrice(token.id, 1);
+                displayPrice(token.id, 1, token.current_price);
                 calculateTokenValue(token.id, 1);
             }
 
@@ -303,7 +317,6 @@ const HeaderInfo = (props) => {
 
             // Add li element to div
             const liElement = document.createElement("li");
-            
             liElement.textContent = token.symbol.toUpperCase();
             outerDiv.appendChild(liElement);
 
@@ -311,6 +324,26 @@ const HeaderInfo = (props) => {
             const sliderOuterDiv = document.createElement("div");
             sliderOuterDiv.classList.add('slider_outer_div');
 
+            // Create top div for price and percentage
+            const sliderTopDiv =  document.createElement("div");
+            sliderTopDiv.classList.add("slider_div_top");
+
+            // Create price p element
+            const priceElement = document.createElement("p");
+            priceElement.textContent = token.current_price;
+            priceElement.id = 'slider_outer_top_price_' + token.id;
+
+            // Create percentage p element
+            const percentageElement = document.createElement("p");
+            percentageElement.textContent = "(0%)";
+            percentageElement.id = 'slider_outer_top_percent_' + token.id;
+
+            // Create price change p element
+            const priceChangeElement = document.createElement("p");
+            priceChangeElement.textContent = "(0+)";
+            priceChangeElement.id = 'slider_outer_top_priceChange_' + token.id;
+            
+            
             // Create value slider and add to sliderOuterDiv
             const valueInputElement = document.createElement("input");
             valueInputElement.type = "range";
@@ -322,7 +355,7 @@ const HeaderInfo = (props) => {
             valueInputElement.classList.add('slider_input');
             valueInputElement.addEventListener("input", calculateCurrentHealthValue);
             valueInputElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
-            valueInputElement.addEventListener("input", function() {displayPrice(token.id, 2);});
+            valueInputElement.addEventListener("input", function() {displayPrice(token.id, 2, token.current_price);});
 
             // Create div below the slider
             const sliderBottomDiv = document.createElement("div");
@@ -338,10 +371,15 @@ const HeaderInfo = (props) => {
 
             sliderBottomDiv.appendChild(lowValueText);
             sliderBottomDiv.appendChild(maxValueText);
-            
 
+            sliderTopDiv.appendChild(priceElement);
+            sliderTopDiv.appendChild(percentageElement);
+            sliderTopDiv.appendChild(priceChangeElement);
+            
+            sliderOuterDiv.appendChild(sliderTopDiv);
             sliderOuterDiv.appendChild(valueInputElement);
             sliderOuterDiv.appendChild(sliderBottomDiv);
+
             outerDiv.appendChild(sliderOuterDiv);
             
             const thresholdInputElement = document.createElement("input");
@@ -402,37 +440,70 @@ const HeaderInfo = (props) => {
     }
 
     // Update the token price in both or either the supply and borrow sides
-    function displayPrice(tokenID, caller){
+    function displayPrice(tokenID, caller, currentTokenPrice){
+        const price = document.getElementById("slider_input_"+tokenID).value;
         if(caller == 0){
-            const price = document.getElementById("slider_input_"+tokenID).value;
+            
             const priceElement = document.getElementById("supply_price_"+tokenID);
             priceElement.value = price;
         }
         else if (caller == 1){
-            const price = document.getElementById("slider_input_"+tokenID).value;
+            
             const priceElement = document.getElementById("borrow_price_"+tokenID);
             priceElement.value = price;
+
         }
         else if (caller == 2){
+            
             const supplyDiv = document.getElementById("supply_price_"+tokenID);
             if(supplyDiv){
-                const price = document.getElementById("slider_input_"+tokenID).value;
-                supplyDiv.value= price;
+                
+                supplyDiv.value = price;
             }
             const borrowDiv = document.getElementById("borrow_price_"+tokenID);
             if(borrowDiv){
-                const price = document.getElementById("slider_input_"+tokenID).value;
+                
                 borrowDiv.value = price;
             }
+
         }
 
+        // Change price
+        const sliderPrice = document.getElementById('slider_outer_top_price_' + tokenID);
+        sliderPrice.textContent = "$" +price;
+
+        // Change percent value
+        const sliderPercent = document.getElementById('slider_outer_top_percent_' + tokenID);
+        if((price /currentTokenPrice) * 100 >= 100){
+            sliderPercent.textContent = "(+" + ((price /currentTokenPrice -1) * 100).toFixed(2) + "%)" ;
+            sliderPercent.style.color = "green";
+        }
+        else{
+            sliderPercent.textContent = "(" + ((price /currentTokenPrice - 1)*100).toFixed(2) + "%)" ;
+            sliderPercent.style.color = "red";
+        }
+
+        // Change +/- value
+        const sliderPriceChange = document.getElementById('slider_outer_top_priceChange_' + tokenID);
+        if(price - currentTokenPrice >= 0){
+            sliderPriceChange.textContent = "(+ $" +(price - currentTokenPrice).toFixed(2) + ")";
+            sliderPriceChange.style.color = "green";
+        }
+        else{
+            sliderPriceChange.textContent = "(- $" +(price - currentTokenPrice).toFixed(2) + ")";
+            sliderPriceChange.style.color = "red";
+        }
+        
     }
 
     // Update the token price in the slider, and possibly the borrow/supply side
-    function adjustSliderValue(tokenID, isSupplySide){
+    function adjustSliderValue(tokenID, isSupplySide, currentTokenPrice){
         const slider = document.getElementById("slider_input_"+tokenID);
         const supply = document.getElementById("supply_price_"+tokenID);
         const borrow = document.getElementById("borrow_price_"+tokenID);
+        const sliderPrice = document.getElementById('slider_outer_top_price_' + tokenID);
+        const sliderPercent = document.getElementById('slider_outer_top_percent_' + tokenID);
+        const sliderPriceChange = document.getElementById('slider_outer_top_priceChange_' + tokenID);
         var price;
         if(isSupplySide){
             price = supply.value;
@@ -443,6 +514,29 @@ const HeaderInfo = (props) => {
                 borrow.value = price;
             }
             slider.value = price;
+            sliderPrice.textContent = price;
+
+            // Change percent value    
+            if((price /currentTokenPrice) * 100 >= 100){
+                sliderPercent.textContent = "(+" + ((price /currentTokenPrice) * 100).toFixed(2) + "%)" ;
+                sliderPercent.style.color = "green";
+            }
+            else{
+                sliderPercent.textContent = "(" + ((price /currentTokenPrice - 1)*100).toFixed(2) + "%)" ;
+                sliderPercent.style.color = "red";
+            }
+
+            // Change +/- value
+            if(price - currentTokenPrice >= 0){
+                sliderPriceChange.textContent = "(+$" +(price - currentTokenPrice).toFixed(2) + ")";
+                sliderPriceChange.style.color = "green";
+            }
+            else{
+                sliderPriceChange.textContent = "(-$" + Math.abs((price - currentTokenPrice)).toFixed(2) + ")";
+                sliderPriceChange.style.color = "red";
+            }
+
+            
             
         }
         else{
@@ -453,16 +547,36 @@ const HeaderInfo = (props) => {
             if(supply){
                 supply.value = price;
             }
-            slider.value = price;
-            
 
+            // Change price value
+            slider.value = price;
+            sliderPrice.textContent = price;
+
+            // Change percent value
+            if((price /currentTokenPrice) * 100 >= 100){
+                sliderPercent.textContent = "(+" + ((price /currentTokenPrice - 1) * 100).toFixed(2) + "%)" ;
+                sliderPercent.style.color = "green";
+            }
+            else{
+                sliderPercent.textContent = "(" + ((price /currentTokenPrice - 1)*100).toFixed(2) + "%)" ;
+                sliderPercent.style.color = "red";
+            }
+
+            // Change +/- value
+            if(price - currentTokenPrice >= 0){
+                sliderPriceChange.textContent = "(+$" + (price - currentTokenPrice).toFixed(2) + ")";
+                sliderPriceChange.style.color = "green";
+            }
+            else{
+                sliderPriceChange.textContent = "(-$" + Math.abs((price - currentTokenPrice)).toFixed(2) + ")";
+                sliderPriceChange.style.color = "red";
+            }
         }
 
     }
 
     // Calculate the current health value
     function calculateCurrentHealthValue(){
-        console.log('here');
         var denominator = 0;
         // Calculate the Denominator: ∑ ( Collateral[ith] × LiquidationThreshold[ith] )
         for(var i = 0; i < supplyTokensArray.length; i++){
@@ -470,8 +584,6 @@ const HeaderInfo = (props) => {
             const inputAmount = document.getElementById("supply_input_"+token.id).value;
             const currentPrice = document.getElementById("slider_input_"+token.id).value;
             const liquidationThreshold = document.getElementById("threshold_input_"+token.id).value/100;
-            //console.log(token.id,inputAmount,currentPrice,liquidationThreshold );
-            //console.log(inputAmount,currentPrice,liquidationThreshold);
             denominator += (currentPrice * inputAmount) * liquidationThreshold;
         }
         // Calculate the Numerator: Total Borrows

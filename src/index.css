@@ -130,9 +130,8 @@
 }
 
 .info_container_title{
-  
   margin:0;
-
+  font-size: 18px;
   padding:15px;
   padding-left:20px;
 }
@@ -628,7 +627,10 @@
   padding-top:35px;
   padding-bottom:35px;
   border-top: 1px solid rgba(235, 235, 239, 0.08);
-  
+}
+
+.outer_div p{
+  background-color: rgb(41, 46, 65);
 
 }
 
@@ -640,8 +642,23 @@
 .slider_outer_div{
   width:100%;
   background-color: rgb(41, 46, 65);
+
   
 }
+.slider_div_top{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(41, 46, 65);
+}
+
+.slider_outer_div p{
+  margin:0;
+  padding-left:10px;
+}
+
+
+
 .slider_div_bottom{
   display:flex;
   justify-content: space-between;
