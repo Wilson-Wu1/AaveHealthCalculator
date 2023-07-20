@@ -198,6 +198,7 @@ const HeaderInfo = (props) => {
                     amountElement.addEventListener("input", calculateCurrentHealthValue);
                     amountElement.addEventListener("input", function() {calculateTokenValue(token.id, 0);});
                     amountElement.addEventListener("input", function() {displayPrice(token.id, 0, token.current_price);});
+                    amountElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(0);});
                     outerDiv.appendChild(amountElement);
 
                     // Add price input div
@@ -206,11 +207,13 @@ const HeaderInfo = (props) => {
                     priceElement.value = 0;
                     priceElement.addEventListener("input", function() {adjustSliderValue(token.id, true, token.current_price);});
                     priceElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
+                    priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(0);});
                     outerDiv.appendChild(priceElement);
 
                     // Add Value div (Price * Amount)
                     const valueElement = document.createElement("p");
                     valueElement.id = "supply_value_"+token.id;
+                    valueElement.classList.add('supply_values');
                     valueElement.value = 0;
                     outerDiv.appendChild(valueElement);
 
@@ -258,8 +261,9 @@ const HeaderInfo = (props) => {
                     const amountElement = document.createElement("input");
                     amountElement.id = "borrow_input_"+token.id;
                     amountElement.addEventListener("input", calculateCurrentHealthValue);
-                    amountElement.addEventListener("input", function() {calculateTokenValue(token.id, 1);});
+                    amountElement.addEventListener("input", function() {calculateTokenValue(token.id, 1);}); 
                     amountElement.addEventListener("input", function() {displayPrice(token.id, 1, token.current_price);});
+                    amountElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(1);});
                     outerDiv.appendChild(amountElement);
 
                     // Add price div
@@ -268,11 +272,13 @@ const HeaderInfo = (props) => {
                     priceElement.value = 0;
                     priceElement.addEventListener("input", function() {adjustSliderValue(token.id, false, token.current_price);});
                     priceElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
+                    priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(1);});
                     outerDiv.appendChild(priceElement);
 
                     // Add Value div (Price * Amount)
                     const valueElement = document.createElement("p");
                     valueElement.id = "borrow_value_"+token.id;
+                    valueElement.classList.add('borrow_values');
                     valueElement.value = 0;
                     outerDiv.appendChild(valueElement);
                     // Finally add the outer div element to the ul element
@@ -356,6 +362,7 @@ const HeaderInfo = (props) => {
             valueInputElement.addEventListener("input", calculateCurrentHealthValue);
             valueInputElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
             valueInputElement.addEventListener("input", function() {displayPrice(token.id, 2, token.current_price);});
+            valueInputElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(2);});
 
             // Create div below the slider
             const sliderBottomDiv = document.createElement("div");
@@ -414,12 +421,14 @@ const HeaderInfo = (props) => {
             const amount = document.getElementById("supply_input_"+tokenID).value;
             const valueElement = document.getElementById("supply_value_"+tokenID);
             valueElement.textContent = (amount*price).toFixed(2) + " USD";
+            valueElement.value = (amount*price)
         }
         // Update borrow side
         else if (caller == 1){
             const amount = document.getElementById("borrow_input_"+tokenID).value;
             const valueElement = document.getElementById("borrow_value_"+tokenID);
             valueElement.textContent = (amount*price).toFixed(2)+ " USD";
+            valueElement.value = (amount*price)
         }
         
         else if (caller == 2){
@@ -429,12 +438,14 @@ const HeaderInfo = (props) => {
             if(supplyDiv){
                 const valueElement = document.getElementById("supply_value_"+tokenID);
                 valueElement.textContent = (supplyDiv.value * price).toFixed(2) + " USD";
+                valueElement.value = (supplyDiv.value * price);
 
             }
             const borrowDiv = document.getElementById("borrow_input_"+tokenID);
             if(borrowDiv){
                 const valueElement = document.getElementById("borrow_value_"+tokenID);
                 valueElement.textContent = (borrowDiv.value * price).toFixed(2) + " USD";
+                valueElement.value = (borrowDiv.value * price);
             }
         }
     }
@@ -571,6 +582,33 @@ const HeaderInfo = (props) => {
                 sliderPriceChange.textContent = "(-$" + Math.abs((price - currentTokenPrice)).toFixed(2) + ")";
                 sliderPriceChange.style.color = "red";
             }
+        }
+
+    }
+
+    function displayTotalSuppliedOrBorrowed(caller){
+        if(caller == 0){
+            const elements = document.getElementsByClassName("supply_values");
+            var sum = 0;
+            for (let i = 0; i < elements.length; i++) {
+                const divElement = elements[i];
+                sum += divElement.value;
+            }
+            const totalSupplyDiv = document.getElementById("info_container_bottom_totalSupplied");
+            totalSupplyDiv.textContent = sum.toFixed(2);
+        }
+        else if (caller == 1){
+            const elements = document.getElementsByClassName("borrow_values");
+            var sum = 0;
+            for (let i = 0; i < elements.length; i++) {
+                const divElement = elements[i];
+                sum += divElement.value;
+            }
+            const totalBorrowDiv = document.getElementById("info_container_bottom_totalBorrowed");
+            totalBorrowDiv.textContent = sum.toFixed(2);
+        }
+        else if (caller == 2){
+
         }
 
     }
@@ -724,9 +762,9 @@ const HeaderInfo = (props) => {
                             <p>Total Supplied</p>  
                         </div>
                         <div className = "info_container_bottom_1">   
-                            <div className="info_container_bottom_netWorth">0</div>     
-                            <div className="info_container_bottom_totalBorrowed">0</div>
-                            <div className="info_container_bottom_totalSupplied">0</div>
+                            <div className="info_container_bottom_netWorth" id = "info_container_bottom_netWorth">0</div>     
+                            <div className="info_container_bottom_totalBorrowed" id = "info_container_bottom_totalBorrowed">0</div>
+                            <div className="info_container_bottom_totalSupplied" id ="info_container_bottom_totalSupplied">0</div>
                             
                         </div>
                         
