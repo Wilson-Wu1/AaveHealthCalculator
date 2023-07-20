@@ -486,11 +486,11 @@ const HeaderInfo = (props) => {
         // Change +/- value
         const sliderPriceChange = document.getElementById('slider_outer_top_priceChange_' + tokenID);
         if(price - currentTokenPrice >= 0){
-            sliderPriceChange.textContent = "(+ $" +(price - currentTokenPrice).toFixed(2) + ")";
+            sliderPriceChange.textContent = "(+$" +(price - currentTokenPrice).toFixed(2) + ")";
             sliderPriceChange.style.color = "green";
         }
         else{
-            sliderPriceChange.textContent = "(- $" +(price - currentTokenPrice).toFixed(2) + ")";
+            sliderPriceChange.textContent = "(-$" + Math.abs((price - currentTokenPrice)).toFixed(2) + ")";
             sliderPriceChange.style.color = "red";
         }
         
