@@ -170,14 +170,19 @@ const HeaderInfo = (props) => {
         const ulElement = document.getElementById("assets_supply_tokens_list");
         const pTag = document.getElementById("assets_supply_nothing");
         const headerTag = document.getElementById("assets_supply_header");
+        const supplyInfo = document.getElementById("assets_supply_info_box_left");
+        
 
         if(supplyTokensArray.length == 0){
             pTag.style.display = "flex";
             headerTag.style.display = "none";
+            supplyInfo.style.display = "none";
         }
         else{
-            headerTag.style.display = "grid";
             pTag.style.display = "none";
+            headerTag.style.display = "grid";
+            supplyInfo.style.display = "flex";
+ 
             for (const token of supplyTokensArray) {
                 // Check if the token has already been added to the list. If it exists, no need to rerender it. 
                 // Otherwise it will lose past input values.
@@ -234,14 +239,18 @@ const HeaderInfo = (props) => {
         const ulElement = document.getElementById("assets_borrow_tokens_list");
         const pTag = document.getElementById("assets_borrow_nothing");
         const headerTag = document.getElementById("assets_borrow_header");
+        const borrowInfo = document.getElementById("assets_borrow_info");
 
         if(borrowTokensArray.length == 0){
             pTag.style.display = "flex";
             headerTag.style.display = "none";
+            borrowInfo.style.display = "none";
+            
         }
         else{
-            headerTag.style.display = "grid";
             pTag.style.display = "none";
+            headerTag.style.display = "grid";
+            borrowInfo.style.display = "flex";
             
             for (const token of borrowTokensArray) {
                 // Check if the token has already been added to the list. If it exists, no need to rerender it. 
@@ -587,29 +596,37 @@ const HeaderInfo = (props) => {
     }
 
     function displayTotalSuppliedOrBorrowed(caller){
-        if(caller == 0){
-            const elements = document.getElementsByClassName("supply_values");
-            var sum = 0;
-            for (let i = 0; i < elements.length; i++) {
-                const divElement = elements[i];
-                sum += divElement.value;
-            }
-            const totalSupplyDiv = document.getElementById("info_container_bottom_totalSupplied");
-            totalSupplyDiv.textContent = sum.toFixed(2);
+        
+        // Calculate and update total value supplied 
+        const supplyElements = document.getElementsByClassName("supply_values");
+        var supplySum = 0;
+        for (let i = 0; i < supplyElements.length; i++) {
+            const divElement = supplyElements[i];
+            supplySum += divElement.value;
         }
-        else if (caller == 1){
-            const elements = document.getElementsByClassName("borrow_values");
-            var sum = 0;
-            for (let i = 0; i < elements.length; i++) {
-                const divElement = elements[i];
-                sum += divElement.value;
-            }
-            const totalBorrowDiv = document.getElementById("info_container_bottom_totalBorrowed");
-            totalBorrowDiv.textContent = sum.toFixed(2);
-        }
-        else if (caller == 2){
+        const totalSupplyDiv = document.getElementById("info_container_bottom_totalSupplied");
+        totalSupplyDiv.textContent = supplySum.toFixed(2);
 
+        // Calculate and update total value borrowed 
+        const borrowElements = document.getElementsByClassName("borrow_values");
+        var borrowSum = 0;
+        for (let i = 0; i < borrowElements.length; i++) {
+            const divElement = borrowElements[i];
+            borrowSum += divElement.value;
         }
+        const totalBorrowDiv = document.getElementById("info_container_bottom_totalBorrowed");
+        totalBorrowDiv.textContent = borrowSum.toFixed(2);
+    
+        // Calculate and update Loan-to-Value ratio (Total Supplied / Total borrowed)
+        const ltvDiv = document.getElementById("info_container_bottom_ltv");
+        if(isNaN(borrowSum/supplySum)){
+            ltvDiv.textContent = "0%";
+        }
+        ltvDiv.textContent = (borrowSum/supplySum*100).toFixed(2) + "%";
+
+        // Calculate and update Net Worth 
+        const netWorthDiv = document.getElementById("info_container_bottom_netWorth");
+        netWorthDiv.textContent = (supplySum - borrowSum).toFixed(2);
 
     }
 
@@ -639,10 +656,7 @@ const HeaderInfo = (props) => {
         }
         else{
             setHealthFactor(healthFactor);
-        }
-        
-        //console.log(healthFactor);
-        
+        }   
     }
 
     useEffect(() => {
@@ -741,35 +755,36 @@ const HeaderInfo = (props) => {
                 <div className='info'>
                 
                     <div className = "info_container" id='info_container'>
-                        <p className = "info_container_title">Position Information</p>
-                        <div className ="info_container_border"></div>
-
-                        <div className = "info_container_top">        
-                            <p>Health Factor</p>
-                            <p>Current LTV</p>
-                            <p>Borrowing Power Used</p>
-                                              
-                            
+                        <div className = "info_container_top">   
+                                <p className = "info_container_top_netWorth">Net Worth</p>     
+                                <p className = "info_container_top_healthFactor">Health Factor</p>
+                                <p className='info_container_top_ltv'>Current LTV</p>
+                                                                                                
                         </div>
                         <div className = "info_container_bottom">
+                            <div className="info_container_bottom_netWorth" id = "info_container_bottom_netWorth">$0.00</div>
                             <div>{healthFactor}</div>
-                            <div className="info_container_bottom_ltv">0</div> 
-                            <div className="info_container_bottom_borrowPower">0</div>
+                            <div className="info_container_bottom_ltv" id = "info_container_bottom_ltv">0.00%</div> 
                         </div>
+                    </div>
+{/* 
                         <div className = "info_container_top_1"> 
-                            <p>Net Worth</p>                          
-                            <p>Total Borrowed</p>                                         
-                            <p>Total Supplied</p>  
+                            
+                            <p>Total Supplied</p>                       
+                            <p>Total Borrowed</p>   
+                            <p>Borrowing Power Used</p>                                             
+                           
                         </div>
                         <div className = "info_container_bottom_1">   
-                            <div className="info_container_bottom_netWorth" id = "info_container_bottom_netWorth">0</div>     
-                            <div className="info_container_bottom_totalBorrowed" id = "info_container_bottom_totalBorrowed">0</div>
-                            <div className="info_container_bottom_totalSupplied" id ="info_container_bottom_totalSupplied">0</div>
-                            
-                        </div>
+                            <div className="info_container_bottom_netWorth" id = "info_container_bottom_netWorth">$0.00</div>
+                            <div className="info_container_bottom_totalSupplied" id ="info_container_bottom_totalSupplied">$0.00</div>     
+                            <div className="info_container_bottom_totalBorrowed" id = "info_container_bottom_totalBorrowed">$0.00</div>
+                            <div className="info_container_bottom_borrowPower" id = "info_container_bottom_borrowPower">0.00%</div>
+                       
+                        </div> */}
                         
-
-                    </div>
+                        
+                    
                 </div>
 
                 <div className = "assets">
@@ -779,6 +794,14 @@ const HeaderInfo = (props) => {
                             <button className = "b_s_container_supply_btn" onClick = {setSupplyModalVisibilityTrue}>Supply</button>
                         </div>
                         <p className = "assets_supply_nothing" id = "assets_supply_nothing">Nothing supplied yet</p>
+                        <div className = "assets_supply_info">
+                            <div className = "assets_supply_info_box" id = "assets_supply_info_box">
+                                <div className='assets_supply_info_box_left' id ="assets_supply_info_box_left">
+                                    <p>Total Supplied $</p>   
+                                    <div className="info_container_bottom_totalSupplied" id ="info_container_bottom_totalSupplied">0.00</div> 
+                                </div>
+                            </div>
+                        </div>    
                         <div className = "assets_supply_header" id ="assets_supply_header">
                             <h3>Asset</h3>
                             <h3>Amount</h3>
@@ -797,6 +820,20 @@ const HeaderInfo = (props) => {
                             <button className = "b_s_container_borrow_btn" onClick = {setBorrowModalVisibilityTrue}>Borrow</button>
                         </div>
                         <p className = "assets_borrow_nothing" id = "assets_borrow_nothing">Nothing borrowed yet</p>
+                        <div className = "assets_borrow_info" id = "assets_borrow_info">
+                            <div className = "assets_borrow_info_box_left">
+                                <div className = "assets_borrow_info_box_left_inner">
+                                    <p>Total Borrowed $</p>  
+                                    <div className="info_container_bottom_totalBorrowed" id = "info_container_bottom_totalBorrowed">0.00</div>
+                                </div>
+                            </div> 
+                            <div className = "assets_borrow_info_box_right">
+                                <p>Borrowing Power Used</p>  
+                                <div className="info_container_bottom_borrowPower" id = "info_container_bottom_borrowPower">0.00%</div>
+                            </div>  
+                        </div>
+               
+                       
                         <div className = "assets_borrow_header" id = "assets_borrow_header">
                             <h3>Asset</h3>
                             <h3>Amount</h3>
