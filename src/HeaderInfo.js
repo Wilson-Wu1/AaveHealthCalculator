@@ -622,7 +622,9 @@ const HeaderInfo = (props) => {
         if(isNaN(borrowSum/supplySum)){
             ltvDiv.textContent = "0%";
         }
-        ltvDiv.textContent = (borrowSum/supplySum*100).toFixed(2) + "%";
+        else{
+            ltvDiv.textContent = (borrowSum/supplySum*100).toFixed(2) + "%";
+        }
 
         // Calculate and update Net Worth 
         const netWorthDiv = document.getElementById("info_container_bottom_netWorth");
@@ -762,7 +764,7 @@ const HeaderInfo = (props) => {
                                                                                                 
                         </div>
                         <div className = "info_container_bottom">
-                            <div className="info_container_bottom_netWorth" id = "info_container_bottom_netWorth">$0.00</div>
+                            <div className="info_container_bottom_netWorth" id = "info_container_bottom_netWorth"><span>$</span>0.00</div>
                             <div>{healthFactor}</div>
                             <div className="info_container_bottom_ltv" id = "info_container_bottom_ltv">0.00%</div> 
                         </div>
