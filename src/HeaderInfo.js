@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
-
+import {ReactComponent as InfoIcon} from './images/infoIcon.svg'
 
 
 const HeaderInfo = (props) => {
@@ -47,21 +47,8 @@ const HeaderInfo = (props) => {
         const ulElementSupply = document.getElementById("modal_supply_content_scrollable_list");
         const ulElementBorrow = document.getElementById("modal_borrow_content_scrollable_list");
         
-        // // Create outer div for custom token
-        // const outerDiv = document.createElement("div");
-        // // Add li element to div
-        // const liElement = document.createElement("li");
-        // liElement.textContent = `Custom Token`.toUpperCase();
-        // // Add button element to div
-        // const btnElement = document.createElement("button");
-        // btnElement.textContent = 'Supply Asset';
-        // btnElement.addEventListener('click', () => {tempAddSupplySide(item, btnElement)});
-        // outerDiv.appendChild(btnElement);
-        // // Finally add the outer div element to the ul element
-        // ulElementSupply.appendChild(outerDiv);
-
-        //outerDiv.appendChild(liElement);
         for (const key in props.cryptoData) {
+            // SUPPLY SIDE
             // Create outer div
             const outerDiv = document.createElement("div");
             // Add li element to div
@@ -69,14 +56,28 @@ const HeaderInfo = (props) => {
             const liElement = document.createElement("li");
             liElement.textContent = `${item.symbol}`.toUpperCase();
             outerDiv.appendChild(liElement);
-            // Add button element to div
-            const btnElement = document.createElement("button");
-            btnElement.textContent = 'Supply Asset';
-            btnElement.addEventListener('click', () => {tempAddSupplySide(item, btnElement)});
-            outerDiv.appendChild(btnElement);
+
+            // Create switch buttons
+            const label = document.createElement("label");
+            label.classList.add("switch");
+            label.style.backgroundColor = "rgb(41, 46, 65)";
+
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            label.appendChild(input);
+
+            const span = document.createElement("span");
+            span.classList.add("slider");
+            label.appendChild(span);
+            input.addEventListener('click', function() {
+                tempAddSupplySide(item, this);
+            });
+            outerDiv.appendChild(label);
+
             // Finally add the outer div element to the ul element
             ulElementSupply.appendChild(outerDiv);
 
+            // BORROW SIDE
             // Create outer div
             const outerDiv1 = document.createElement("div");
             // Add li element to div
@@ -84,11 +85,24 @@ const HeaderInfo = (props) => {
             const liElement1 = document.createElement("li");
             liElement1.textContent = `${item1.symbol}`.toUpperCase();
             outerDiv1.appendChild(liElement1);
-            // Add button element to div
-            const btnElement1 = document.createElement("button");
-            btnElement1.textContent = 'Supply Asset';
-            btnElement1.addEventListener('click', () => {tempAddBorrowSide(item1, btnElement1)});
-            outerDiv1.appendChild(btnElement1);
+
+            // Create switch buttons
+            const label1 = document.createElement("label");
+            label1.classList.add("switch");
+            label1.style.backgroundColor = "rgb(41, 46, 65)";
+
+            const input1 = document.createElement("input");
+            input1.type = "checkbox";
+            label1.appendChild(input1);
+
+            const span1 = document.createElement("span");
+            span1.classList.add("slider");
+            label1.appendChild(span1);
+            input1.addEventListener('click', function() {
+                tempAddBorrowSide(item1, this);
+            });
+            outerDiv1.appendChild(label1);
+
             // Finally add the outer div element to the ul element
             ulElementBorrow.appendChild(outerDiv1);
         }
@@ -171,8 +185,6 @@ const HeaderInfo = (props) => {
         const pTag = document.getElementById("assets_supply_nothing");
         const headerTag = document.getElementById("assets_supply_header");
         const supplyInfo = document.getElementById("assets_supply_info_box_left");
-        
-
         if(supplyTokensArray.length == 0){
             pTag.style.display = "flex";
             headerTag.style.display = "none";
@@ -315,11 +327,24 @@ const HeaderInfo = (props) => {
             setSliderTokensArray(tempArray);
             sliderToRemove.remove();
         }
+        
+        const sliderHeader = document.getElementById('values_container_header');
+        const sliderEmptyText = document.getElementById('values_container_empty');
+        if(tempArray.length == 0){
+            sliderHeader.style.display = "none";
+            sliderEmptyText.style.display = "block";
+        }
     }
+
 
     function displaySlider(token){
         var tempArray = sliderTokensArray;
         const index = tempArray.indexOf(token);
+
+        const sliderHeader = document.getElementById('values_container_header');
+        const sliderEmptyText = document.getElementById('values_container_empty');
+        sliderHeader.style.display = "grid";
+        sliderEmptyText.style.display = "none";
 
         if (index == -1) {
             // Concat the borrow and supply arrays
@@ -379,11 +404,11 @@ const HeaderInfo = (props) => {
 
             // Create p tags for the min and max values
             const lowValueText = document.createElement("p");
-            lowValueText.classList.add('slider_div_top_min');
-            lowValueText.textContent = 0;
+            lowValueText.id = 'slider_div_top_min_max';
+            lowValueText.textContent = "$ 0";
             const maxValueText = document.createElement("p");
-            maxValueText.classList.add('slider_div_top_max');
-            maxValueText.textContent = (token.current_price*3).toFixed(2);
+            maxValueText.id = 'slider_div_top_min_max';
+            maxValueText.textContent = '$ ' + (token.current_price*3).toFixed(2);
 
             sliderBottomDiv.appendChild(lowValueText);
             sliderBottomDiv.appendChild(maxValueText);
@@ -414,9 +439,7 @@ const HeaderInfo = (props) => {
 
             tempArray.push(token);
             setSliderTokensArray(tempArray);
-            
         }
-        
     }
 
     // Calculate the Value of a borrow/supply, and update the display
@@ -627,7 +650,7 @@ const HeaderInfo = (props) => {
         }
 
         // Calculate and update Net Worth 
-        const netWorthDiv = document.getElementById("info_container_bottom_netWorth");
+        const netWorthDiv = document.getElementById("info_container_bottom_netWorth_value");
         netWorthDiv.textContent = (supplySum - borrowSum).toFixed(2);
 
     }
@@ -652,16 +675,46 @@ const HeaderInfo = (props) => {
             totalBorrowValue += (inputAmount * currentPrice);
             
         }
-        const healthFactor = (denominator/totalBorrowValue).toFixed(2);
+        var healthFactor = (denominator/totalBorrowValue).toFixed(2);
+        const healthFactorDiv = document.getElementById("info_container_bottom_healthFactorValue");
         if(isNaN(healthFactor)){
-            setHealthFactor(0);
+            healthFactor = 0;
+        }
+        if(!isFinite(healthFactor)){
+            healthFactor = "∞";
+        }
+
+        
+        if(healthFactor <= 1.1){
+            healthFactorDiv.style.color = "red";
+        }
+        else if (healthFactor <= 3){
+            healthFactorDiv.style.color = "orange";
         }
         else{
-            setHealthFactor(healthFactor);
-        }   
-    }
+            healthFactorDiv.style.color = "green";
+        }
+    
+        setHealthFactor(healthFactor);
+         
 
+    }
+    
     useEffect(() => {
+        const svg = document.getElementById("info_container_top_netWorth_icon");
+        const textBox = document.getElementById("textbox");
+    
+        svg.addEventListener("click", () => {
+        textBox.style.display = "block";
+        });
+    
+        document.addEventListener("click", (event) => {
+        if (!svg.contains(event.target) && !textBox.contains(event.target)) {
+            textBox.style.display = "none";
+        }
+        });
+    
+
         addTokensToLists();
         handleResize();
         function handleResize() {
@@ -679,6 +732,7 @@ const HeaderInfo = (props) => {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
         }, []
     );
@@ -758,35 +812,32 @@ const HeaderInfo = (props) => {
                 
                     <div className = "info_container" id='info_container'>
                         <div className = "info_container_top">   
-                                <p className = "info_container_top_netWorth">Net Worth</p>     
+                            <div>
+                                <p className = "info_container_top_netWorth">Net Worth</p>  
+                                <InfoIcon className = "info_container_top_netWorth_icon" id ="info_container_top_netWorth_icon"></InfoIcon>
+                                <div className="textbox" id="textbox">This is the text box content.</div>
+                            </div>   
+                            <div>
                                 <p className = "info_container_top_healthFactor">Health Factor</p>
+                                <InfoIcon className = "info_container_top_icon_healthFactor_icon"></InfoIcon>
+                            </div>
+                            <div>
                                 <p className='info_container_top_ltv'>Current LTV</p>
-                                                                                                
+                                <InfoIcon className = "info_container_top_icon_ltv_icon"></InfoIcon>
+                            </div>
+                            
+                                                                                            
                         </div>
                         <div className = "info_container_bottom">
-                            <div className="info_container_bottom_netWorth" id = "info_container_bottom_netWorth"><span>$</span>0.00</div>
-                            <div>{healthFactor}</div>
+                            <div className = "info_container_bottom_netWorth">
+                                <div className='info_container_bottom_netWorth_symbol'>$</div>
+                                <div className="info_container_bottom_netWorth_value" id = "info_container_bottom_netWorth_value">0.00</div>
+                            </div>
+                            <div className = "info_container_bottom_healthFactorValue" id = "info_container_bottom_healthFactorValue">{healthFactor}</div>
                             <div className="info_container_bottom_ltv" id = "info_container_bottom_ltv">0.00%</div> 
-                        </div>
-                    </div>
-{/* 
-                        <div className = "info_container_top_1"> 
                             
-                            <p>Total Supplied</p>                       
-                            <p>Total Borrowed</p>   
-                            <p>Borrowing Power Used</p>                                             
-                           
                         </div>
-                        <div className = "info_container_bottom_1">   
-                            <div className="info_container_bottom_netWorth" id = "info_container_bottom_netWorth">$0.00</div>
-                            <div className="info_container_bottom_totalSupplied" id ="info_container_bottom_totalSupplied">$0.00</div>     
-                            <div className="info_container_bottom_totalBorrowed" id = "info_container_bottom_totalBorrowed">$0.00</div>
-                            <div className="info_container_bottom_borrowPower" id = "info_container_bottom_borrowPower">0.00%</div>
-                       
-                        </div> */}
-                        
-                        
-                    
+                    </div>                              
                 </div>
 
                 <div className = "assets">
@@ -852,6 +903,7 @@ const HeaderInfo = (props) => {
                 <div className = "values" id ="values">
                     <div className = "values_container" id="values_container">
                         <p className='values_container_title'>Token Prices & Liquidation Thresholds</p>
+                        <p className = "values_container_empty" id =  "values_container_empty">Nothing supplied or borrowed yet</p>
                         <div className = "values_container_header" id = "values_container_header">
                             <h3>Asset</h3>
                             <h3>Price</h3>
@@ -861,7 +913,9 @@ const HeaderInfo = (props) => {
                     
                     </div>
                 </div>
+                
             </div>
+            
         </div>
         
      );
