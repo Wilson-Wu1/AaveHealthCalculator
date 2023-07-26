@@ -5,9 +5,71 @@ import {ReactComponent as InfoIcon} from './images/infoIcon.svg'
 
 const HeaderInfo = (props) => {
 
+    
+
     const [chain, setChain] = useState("Ethereum")
     const [modalSupplyVisible, setSupplyModalVisible] = useState(false);
     const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
+    var endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
+
+    function changeNetwork(newNetwork, isVersion3){
+        if(chain != newNetwork){
+            setChain(newNetwork);
+            // Aave V3
+            if(isVersion3){
+                endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
+                if(newNetwork != "Ethereum"){
+                    endpoint += ('-'+newNetwork.toLowerCase());
+                }
+
+            }
+            // Aave V2
+            else{
+                endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v2';
+                if(newNetwork != "Ethereum"){
+                    endpoint += ('-'+newNetwork.toLowerCase());
+                }
+                
+            }
+            
+            console.log(endpoint);
+        }
+        
+    }
+
+    // Query the graph for the tokens that can be supplied/borrowed for a given network
+    // Retrieve each token's symbol and price.
+    function searchTokens(){
+        const { request } = require('graphql-request');
+
+    }
+
+    // Query the graph for a user's aave position on a certain network
+    function queryAddressForUserPosition(){
+        const address = document.getElementById("search_div_input").value.toLowerCase();
+        const { request } = require('graphql-request');
+        const query = `
+        query getUserPosition {
+            userReserves(where: {user: "${address}"}) {
+              currentATokenBalance
+              id
+              reserve {
+                symbol
+                baseLTVasCollateral
+              }
+            }
+          }
+        `;
+        request(endpoint, query)
+        .then((data) => {
+            console.log(data);
+        })
+        .catch((error) => {
+            console.error('Error fetching user position:', error);
+        });
+
+    }
+
     
     function setSupplyModalVisibilityFalse(){
         setSupplyModalVisible(false); 
@@ -696,8 +758,6 @@ const HeaderInfo = (props) => {
         }
     
         setHealthFactor(healthFactor);
-         
-
     }
     
     useEffect(() => {
@@ -793,18 +853,27 @@ const HeaderInfo = (props) => {
                 </div>
             </div>
 
+
             <div className="dropdown">
                 <div onClick={showDropDown} className="dropbtn">{chain} Network</div>
                 <div id="myDropdown" className="dropdown-content">
-                    <a href="#" onClick={ () => setChain("Ethereum") }>Ethereum</a>
-                    <a href="#" onClick={ () => setChain("Aribtrum") }>Aribtrum</a>
-                    <a href="#" onClick={ () => setChain("Avalanche") }>Avalanche</a>
-                    <a href="#" onClick={ () => setChain("Fantom") }>Fantom</a>
-                    <a href="#" onClick={ () => setChain("Harmony") }>Harmony</a>
-                    <a href="#" onClick={ () => setChain("Optimism") }>Optimism</a>
-                    <a href="#" onClick={ () => setChain("Polygon") }>Polygon</a>
-                    <a href="#" onClick={ () => setChain("Metis") }>Metis</a>
+                    <a href="#" onClick={ () => changeNetwork("Ethereum", true) }>Ethereum</a>
+                    <a href="#" onClick={ () => changeNetwork("Aribtrum", true) }>Aribtrum</a>
+                    <a href="#" onClick={ () => changeNetwork("Avalanche", true) }>Avalanche</a>
+                    <a href="#" onClick={ () => changeNetwork("Fantom", true) }>Fantom</a>
+                    <a href="#" onClick={ () => changeNetwork("Harmony", true) }>Harmony</a>
+                    <a href="#" onClick={ () => changeNetwork("Optimism", true) }>Optimism</a>
+                    <a href="#" onClick={ () => changeNetwork("Polygon", true) }>Polygon</a>
+                    <a href="#" onClick={ () => changeNetwork("Metis", true) }>Metis</a>
                 </div>
+            </div>
+
+            <div className = "search">
+                <div className = "search_div">
+                    <input id = "search_div_input" className = "search_div_input"></input>
+                    <button className = "search_div_button" onClick = {queryAddressForUserPosition}>Search</button>
+                </div>
+
             </div>
 
             <div className ="b_s">
@@ -813,9 +882,9 @@ const HeaderInfo = (props) => {
                     <div className = "info_container" id='info_container'>
                         <div className = "info_container_top">   
                             <div>
-                                <p className = "info_container_top_netWorth">Net Worth</p>  
+                                <p className = "info_container_top_netWorth">Net Worth</p> 
                                 <InfoIcon className = "info_container_top_netWorth_icon" id ="info_container_top_netWorth_icon"></InfoIcon>
-                                <div className="textbox" id="textbox">This is the text box content.</div>
+                                <div className="textbox" id="textbox">Value supplied minus value borrowed.</div>
                             </div>   
                             <div>
                                 <p className = "info_container_top_healthFactor">Health Factor</p>
