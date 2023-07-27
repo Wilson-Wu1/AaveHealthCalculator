@@ -2,7 +2,6 @@ import {useEffect, useState} from 'react';
 import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
 import {ReactComponent as InfoIcon} from './images/infoIcon.svg'
 
-
 const HeaderInfo = (props) => {
 
     
@@ -10,6 +9,7 @@ const HeaderInfo = (props) => {
     const [chain, setChain] = useState("Ethereum")
     const [modalSupplyVisible, setSupplyModalVisible] = useState(false);
     const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
+    const [tokenData, setTokenData] = useState(null);
     var endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
 
     function changeNetwork(newNetwork, isVersion3){
@@ -18,8 +18,12 @@ const HeaderInfo = (props) => {
             // Aave V3
             if(isVersion3){
                 endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
-                if(newNetwork != "Ethereum"){
-                    endpoint += ('-'+newNetwork.toLowerCase());
+                // Metis network endpoint is different from others.
+                if(newNetwork == "Metis"){
+                    endpoint = "https://andromeda.thegraph.metis.io/subgraphs/name/aave/protocol-v3-metis"
+                }
+                else if(newNetwork != "Ethereum"){
+                    endpoint += ('-'+(newNetwork.toLowerCase()));
                 }
 
             }
@@ -27,35 +31,71 @@ const HeaderInfo = (props) => {
             else{
                 endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v2';
                 if(newNetwork != "Ethereum"){
-                    endpoint += ('-'+newNetwork.toLowerCase());
+                    endpoint += ('-'+(newNetwork.toLowerCase()));
                 }
                 
             }
             
             console.log(endpoint);
+            getTokens();
         }
         
     }
 
     // Query the graph for the tokens that can be supplied/borrowed for a given network
     // Retrieve each token's symbol and price.
-    function searchTokens(){
+    function getTokens(){
         const { request } = require('graphql-request');
+        const query = `
+        query GetTokens {
+            reserves {
+              decimals
+              symbol
+              price {
+                priceInEth
+              }
+              borrowingEnabled
+            }
+          }
+        `;
+        request(endpoint, query)
+        .then((data) => {
+            setTokenData(data.reserves);
+            //addTokensToLists();
+            
+        })
+        .catch((error) => {
+            console.error('Error fetching user position:', error);
+        });
+        
 
     }
+    useEffect(() => {
+        addTokensToLists();
+    },[tokenData]);
 
-    // Query the graph for a user's aave position on a certain network
+    function test(){
+        console.log(tokenData);
+        for(const index in tokenData){
+            console.log(tokenData[index].symbol);
+        }
+    }
+
+    // Query the graph for a user's Aave position on the current network
     function queryAddressForUserPosition(){
         const address = document.getElementById("search_div_input").value.toLowerCase();
         const { request } = require('graphql-request');
         const query = `
-        query getUserPosition {
+        {
             userReserves(where: {user: "${address}"}) {
+              currentTotalDebt
               currentATokenBalance
-              id
               reserve {
+                decimals
                 symbol
-                baseLTVasCollateral
+                price {
+                  priceInEth
+                }
               }
             }
           }
@@ -63,11 +103,12 @@ const HeaderInfo = (props) => {
         request(endpoint, query)
         .then((data) => {
             console.log(data);
+            
+            
         })
         .catch((error) => {
             console.error('Error fetching user position:', error);
         });
-
     }
 
     
@@ -108,13 +149,16 @@ const HeaderInfo = (props) => {
     function addTokensToLists(){
         const ulElementSupply = document.getElementById("modal_supply_content_scrollable_list");
         const ulElementBorrow = document.getElementById("modal_borrow_content_scrollable_list");
+        ulElementSupply.innerHTML = "";
+        ulElementBorrow.innerHTML = "";
         
-        for (const key in props.cryptoData) {
-            // SUPPLY SIDE
+        for (const key in tokenData) {
+            /* -- SUPPLY SIDE -- */
+
             // Create outer div
             const outerDiv = document.createElement("div");
             // Add li element to div
-            const item = props.cryptoData[key];
+            const item = tokenData[key];
             const liElement = document.createElement("li");
             liElement.textContent = `${item.symbol}`.toUpperCase();
             outerDiv.appendChild(liElement);
@@ -139,11 +183,13 @@ const HeaderInfo = (props) => {
             // Finally add the outer div element to the ul element
             ulElementSupply.appendChild(outerDiv);
 
-            // BORROW SIDE
+
+            /* -- BORROW SIDE -- */
+
             // Create outer div
             const outerDiv1 = document.createElement("div");
             // Add li element to div
-            const item1 = props.cryptoData[key];
+            const item1 = tokenData[key];
             const liElement1 = document.createElement("li");
             liElement1.textContent = `${item1.symbol}`.toUpperCase();
             outerDiv1.appendChild(liElement1);
@@ -774,8 +820,7 @@ const HeaderInfo = (props) => {
         }
         });
     
-
-        addTokensToLists();
+        getTokens();
         handleResize();
         function handleResize() {
             const supplyDiv = document.getElementById("assets_supply").offsetWidth;
@@ -858,7 +903,7 @@ const HeaderInfo = (props) => {
                 <div onClick={showDropDown} className="dropbtn">{chain} Network</div>
                 <div id="myDropdown" className="dropdown-content">
                     <a href="#" onClick={ () => changeNetwork("Ethereum", true) }>Ethereum</a>
-                    <a href="#" onClick={ () => changeNetwork("Aribtrum", true) }>Aribtrum</a>
+                    <a href="#" onClick={ () => changeNetwork("Arbitrum", true) }>Arbitrum</a>
                     <a href="#" onClick={ () => changeNetwork("Avalanche", true) }>Avalanche</a>
                     <a href="#" onClick={ () => changeNetwork("Fantom", true) }>Fantom</a>
                     <a href="#" onClick={ () => changeNetwork("Harmony", true) }>Harmony</a>
@@ -982,6 +1027,7 @@ const HeaderInfo = (props) => {
                     
                     </div>
                 </div>
+                <button onClick={test}>est</button>
                 
             </div>
             
