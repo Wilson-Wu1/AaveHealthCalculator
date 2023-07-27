@@ -1,22 +1,25 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useRef} from 'react';
 import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
 import {ReactComponent as InfoIcon} from './images/infoIcon.svg'
-
+import Web3 from 'web3';
 const HeaderInfo = (props) => {
 
     
 
     const [chain, setChain] = useState("Ethereum")
+    const [aaveVersion, setAaveVersion] = useState("V3");
     const [modalSupplyVisible, setSupplyModalVisible] = useState(false);
     const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
     const [tokenData, setTokenData] = useState(null);
+    const [usdPriceEth, setUsdPriceEth] = useState(0);
     var endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
 
-    function changeNetwork(newNetwork, isVersion3){
-        if(chain != newNetwork){
+    function changeNetwork(newNetwork, aaveVersion){
+       
             setChain(newNetwork);
+            setAaveVersion(aaveVersion)
             // Aave V3
-            if(isVersion3){
+            if(aaveVersion == "V3"){
                 endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
                 // Metis network endpoint is different from others.
                 if(newNetwork == "Metis"){
@@ -30,56 +33,106 @@ const HeaderInfo = (props) => {
             // Aave V2
             else{
                 endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v2';
-                if(newNetwork != "Ethereum"){
+               
+                // Matic network endpoint is different from others.
+                if(newNetwork == "Polygon"){
+                    endpoint = "https://api.thegraph.com/subgraphs/name/aave/aave-v2-matic";
+                }
+                else if (newNetwork != "Ethereum"){
                     endpoint += ('-'+(newNetwork.toLowerCase()));
                 }
+                    
                 
             }
-            
             console.log(endpoint);
             getTokens();
-        }
-        
     }
 
     // Query the graph for the tokens that can be supplied/borrowed for a given network
     // Retrieve each token's symbol and price.
-    function getTokens(){
+    async function getTokens(){
         const { request } = require('graphql-request');
         const query = `
-        query GetTokens {
-            reserves {
-              decimals
+        {
+            reserves(where: {isFrozen: false}) {
               symbol
+              borrowingEnabled
+              usageAsCollateralEnabled
               price {
                 priceInEth
               }
-              borrowingEnabled
+            }
+            priceOracles {
+              usdPriceEth
             }
           }
         `;
-        request(endpoint, query)
-        .then((data) => {
+        try {
+            const data = await request(endpoint, query);
+            for (const index in data.reserves) {
+              const token = data.reserves[index];
+              const decimalConvert = Math.pow(10, 8);
+              token.price.priceInUSD = token.price.priceInEth / decimalConvert;
+            }
             setTokenData(data.reserves);
-            //addTokensToLists();
-            
-        })
-        .catch((error) => {
-            console.error('Error fetching user position:', error);
-        });
+            setUsdPriceEth(data.priceOracles[0].usdPriceEth);
         
+            // Call your next function here, for example:
+           
+          } catch (error) {
+            console.error('Error fetching token info:', error);
+          }
+    }
+
+    async function getMissingPricesMainnet() {
+        const web3ProviderUrl = `https://mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
+        const web3 = new Web3(web3ProviderUrl);
+        const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
+        const oracleAddresses = ['0x230E0321Cf38F09e247e50Afc7801EA2351fe56F', '0xb01e6C9af83879B8e06a092f0DD94309c0D497E4', '0x8B6851156023f4f5A66F68BEA80851c3D905Ac93', '0x05225Cd708bCa9253789C1374e4337a019e99D56','0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731'];
+        const symbols = ['WBTC', "LDO", "wstETH", "rETH", "cbETH"]
+
+        // For each oracle, retrieve the latest token price.
+        for(const index in oracleAddresses){
+            const oracle = oracleAddresses[index];
+            const contract = new web3.eth.Contract(contractABI, oracle);
+            try {
+                const result = await contract.methods.latestAnswer().call();
+                console.log('Result:', (Number(result) / 100000000).toFixed(2));
+                // Set the oracle price to the tokenData object
+                const foundObject = tokenData.find((item) => item.symbol === symbols[index]);
+                foundObject.price.priceInUSD = (Number(result) / 100000000).toFixed(2);
+                
+                } catch (error) {  
+            }
+        }
+
+        // Set $GHO token price to $1, since it does not use an Oracle
+        const foundObject = tokenData.find((item) => item.symbol === "GHO");
+        foundObject.price.priceInUSD = 1;
+
+        // Set the data
+        setTokenData(tokenData);
 
     }
+
+    const isGetMissingPricesMainnetCalled = useRef(false);
     useEffect(() => {
-        addTokensToLists();
-    },[tokenData]);
+      if (tokenData && !isGetMissingPricesMainnetCalled.current) {
+        getMissingPricesMainnet();
+        isGetMissingPricesMainnetCalled.current = true;
+      }
+      addTokensToLists();
+    }, [tokenData]);
+
 
     function test(){
+        console.log(chain);
         console.log(tokenData);
         for(const index in tokenData){
-            console.log(tokenData[index].symbol);
+            console.log(tokenData[index].price.priceInUSD);
         }
-    }
+        console.log(usdPriceEth);
+    } 
 
     // Query the graph for a user's Aave position on the current network
     function queryAddressForUserPosition(){
@@ -147,6 +200,7 @@ const HeaderInfo = (props) => {
 
     // Adds tokens to the supply list modal
     function addTokensToLists(){
+        
         const ulElementSupply = document.getElementById("modal_supply_content_scrollable_list");
         const ulElementBorrow = document.getElementById("modal_borrow_content_scrollable_list");
         ulElementSupply.innerHTML = "";
@@ -160,7 +214,7 @@ const HeaderInfo = (props) => {
             // Add li element to div
             const item = tokenData[key];
             const liElement = document.createElement("li");
-            liElement.textContent = `${item.symbol}`.toUpperCase();
+            liElement.textContent = `${item.symbol}`;
             outerDiv.appendChild(liElement);
 
             // Create switch buttons
@@ -185,34 +239,38 @@ const HeaderInfo = (props) => {
 
 
             /* -- BORROW SIDE -- */
-
-            // Create outer div
-            const outerDiv1 = document.createElement("div");
-            // Add li element to div
             const item1 = tokenData[key];
-            const liElement1 = document.createElement("li");
-            liElement1.textContent = `${item1.symbol}`.toUpperCase();
-            outerDiv1.appendChild(liElement1);
+            const isBorrowingEnabled = item1.borrowingEnabled;
+                
+            if(isBorrowingEnabled){
+                // Create outer div
+                const outerDiv1 = document.createElement("div");
+                // Add li element to div
+                
+                const liElement1 = document.createElement("li");
+                liElement1.textContent = `${item1.symbol}`;
+                outerDiv1.appendChild(liElement1);
 
-            // Create switch buttons
-            const label1 = document.createElement("label");
-            label1.classList.add("switch");
-            label1.style.backgroundColor = "rgb(41, 46, 65)";
+                // Create switch buttons
+                const label1 = document.createElement("label");
+                label1.classList.add("switch");
+                label1.style.backgroundColor = "rgb(41, 46, 65)";
 
-            const input1 = document.createElement("input");
-            input1.type = "checkbox";
-            label1.appendChild(input1);
+                const input1 = document.createElement("input");
+                input1.type = "checkbox";
+                label1.appendChild(input1);
 
-            const span1 = document.createElement("span");
-            span1.classList.add("slider");
-            label1.appendChild(span1);
-            input1.addEventListener('click', function() {
-                tempAddBorrowSide(item1, this);
-            });
-            outerDiv1.appendChild(label1);
+                const span1 = document.createElement("span");
+                span1.classList.add("slider");
+                label1.appendChild(span1);
+                input1.addEventListener('click', function() {
+                    tempAddBorrowSide(item1, this);
+                });
+                outerDiv1.appendChild(label1);
 
-            // Finally add the outer div element to the ul element
-            ulElementBorrow.appendChild(outerDiv1);
+                // Finally add the outer div element to the ul element
+                ulElementBorrow.appendChild(outerDiv1);
+            }
         }
     }
 
@@ -277,12 +335,12 @@ const HeaderInfo = (props) => {
 
     // Remove a token from the supply or borrow side
     function removeTokenInfo(token, isSupplySide){
-        if(isSupplySide && document.getElementById("supply_outer_div_" + token.id)){
-            const outerDivToRemove = document.getElementById("supply_outer_div_" + token.id);
+        if(isSupplySide && document.getElementById("supply_outer_div_" + token.symbol)){
+            const outerDivToRemove = document.getElementById("supply_outer_div_" + token.symbol);
             outerDivToRemove.remove();
         }
-        else if (!isSupplySide && document.getElementById("borrow_outer_div_" + token.id)){
-            const outerDivToRemove = document.getElementById("borrow_outer_div_" + token.id);
+        else if (!isSupplySide && document.getElementById("borrow_outer_div_" + token.symbol)){
+            const outerDivToRemove = document.getElementById("borrow_outer_div_" + token.symbol);
             outerDivToRemove.remove();
         }
     }
@@ -306,38 +364,38 @@ const HeaderInfo = (props) => {
             for (const token of supplyTokensArray) {
                 // Check if the token has already been added to the list. If it exists, no need to rerender it. 
                 // Otherwise it will lose past input values.
-                const divElement = document.getElementById("supply_outer_div_" + token.id);
+                const divElement = document.getElementById("supply_outer_div_" + token.symbol);
                 if(!divElement){
                     // Create outer div
                     const outerDiv = document.createElement("div");
-                    outerDiv.id = "supply_outer_div_" + token.id;
+                    outerDiv.id = "supply_outer_div_" + token.symbol;
                         
                     // Add li element to div
                     const liElement = document.createElement("li");
-                    liElement.textContent = token.symbol.toUpperCase();
+                    liElement.textContent = token.symbol;
                     outerDiv.appendChild(liElement);
 
                     // Add amount input to div
                     const amountElement = document.createElement("input");
-                    amountElement.id = "supply_input_"+token.id;
+                    amountElement.id = "supply_input_"+token.symbol;
                     amountElement.addEventListener("input", calculateCurrentHealthValue);
-                    amountElement.addEventListener("input", function() {calculateTokenValue(token.id, 0);});
-                    amountElement.addEventListener("input", function() {displayPrice(token.id, 0, token.current_price);});
+                    amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 0);});
+                    amountElement.addEventListener("input", function() {displayPrice(token.symbol, 0, token.price.priceInUSD);});
                     amountElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(0);});
                     outerDiv.appendChild(amountElement);
 
                     // Add price input div
                     const priceElement = document.createElement("input");
-                    priceElement.id = "supply_price_"+token.id;
+                    priceElement.id = "supply_price_"+token.symbol;
                     priceElement.value = 0;
-                    priceElement.addEventListener("input", function() {adjustSliderValue(token.id, true, token.current_price);});
-                    priceElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
+                    priceElement.addEventListener("input", function() {adjustSliderValue(token.symbol, true, token.price.priceInUSD);});
+                    priceElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
                     priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(0);});
                     outerDiv.appendChild(priceElement);
 
                     // Add Value div (Price * Amount)
                     const valueElement = document.createElement("p");
-                    valueElement.id = "supply_value_"+token.id;
+                    valueElement.id = "supply_value_"+token.symbol;
                     valueElement.classList.add('supply_values');
                     valueElement.value = 0;
                     outerDiv.appendChild(valueElement);
@@ -346,8 +404,8 @@ const HeaderInfo = (props) => {
                     ulElement.appendChild(outerDiv);
                     
                 }
-                displayPrice(token.id, 0, token.current_price);
-                calculateTokenValue(token.id, 0);
+                displayPrice(token.symbol, 0, token.price.priceInUSD);
+                calculateTokenValue(token.symbol, 0);
   
             }
         }
@@ -373,48 +431,50 @@ const HeaderInfo = (props) => {
             borrowInfo.style.display = "flex";
             
             for (const token of borrowTokensArray) {
-                // Check if the token has already been added to the list. If it exists, no need to rerender it. 
-                // Otherwise it will lose past input values.
-                const divElement = document.getElementById("borrow_outer_div_" + token.id);
+            // Check if the token has already been added to the list. If it exists, no need to rerender it. 
+            // Otherwise it will lose past input values.
+            const divElement = document.getElementById("borrow_outer_div_" + token.symbol);
+                
                 if(!divElement){
                     // Create outer div
                     const outerDiv = document.createElement("div");
-                    outerDiv.id = "borrow_outer_div_" + token.id;
+                    outerDiv.id = "borrow_outer_div_" + token.symbol;
 
                     // Add li element to div
                     const liElement = document.createElement("li");
-                    liElement.textContent = token.symbol.toUpperCase();
+                    liElement.textContent = token.symbol;
                     outerDiv.appendChild(liElement);
                     
                     // Add amount input to div
                     const amountElement = document.createElement("input");
-                    amountElement.id = "borrow_input_"+token.id;
+                    amountElement.id = "borrow_input_"+token.symbol;
                     amountElement.addEventListener("input", calculateCurrentHealthValue);
-                    amountElement.addEventListener("input", function() {calculateTokenValue(token.id, 1);}); 
-                    amountElement.addEventListener("input", function() {displayPrice(token.id, 1, token.current_price);});
+                    amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 1);}); 
+                    amountElement.addEventListener("input", function() {displayPrice(token.symbol, 1, token.price.priceInUSD);});
                     amountElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(1);});
                     outerDiv.appendChild(amountElement);
 
                     // Add price div
                     const priceElement = document.createElement("input");
-                    priceElement.id = "borrow_price_"+token.id;
+                    priceElement.id = "borrow_price_"+token.symbol;
                     priceElement.value = 0;
-                    priceElement.addEventListener("input", function() {adjustSliderValue(token.id, false, token.current_price);});
-                    priceElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
+                    priceElement.addEventListener("input", function() {adjustSliderValue(token.symbol, false, token.price.priceInUSD);});
+                    priceElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
                     priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(1);});
                     outerDiv.appendChild(priceElement);
 
                     // Add Value div (Price * Amount)
                     const valueElement = document.createElement("p");
-                    valueElement.id = "borrow_value_"+token.id;
+                    valueElement.id = "borrow_value_"+token.symbol;
                     valueElement.classList.add('borrow_values');
                     valueElement.value = 0;
                     outerDiv.appendChild(valueElement);
                     // Finally add the outer div element to the ul element
                     ulElement.appendChild(outerDiv);
                 }
-                displayPrice(token.id, 1, token.current_price);
-                calculateTokenValue(token.id, 1);
+                displayPrice(token.symbol, 1, token.price.priceInUSD);
+                calculateTokenValue(token.symbol, 1);
+            
             }
 
         }
@@ -423,7 +483,7 @@ const HeaderInfo = (props) => {
 
     
     function removeSlider(token){
-        const sliderToRemove = document.getElementById(token.id);
+        const sliderToRemove = document.getElementById(token.symbol);
         var tempArray = sliderTokensArray;
         var tempArray1 = supplyTokensArray;
         var tempArray2 = borrowTokensArray;
@@ -461,7 +521,7 @@ const HeaderInfo = (props) => {
             // Create outer div
             const outerDiv = document.createElement("div");
             outerDiv.classList.add('outer_div')
-            outerDiv.id = token.id;
+            outerDiv.id = token.symbol;
 
             // Add li element to div
             const liElement = document.createElement("li");
@@ -478,18 +538,18 @@ const HeaderInfo = (props) => {
 
             // Create price p element
             const priceElement = document.createElement("p");
-            priceElement.textContent = token.current_price;
-            priceElement.id = 'slider_outer_top_price_' + token.id;
+            priceElement.textContent = token.price.priceInUSD;
+            priceElement.id = 'slider_outer_top_price_' + token.symbol;
 
             // Create percentage p element
             const percentageElement = document.createElement("p");
             percentageElement.textContent = "(0%)";
-            percentageElement.id = 'slider_outer_top_percent_' + token.id;
+            percentageElement.id = 'slider_outer_top_percent_' + token.symbol;
 
             // Create price change p element
             const priceChangeElement = document.createElement("p");
-            priceChangeElement.textContent = "(0+)";
-            priceChangeElement.id = 'slider_outer_top_priceChange_' + token.id;
+            priceChangeElement.textContent = "(+0)";
+            priceChangeElement.id = 'slider_outer_top_priceChange_' + token.symbol;
             
             
             // Create value slider and add to sliderOuterDiv
@@ -497,13 +557,13 @@ const HeaderInfo = (props) => {
             valueInputElement.type = "range";
             valueInputElement.min = "0";
             valueInputElement.step="0.01"
-            valueInputElement.max = (token.current_price * 3);
-            valueInputElement.value = token.current_price;
-            valueInputElement.id = "slider_input_"+token.id;
+            valueInputElement.max = (token.price.priceInUSD * 3);
+            valueInputElement.value = token.price.priceInUSD;
+            valueInputElement.id = "slider_input_"+token.symbol;
             valueInputElement.classList.add('slider_input');
             valueInputElement.addEventListener("input", calculateCurrentHealthValue);
-            valueInputElement.addEventListener("input", function() {calculateTokenValue(token.id, 2);});
-            valueInputElement.addEventListener("input", function() {displayPrice(token.id, 2, token.current_price);});
+            valueInputElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
+            valueInputElement.addEventListener("input", function() {displayPrice(token.symbol, 2, token.price.priceInUSD);});
             valueInputElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(2);});
 
             // Create div below the slider
@@ -516,7 +576,7 @@ const HeaderInfo = (props) => {
             lowValueText.textContent = "$ 0";
             const maxValueText = document.createElement("p");
             maxValueText.id = 'slider_div_top_min_max';
-            maxValueText.textContent = '$ ' + (token.current_price*3).toFixed(2);
+            maxValueText.textContent = '$ ' + (token.price.priceInUSD*3).toFixed(2);
 
             sliderBottomDiv.appendChild(lowValueText);
             sliderBottomDiv.appendChild(maxValueText);
@@ -538,7 +598,7 @@ const HeaderInfo = (props) => {
             thresholdInputElement.step = 1;
             thresholdInputElement.value = 75;
             thresholdInputElement.addEventListener("input", calculateCurrentHealthValue);
-            thresholdInputElement.id = "threshold_input_"+token.id;
+            thresholdInputElement.id = "threshold_input_"+token.symbol;
            
             outerDiv.appendChild(thresholdInputElement);
 
@@ -769,17 +829,17 @@ const HeaderInfo = (props) => {
         // Calculate the Denominator: ∑ ( Collateral[ith] × LiquidationThreshold[ith] )
         for(var i = 0; i < supplyTokensArray.length; i++){
             const token = supplyTokensArray[i];
-            const inputAmount = document.getElementById("supply_input_"+token.id).value;
-            const currentPrice = document.getElementById("slider_input_"+token.id).value;
-            const liquidationThreshold = document.getElementById("threshold_input_"+token.id).value/100;
+            const inputAmount = document.getElementById("supply_input_"+token.symbol).value;
+            const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
+            const liquidationThreshold = document.getElementById("threshold_input_"+token.symbol).value/100;
             denominator += (currentPrice * inputAmount) * liquidationThreshold;
         }
         // Calculate the Numerator: Total Borrows
         var totalBorrowValue = 0;
         for(var j = 0; j < borrowTokensArray.length; j++){
             const token = borrowTokensArray[j];
-            const inputAmount = document.getElementById("borrow_input_"+token.id).value;
-            const currentPrice = document.getElementById("slider_input_"+token.id).value;
+            const inputAmount = document.getElementById("borrow_input_"+token.symbol).value;
+            const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
             totalBorrowValue += (inputAmount * currentPrice);
             
         }
@@ -898,28 +958,29 @@ const HeaderInfo = (props) => {
                 </div>
             </div>
 
-
-            <div className="dropdown">
-                <div onClick={showDropDown} className="dropbtn">{chain} Network</div>
-                <div id="myDropdown" className="dropdown-content">
-                    <a href="#" onClick={ () => changeNetwork("Ethereum", true) }>Ethereum</a>
-                    <a href="#" onClick={ () => changeNetwork("Arbitrum", true) }>Arbitrum</a>
-                    <a href="#" onClick={ () => changeNetwork("Avalanche", true) }>Avalanche</a>
-                    <a href="#" onClick={ () => changeNetwork("Fantom", true) }>Fantom</a>
-                    <a href="#" onClick={ () => changeNetwork("Harmony", true) }>Harmony</a>
-                    <a href="#" onClick={ () => changeNetwork("Optimism", true) }>Optimism</a>
-                    <a href="#" onClick={ () => changeNetwork("Polygon", true) }>Polygon</a>
-                    <a href="#" onClick={ () => changeNetwork("Metis", true) }>Metis</a>
-                </div>
-            </div>
-
             <div className = "search">
                 <div className = "search_div">
                     <input id = "search_div_input" className = "search_div_input"></input>
                     <button className = "search_div_button" onClick = {queryAddressForUserPosition}>Search</button>
                 </div>
-
             </div>
+            
+            <div className="dropdown">
+                <div onClick={showDropDown} className="dropbtn">{chain} Market</div>
+                <div id="myDropdown" className="dropdown-content">
+                    <a href="#" onClick={ () => changeNetwork("Ethereum", "V3") }>Ethereum</a>
+                    <a href="#" onClick={ () => changeNetwork("Arbitrum", "V3") }>Arbitrum</a>
+                    <a href="#" onClick={ () => changeNetwork("Avalanche", "V3") }>Avalanche</a>
+                    <a href="#" onClick={ () => changeNetwork("Optimism", "V3") }>Optimism</a>
+                    <a href="#" onClick={ () => changeNetwork("Polygon", "V3") }>Polygon</a>
+                    <a href="#" onClick={ () => changeNetwork("Metis", "V3") }>Metis</a>
+                    <a href="#" onClick={ () => changeNetwork("Ethereum", "V2") }>Ethereum V2</a>
+                    <a href="#" onClick={ () => changeNetwork("Avalanche", "V2") }>Avalanche V2</a>
+                    <a href="#" onClick={ () => changeNetwork("Polygon", "V2") }>Polygon V2</a>
+                </div>
+            </div>
+
+     
 
             <div className ="b_s">
                 <div className='info'>

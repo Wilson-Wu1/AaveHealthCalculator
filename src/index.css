@@ -25,19 +25,19 @@
   
 }
 
-.dropbtn{
+.dropdown{
+  width:80%;
+}
+
+/* Dropdown Button */
+.dropbtn {
   margin: 0;
   display:block;
   font-weight: 700;
   letter-spacing: 0.015625rem;
   line-height: 123.5%;
   font-size: 1.75rem;
-  color: #fff;
   margin-right: 4px;
-}
-
-/* Dropdown Button */
-.dropbtn {
   background-color: rgb(56, 61, 81);;
   color: white;
   padding: 16px;
