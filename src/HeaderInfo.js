@@ -12,14 +12,15 @@ const HeaderInfo = (props) => {
     const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
     const [tokenData, setTokenData] = useState(null);
     const [usdPriceEth, setUsdPriceEth] = useState(0);
+    const [aavePosition, setAavePosition] = useState(null);
     var endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
 
-    function changeNetwork(newNetwork, aaveVersion){
+    function changeNetwork(newNetwork, newAaveVersion){
        
             setChain(newNetwork);
-            setAaveVersion(aaveVersion)
+            setAaveVersion(newAaveVersion)
             // Aave V3
-            if(aaveVersion == "V3"){
+            if(newAaveVersion == "V3"){
                 endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
                 // Metis network endpoint is different from others.
                 if(newNetwork == "Metis"){
@@ -28,6 +29,7 @@ const HeaderInfo = (props) => {
                 else if(newNetwork != "Ethereum"){
                     endpoint += ('-'+(newNetwork.toLowerCase()));
                 }
+
 
             }
             // Aave V2
@@ -77,7 +79,6 @@ const HeaderInfo = (props) => {
             setTokenData(data.reserves);
             setUsdPriceEth(data.priceOracles[0].usdPriceEth);
         
-            // Call your next function here, for example:
            
           } catch (error) {
             console.error('Error fetching token info:', error);
@@ -126,13 +127,35 @@ const HeaderInfo = (props) => {
 
 
     function test(){
-        console.log(chain);
-        console.log(tokenData);
+        // console.log(chain);
+        // console.log(tokenData);
+        // for(const index in tokenData){
+        //     console.log(tokenData[index].price.priceInUSD);
+        // }
+        // console.log(usdPriceEth);
         for(const index in tokenData){
-            console.log(tokenData[index].price.priceInUSD);
+            tokenData.supplyAmount = 0;
+            removeTokenInfo(tokenData[index], true);
+            removeTokenInfo(tokenData[index], false);
         }
-        console.log(usdPriceEth);
     } 
+    
+    function clearAllTokenInfo(){
+      
+        for(const index in aavePosition){
+            var key = aavePosition[index];
+            var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
+            if(key.currentATokenBalance != "0"){
+                tempAddSupplySide(foundObject);
+            }
+        
+            if(key.currentTotalDebt != "0"){
+                tempAddBorrowSide(foundObject);
+            }
+
+            
+        }
+    }
 
     // Query the graph for a user's Aave position on the current network
     function queryAddressForUserPosition(){
@@ -156,6 +179,37 @@ const HeaderInfo = (props) => {
         request(endpoint, query)
         .then((data) => {
             console.log(data);
+            console.log(data.userReserves.length);
+
+            clearAllTokenInfo();
+            setAavePosition(data.userReserves);
+            if(data.userReserves.length != 0){
+                
+                for(const index in data.userReserves){
+                    var key = data.userReserves[index];
+                    
+                    if(key.currentATokenBalance != "0"){
+                        var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
+                        foundObject.supplyAmount = key.currentATokenBalance / Math.pow(10, key.reserve.decimals);
+                        var buttonDiv = document.getElementById("supply_input_button_" + key.reserve.symbol);
+                        tempAddSupplySide(foundObject, buttonDiv);
+                    }
+                    if(key.currentTotalDebt != "0"){
+                        var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
+                        foundObject.borrowAmount = key.currentTotalDebt / Math.pow(10, key.reserve.decimals);
+                        var buttonDiv = document.getElementById("borrow_input_button_" + key.reserve.symbol);
+                        tempAddBorrowSide(foundObject, buttonDiv);
+                    }
+                }
+                addSupplySide();
+                addBorrowSide();
+                calculateCurrentHealthValue();
+                displayTotalSuppliedOrBorrowed(0);
+                displayTotalSuppliedOrBorrowed(1)
+            }
+            else{
+                console.log("Error: Address does not have Aave position or invalid address");
+            }
             
             
         })
@@ -186,7 +240,7 @@ const HeaderInfo = (props) => {
     // Close the dropdown menu if the user clicks outside of it
     window.onclick = function(event) {
         if (!event.target.matches('.dropbtn')) {
-            var dropdowns = document.getElementsByClassName("dropdown-content");
+            var dropdowns = document.getElementsByClassName("dropdown_content");
             var i;
             for (i = 0; i < dropdowns.length; i++) {
                 var openDropdown = dropdowns[i];
@@ -220,15 +274,18 @@ const HeaderInfo = (props) => {
             // Create switch buttons
             const label = document.createElement("label");
             label.classList.add("switch");
+            label.id = "supply_input_button_" + item.symbol;
             label.style.backgroundColor = "rgb(41, 46, 65)";
 
             const input = document.createElement("input");
+            //input.id = "supply_input_button_" + item.symbol;
             input.type = "checkbox";
             label.appendChild(input);
 
             const span = document.createElement("span");
             span.classList.add("slider");
             label.appendChild(span);
+
             input.addEventListener('click', function() {
                 tempAddSupplySide(item, this);
             });
@@ -257,11 +314,13 @@ const HeaderInfo = (props) => {
                 label1.style.backgroundColor = "rgb(41, 46, 65)";
 
                 const input1 = document.createElement("input");
+                input1.id = "borrow_input_button_" + item.symbol;
                 input1.type = "checkbox";
                 label1.appendChild(input1);
 
                 const span1 = document.createElement("span");
                 span1.classList.add("slider");
+
                 label1.appendChild(span1);
                 input1.addEventListener('click', function() {
                     tempAddBorrowSide(item1, this);
@@ -281,6 +340,7 @@ const HeaderInfo = (props) => {
 
     // Add tokens that are being selected in the supply modal
     function tempAddSupplySide(tokenToAdd, thisBtn){
+        
         // Retrieve the current supply token array 
         var tempSupplyArray = supplyTokensArray;
         // Find the index of the item in the array
@@ -290,8 +350,6 @@ const HeaderInfo = (props) => {
         if (index !== -1) {
             // Remove the item from the array
             tempSupplyArray.splice(index, 1);
-            thisBtn.style.backgroundColor = "rgb(56, 61, 81)";
-            thisBtn.textContent = "Supply Asset"
             setSupplyTokensArray(tempSupplyArray);
             removeSlider(tokenToAdd);
             removeTokenInfo(tokenToAdd, true);
@@ -300,8 +358,6 @@ const HeaderInfo = (props) => {
         // Item does not exist in the array
         else{
             tempSupplyArray.push(tokenToAdd);
-            thisBtn.style.backgroundColor = "#547a5c";
-            thisBtn.textContent = "Supplied"
             setSupplyTokensArray(tempSupplyArray);
             displaySlider(tokenToAdd);
         }
@@ -318,16 +374,16 @@ const HeaderInfo = (props) => {
         if (index !== -1) {
             // Remove the item from the array
             tempBorrowArray.splice(index, 1);
-            thisBtn.style.backgroundColor = "rgb(56, 61, 81)";
-            thisBtn.textContent = "Borrow Asset"
+            // thisBtn.style.backgroundColor = "rgb(56, 61, 81)";
+            // thisBtn.textContent = "Borrow Asset"
             setBorrowTokensArray(tempBorrowArray);
             removeSlider(tokenToAdd);
             removeTokenInfo(tokenToAdd, false);
         }
         else{
             tempBorrowArray.push(tokenToAdd);
-            thisBtn.style.backgroundColor = "#547a5c";
-            thisBtn.textContent = "Borrowed"
+            // thisBtn.style.backgroundColor = "#547a5c";
+            // thisBtn.textContent = "Borrowed"
             setBorrowTokensArray(tempBorrowArray);
             displaySlider(tokenToAdd);
         }
@@ -335,12 +391,15 @@ const HeaderInfo = (props) => {
 
     // Remove a token from the supply or borrow side
     function removeTokenInfo(token, isSupplySide){
+        
         if(isSupplySide && document.getElementById("supply_outer_div_" + token.symbol)){
             const outerDivToRemove = document.getElementById("supply_outer_div_" + token.symbol);
+            console.log("supply: " + token.symbol);
             outerDivToRemove.remove();
         }
         else if (!isSupplySide && document.getElementById("borrow_outer_div_" + token.symbol)){
             const outerDivToRemove = document.getElementById("borrow_outer_div_" + token.symbol);
+            console.log("borrow:  " + token.symbol);
             outerDivToRemove.remove();
         }
     }
@@ -378,6 +437,12 @@ const HeaderInfo = (props) => {
                     // Add amount input to div
                     const amountElement = document.createElement("input");
                     amountElement.id = "supply_input_"+token.symbol;
+                    
+                    if(token.supplyAmount !== undefined){
+                        //console.log("here");
+                        amountElement.value = token.supplyAmount;
+                    }
+                    
                     amountElement.addEventListener("input", calculateCurrentHealthValue);
                     amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 0);});
                     amountElement.addEventListener("input", function() {displayPrice(token.symbol, 0, token.price.priceInUSD);});
@@ -448,6 +513,9 @@ const HeaderInfo = (props) => {
                     // Add amount input to div
                     const amountElement = document.createElement("input");
                     amountElement.id = "borrow_input_"+token.symbol;
+                    if(token.borrowAmount != "undefined" || token.borrowAmount != 0){
+                        amountElement.value = token.borrowAmount;
+                    }
                     amountElement.addEventListener("input", calculateCurrentHealthValue);
                     amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 1);}); 
                     amountElement.addEventListener("input", function() {displayPrice(token.symbol, 1, token.price.priceInUSD);});
@@ -469,6 +537,7 @@ const HeaderInfo = (props) => {
                     valueElement.classList.add('borrow_values');
                     valueElement.value = 0;
                     outerDiv.appendChild(valueElement);
+
                     // Finally add the outer div element to the ul element
                     ulElement.appendChild(outerDiv);
                 }
@@ -957,30 +1026,38 @@ const HeaderInfo = (props) => {
 
                 </div>
             </div>
-
+            <div className = "drop">
+                <div className="dropdown" >
+                    <div className = "dropDown_text">
+                        <div onClick={showDropDown} className="dropbtn">{chain} Market</div>
+                        <div className="dropdown_version" >
+                            <p className="dropdown_version_text" id = "dropdown_version_text"  >{aaveVersion} </p>
+                        </div>
+                    </div>
+                    <div id="myDropdown" className="dropdown_content">
+                        <p className = "dropdown_content_text">Select Aave Market</p>
+                        <a href="#" onClick={ () => changeNetwork("Ethereum", "V3") }>Ethereum</a>
+                        <a href="#" onClick={ () => changeNetwork("Arbitrum", "V3") }>Arbitrum</a>
+                        <a href="#" onClick={ () => changeNetwork("Avalanche", "V3") }>Avalanche</a>
+                        <a href="#" onClick={ () => changeNetwork("Optimism", "V3") }>Optimism</a>
+                        <a href="#" onClick={ () => changeNetwork("Polygon", "V3") }>Polygon</a>
+                        <a href="#" onClick={ () => changeNetwork("Metis", "V3") }>Metis</a>
+                        <a href="#" onClick={ () => changeNetwork("Ethereum", "V2") }>Ethereum V2</a>
+                        <a href="#" onClick={ () => changeNetwork("Avalanche", "V2") }>Avalanche V2</a>
+                        <a href="#" onClick={ () => changeNetwork("Polygon", "V2") }>Polygon V2</a>
+                    </div>
+                   
+                </div>
+            </div>
+     
             <div className = "search">
                 <div className = "search_div">
                     <input id = "search_div_input" className = "search_div_input"></input>
                     <button className = "search_div_button" onClick = {queryAddressForUserPosition}>Search</button>
                 </div>
             </div>
-            
-            <div className="dropdown">
-                <div onClick={showDropDown} className="dropbtn">{chain} Market</div>
-                <div id="myDropdown" className="dropdown-content">
-                    <a href="#" onClick={ () => changeNetwork("Ethereum", "V3") }>Ethereum</a>
-                    <a href="#" onClick={ () => changeNetwork("Arbitrum", "V3") }>Arbitrum</a>
-                    <a href="#" onClick={ () => changeNetwork("Avalanche", "V3") }>Avalanche</a>
-                    <a href="#" onClick={ () => changeNetwork("Optimism", "V3") }>Optimism</a>
-                    <a href="#" onClick={ () => changeNetwork("Polygon", "V3") }>Polygon</a>
-                    <a href="#" onClick={ () => changeNetwork("Metis", "V3") }>Metis</a>
-                    <a href="#" onClick={ () => changeNetwork("Ethereum", "V2") }>Ethereum V2</a>
-                    <a href="#" onClick={ () => changeNetwork("Avalanche", "V2") }>Avalanche V2</a>
-                    <a href="#" onClick={ () => changeNetwork("Polygon", "V2") }>Polygon V2</a>
-                </div>
-            </div>
 
-     
+   
 
             <div className ="b_s">
                 <div className='info'>
