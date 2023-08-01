@@ -2,7 +2,7 @@ import {useEffect, useState, useRef} from 'react';
 import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
 import {ReactComponent as InfoIcon} from './images/infoIcon.svg'
 import Web3 from 'web3';
-const HeaderInfo = (props) => {
+const HeaderInfo = () => {
 
     
 
@@ -13,7 +13,8 @@ const HeaderInfo = (props) => {
     const [tokenData, setTokenData] = useState(null);
     const [usdPriceEth, setUsdPriceEth] = useState(0);
     const [aavePosition, setAavePosition] = useState(null);
-    var endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
+    const [endpoint , setEndpoint] = useState('https://api.thegraph.com/subgraphs/name/aave/protocol-v3')
+    
 
     function changeNetwork(newNetwork, newAaveVersion){
        
@@ -21,35 +22,43 @@ const HeaderInfo = (props) => {
             setAaveVersion(newAaveVersion)
             // Aave V3
             if(newAaveVersion == "V3"){
-                endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
+                var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
+
                 // Metis network endpoint is different from others.
                 if(newNetwork == "Metis"){
-                    endpoint = "https://andromeda.thegraph.metis.io/subgraphs/name/aave/protocol-v3-metis"
+                    tempNewEndpoint = "https://andromeda.thegraph.metis.io/subgraphs/name/aave/protocol-v3-metis"
                 }
                 else if(newNetwork != "Ethereum"){
-                    endpoint += ('-'+(newNetwork.toLowerCase()));
+                    tempNewEndpoint += ('-'+(newNetwork.toLowerCase()));
                 }
-
-
             }
             // Aave V2
             else{
-                endpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v2';
+                var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
                
                 // Matic network endpoint is different from others.
                 if(newNetwork == "Polygon"){
-                    endpoint = "https://api.thegraph.com/subgraphs/name/aave/aave-v2-matic";
+                    tempNewEndpoint = "https://api.thegraph.com/subgraphs/name/aave/aave-v2-matic";
                 }
                 else if (newNetwork != "Ethereum"){
-                    endpoint += ('-'+(newNetwork.toLowerCase()));
+                    tempNewEndpoint += ('-'+(newNetwork.toLowerCase()));
                 }
-                    
                 
             }
-            console.log(endpoint);
-            getTokens();
+            setEndpoint(tempNewEndpoint);
+           
     }
 
+    useEffect(() => {
+        // This effect will run when the component mounts and whenever the endpoint changes
+        if (endpoint !== null) {
+          console.log(endpoint);
+          clearAllSupplyAndBorrowData();
+          getTokens();
+        }
+      }, [endpoint]);
+
+    
     // Query the graph for the tokens that can be supplied/borrowed for a given network
     // Retrieve each token's symbol and price.
     async function getTokens(){
@@ -60,6 +69,7 @@ const HeaderInfo = (props) => {
               symbol
               borrowingEnabled
               usageAsCollateralEnabled
+              reserveLiquidationThreshold
               price {
                 priceInEth
               }
@@ -71,90 +81,157 @@ const HeaderInfo = (props) => {
         `;
         try {
             const data = await request(endpoint, query);
+            console.log(data.reserves);
             for (const index in data.reserves) {
               const token = data.reserves[index];
               const decimalConvert = Math.pow(10, 8);
               token.price.priceInUSD = token.price.priceInEth / decimalConvert;
+              
             }
-            setTokenData(data.reserves);
+            
             setUsdPriceEth(data.priceOracles[0].usdPriceEth);
-        
+            //console.log(chain, aaveVersion);
+            setTokenData(data.reserves);
            
           } catch (error) {
             console.error('Error fetching token info:', error);
           }
     }
 
+    const symbols = ['WBTC', "LDO", "wstETH", "rETH", "cbETH"]
+    //var oraclePrices = [];
+    const [oraclePrices, setOraclePrices] = useState([]);
+    
     async function getMissingPricesMainnet() {
         const web3ProviderUrl = `https://mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
         const web3 = new Web3(web3ProviderUrl);
         const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
         const oracleAddresses = ['0x230E0321Cf38F09e247e50Afc7801EA2351fe56F', '0xb01e6C9af83879B8e06a092f0DD94309c0D497E4', '0x8B6851156023f4f5A66F68BEA80851c3D905Ac93', '0x05225Cd708bCa9253789C1374e4337a019e99D56','0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731'];
-        const symbols = ['WBTC', "LDO", "wstETH", "rETH", "cbETH"]
-
+        
         // For each oracle, retrieve the latest token price.
+        var tempOraclePrices = [];
         for(const index in oracleAddresses){
             const oracle = oracleAddresses[index];
             const contract = new web3.eth.Contract(contractABI, oracle);
             try {
                 const result = await contract.methods.latestAnswer().call();
-                console.log('Result:', (Number(result) / 100000000).toFixed(2));
-                // Set the oracle price to the tokenData object
-                const foundObject = tokenData.find((item) => item.symbol === symbols[index]);
-                foundObject.price.priceInUSD = (Number(result) / 100000000).toFixed(2);
+                tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
+                
                 
                 } catch (error) {  
             }
         }
-
-        // Set $GHO token price to $1, since it does not use an Oracle
-        const foundObject = tokenData.find((item) => item.symbol === "GHO");
-        foundObject.price.priceInUSD = 1;
-
-        // Set the data
-        setTokenData(tokenData);
+        setOraclePrices(tempOraclePrices);
 
     }
 
-    const isGetMissingPricesMainnetCalled = useRef(false);
+
+    function setMissingPrices(){
+        if(chain == "Ethereum" && aaveVersion == "V3"){
+            for(const index in oraclePrices){
+                //console.log("SetMIssingprices: ", index, symbols[index], oraclePrices[index]);
+                const foundObject = tokenData.find((item) => item.symbol === symbols[index]);
+                foundObject.price.priceInUSD = oraclePrices[index];
+            }
+            // Set $GHO token price to $1, since it does not use an Oracle
+            const foundObject = tokenData.find((item) => item.symbol === "GHO");
+            foundObject.price.priceInUSD = 1;
+            setTokenData(tokenData);
+        }
+    }
+    
     useEffect(() => {
-      if (tokenData && !isGetMissingPricesMainnetCalled.current) {
-        getMissingPricesMainnet();
-        isGetMissingPricesMainnetCalled.current = true;
-      }
-      addTokensToLists();
-    }, [tokenData]);
+        // When oraclePrices state is updated, set the missing prices
+        if (oraclePrices.length > 0) {
+            setMissingPrices();
+        }
+        // Update the tokenData state with the new data
+        addTokensToLists();
+      }, [oraclePrices, tokenData]);
 
 
     function test(){
-        // console.log(chain);
-        // console.log(tokenData);
+        setMissingPrices();
+        //console.log(chain);
+        //console.log(tokenData);
+        
+
         // for(const index in tokenData){
         //     console.log(tokenData[index].price.priceInUSD);
         // }
-        // console.log(usdPriceEth);
-        for(const index in tokenData){
-            tokenData.supplyAmount = 0;
-            removeTokenInfo(tokenData[index], true);
-            removeTokenInfo(tokenData[index], false);
-        }
+        //console.log(usdPriceEth);
+
+        // for(const index in tokenData){
+        //     tokenData.supplyAmount = 0;
+        //     removeTokenInfo(tokenData[index], true);
+        //     removeTokenInfo(tokenData[index], false);
+        // }
     } 
     
-    function clearAllTokenInfo(){
-      
-        for(const index in aavePosition){
-            var key = aavePosition[index];
-            var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
-            if(key.currentATokenBalance != "0"){
-                tempAddSupplySide(foundObject);
-            }
-        
-            if(key.currentTotalDebt != "0"){
-                tempAddBorrowSide(foundObject);
-            }
+    // Clear all the supplied and borrowed data. 
+    // Including which tokens are being supplied/borrowed, sliders, and general info
+    function clearAllSupplyAndBorrowData(){
 
+        // Clear user's aave position from supply and borrow side 
+        for(const index in aavePosition){
+            var key = aavePosition[index]; 
+            var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
+            if(foundObject != undefined){
+                if(key.currentATokenBalance != "0" ){
+                
+                    tempAddSupplySide(foundObject);
+                }
             
+                if(key.currentTotalDebt != "0"){
+                    
+                    tempAddBorrowSide(foundObject);
+                }
+            }    
         }
+
+        // Remove any additionally added supply or borrow tokens
+        var tempSupplyArray = supplyTokensArray;
+        var tempBorrowArray = borrowTokensArray;
+        for (const index in tempSupplyArray){
+            
+            tempAddSupplySide(tempSupplyArray[index]);
+        }
+        for (const index in tempBorrowArray){
+            
+            tempAddBorrowSide(tempBorrowArray[index]);
+        }
+        setAavePosition(null);
+
+
+        // Reset net worth
+        const netWorthDiv = document.getElementById("info_container_bottom_netWorth_value");
+        netWorthDiv.textContent = 0;
+
+        // Reset Health Factor
+        const healthFactorDiv = document.getElementById("info_container_bottom_healthFactorValue");
+        healthFactorDiv.style.color = "white";
+        setHealthFactor(0);
+
+        // Reset LTV
+        const ltvDiv = document.getElementById("info_container_bottom_ltv");
+        ltvDiv.textContent = "0.00%";
+
+        // Hide supply info
+        const pTag = document.getElementById("assets_supply_nothing");
+        const headerTag = document.getElementById("assets_supply_header");
+        const supplyInfo = document.getElementById("assets_supply_info_box_left");
+        pTag.style.display = "flex";
+        headerTag.style.display = "none";
+        supplyInfo.style.display = "none";
+
+        // Hide borrow info
+        const pTag1 = document.getElementById("assets_borrow_nothing");
+        const headerTag1 = document.getElementById("assets_borrow_header");
+        const borrowInfo1 = document.getElementById("assets_borrow_info");
+        pTag1.style.display = "flex";
+        headerTag1.style.display = "none";
+        borrowInfo1.style.display = "none";
+
     }
 
     // Query the graph for a user's Aave position on the current network
@@ -178,27 +255,25 @@ const HeaderInfo = (props) => {
         `;
         request(endpoint, query)
         .then((data) => {
-            console.log(data);
-            console.log(data.userReserves.length);
-
-            clearAllTokenInfo();
+            // console.log(endpoint);
+            // console.log(data);
+            // console.log(data.userReserves.length);
+            clearAllSupplyAndBorrowData();
+            
             setAavePosition(data.userReserves);
             if(data.userReserves.length != 0){
-                
                 for(const index in data.userReserves){
                     var key = data.userReserves[index];
                     
                     if(key.currentATokenBalance != "0"){
                         var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
                         foundObject.supplyAmount = key.currentATokenBalance / Math.pow(10, key.reserve.decimals);
-                        var buttonDiv = document.getElementById("supply_input_button_" + key.reserve.symbol);
-                        tempAddSupplySide(foundObject, buttonDiv);
+                        tempAddSupplySide(foundObject);
                     }
                     if(key.currentTotalDebt != "0"){
                         var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
                         foundObject.borrowAmount = key.currentTotalDebt / Math.pow(10, key.reserve.decimals);
-                        var buttonDiv = document.getElementById("borrow_input_button_" + key.reserve.symbol);
-                        tempAddBorrowSide(foundObject, buttonDiv);
+                        tempAddBorrowSide(foundObject);
                     }
                 }
                 addSupplySide();
@@ -208,13 +283,16 @@ const HeaderInfo = (props) => {
                 displayTotalSuppliedOrBorrowed(1)
             }
             else{
-                console.log("Error: Address does not have Aave position or invalid address");
+                displayErrorMessage(`Error: address does not own an Aave position on the ${chain} network`);
+                //console.log("Error: Address does not have Aave position or invalid address");
+                
             }
             
             
         })
         .catch((error) => {
-            console.error('Error fetching user position:', error);
+            displayErrorMessage(`Error: invalid address`);
+            //console.error('Error fetching user position:', error);
         });
     }
 
@@ -262,44 +340,43 @@ const HeaderInfo = (props) => {
         
         for (const key in tokenData) {
             /* -- SUPPLY SIDE -- */
-
-            // Create outer div
-            const outerDiv = document.createElement("div");
-            // Add li element to div
             const item = tokenData[key];
-            const liElement = document.createElement("li");
-            liElement.textContent = `${item.symbol}`;
-            outerDiv.appendChild(liElement);
+            if(item.usageAsCollateralEnabled){
+                // Create outer div
+                const outerDiv = document.createElement("div");
+                // Add li element to div
+                const liElement = document.createElement("li");
+                liElement.textContent = `${item.symbol}`;
+                outerDiv.appendChild(liElement);
 
-            // Create switch buttons
-            const label = document.createElement("label");
-            label.classList.add("switch");
-            label.id = "supply_input_button_" + item.symbol;
-            label.style.backgroundColor = "rgb(41, 46, 65)";
+                // Create switch buttons
+                const label = document.createElement("label");
+                label.classList.add("switch");
+                label.id = "supply_input_button_" + item.symbol;
+                label.style.backgroundColor = "rgb(41, 46, 65)";
 
-            const input = document.createElement("input");
-            //input.id = "supply_input_button_" + item.symbol;
-            input.type = "checkbox";
-            label.appendChild(input);
+                const input = document.createElement("input");
+                //input.id = "supply_input_button_" + item.symbol;
+                input.type = "checkbox";
+                label.appendChild(input);
 
-            const span = document.createElement("span");
-            span.classList.add("slider");
-            label.appendChild(span);
+                const span = document.createElement("span");
+                span.classList.add("slider");
+                label.appendChild(span);
 
-            input.addEventListener('click', function() {
-                tempAddSupplySide(item, this);
-            });
-            outerDiv.appendChild(label);
+                input.addEventListener('click', function() {
+                    tempAddSupplySide(item, this);
+                });
+                outerDiv.appendChild(label);
 
-            // Finally add the outer div element to the ul element
-            ulElementSupply.appendChild(outerDiv);
-
+                // Finally add the outer div element to the ul element
+                ulElementSupply.appendChild(outerDiv);
+            }
 
             /* -- BORROW SIDE -- */
             const item1 = tokenData[key];
-            const isBorrowingEnabled = item1.borrowingEnabled;
                 
-            if(isBorrowingEnabled){
+            if(item1.borrowingEnabled){
                 // Create outer div
                 const outerDiv1 = document.createElement("div");
                 // Add li element to div
@@ -345,6 +422,7 @@ const HeaderInfo = (props) => {
         var tempSupplyArray = supplyTokensArray;
         // Find the index of the item in the array
         const index = tempSupplyArray.indexOf(tokenToAdd);
+        console.log(index);
 
         // Item already exists in the array
         if (index !== -1) {
@@ -372,18 +450,16 @@ const HeaderInfo = (props) => {
 
         // Check if the item exists in the array
         if (index !== -1) {
+            //console.log("Splicing Borrow: " + tokenToAdd.symbol);
             // Remove the item from the array
             tempBorrowArray.splice(index, 1);
-            // thisBtn.style.backgroundColor = "rgb(56, 61, 81)";
-            // thisBtn.textContent = "Borrow Asset"
             setBorrowTokensArray(tempBorrowArray);
             removeSlider(tokenToAdd);
             removeTokenInfo(tokenToAdd, false);
         }
         else{
+            //console.log("Adding Borrow: " + tokenToAdd.symbol);
             tempBorrowArray.push(tokenToAdd);
-            // thisBtn.style.backgroundColor = "#547a5c";
-            // thisBtn.textContent = "Borrowed"
             setBorrowTokensArray(tempBorrowArray);
             displaySlider(tokenToAdd);
         }
@@ -394,12 +470,12 @@ const HeaderInfo = (props) => {
         
         if(isSupplySide && document.getElementById("supply_outer_div_" + token.symbol)){
             const outerDivToRemove = document.getElementById("supply_outer_div_" + token.symbol);
-            console.log("supply: " + token.symbol);
+            
             outerDivToRemove.remove();
         }
         else if (!isSupplySide && document.getElementById("borrow_outer_div_" + token.symbol)){
             const outerDivToRemove = document.getElementById("borrow_outer_div_" + token.symbol);
-            console.log("borrow:  " + token.symbol);
+            
             outerDivToRemove.remove();
         }
     }
@@ -513,9 +589,10 @@ const HeaderInfo = (props) => {
                     // Add amount input to div
                     const amountElement = document.createElement("input");
                     amountElement.id = "borrow_input_"+token.symbol;
-                    if(token.borrowAmount != "undefined" || token.borrowAmount != 0){
+                    if(token.borrowAmount !== undefined){
                         amountElement.value = token.borrowAmount;
                     }
+
                     amountElement.addEventListener("input", calculateCurrentHealthValue);
                     amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 1);}); 
                     amountElement.addEventListener("input", function() {displayPrice(token.symbol, 1, token.price.priceInUSD);});
@@ -665,7 +742,7 @@ const HeaderInfo = (props) => {
             thresholdInputElement.min = 0;
             thresholdInputElement.max = 100;
             thresholdInputElement.step = 1;
-            thresholdInputElement.value = 75;
+            thresholdInputElement.value = token.reserveLiquidationThreshold/100;
             thresholdInputElement.addEventListener("input", calculateCurrentHealthValue);
             thresholdInputElement.id = "threshold_input_"+token.symbol;
            
@@ -934,7 +1011,19 @@ const HeaderInfo = (props) => {
     
         setHealthFactor(healthFactor);
     }
+
+    function displayErrorMessage(message) {
+        const errorContainer = document.getElementById('errorContainer');
+        errorContainer.innerText = message;
+        errorContainer.style.opacity = 1; // Ensure the container is visible
+        errorContainer.style.display = 'block';
+        // Set a timeout to fade out the error message after the specified duration
+        setTimeout(() => {
+          errorContainer.style.opacity = 0; // Fade out the error message
+        }, 5000);
+    }
     
+    const isGetMissingPricesMainnetCalled = useRef(false);
     useEffect(() => {
         const svg = document.getElementById("info_container_top_netWorth_icon");
         const textBox = document.getElementById("textbox");
@@ -950,6 +1039,10 @@ const HeaderInfo = (props) => {
         });
     
         getTokens();
+        if (!isGetMissingPricesMainnetCalled.current) {
+            getMissingPricesMainnet();
+            isGetMissingPricesMainnetCalled.current = true;
+        }
         handleResize();
         function handleResize() {
             const supplyDiv = document.getElementById("assets_supply").offsetWidth;
@@ -1063,6 +1156,7 @@ const HeaderInfo = (props) => {
                 <div className='info'>
                 
                     <div className = "info_container" id='info_container'>
+                    <div className = "info_container_outer"> 
                         <div className = "info_container_top">   
                             <div>
                                 <p className = "info_container_top_netWorth">Net Worth</p> 
@@ -1089,7 +1183,8 @@ const HeaderInfo = (props) => {
                             <div className="info_container_bottom_ltv" id = "info_container_bottom_ltv">0.00%</div> 
                             
                         </div>
-                    </div>                              
+                    </div>     
+                    </div>                         
                 </div>
 
                 <div className = "assets">
@@ -1166,6 +1261,7 @@ const HeaderInfo = (props) => {
                     </div>
                 </div>
                 <button onClick={test}>est</button>
+                <div className="error-container" id="errorContainer"></div>
                 
             </div>
             
