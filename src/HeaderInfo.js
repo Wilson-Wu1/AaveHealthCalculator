@@ -81,7 +81,7 @@ const HeaderInfo = () => {
         `;
         try {
             const data = await request(endpoint, query);
-            console.log(data.reserves);
+            //console.log(data.reserves);
             for (const index in data.reserves) {
               const token = data.reserves[index];
               const decimalConvert = Math.pow(10, 8);
@@ -129,7 +129,7 @@ const HeaderInfo = () => {
     function setMissingPrices(){
         if(chain == "Ethereum" && aaveVersion == "V3"){
             for(const index in oraclePrices){
-                //console.log("SetMIssingprices: ", index, symbols[index], oraclePrices[index]);
+                console.log("SetMIssingprices: ", index, symbols[index], oraclePrices[index]);
                 const foundObject = tokenData.find((item) => item.symbol === symbols[index]);
                 foundObject.price.priceInUSD = oraclePrices[index];
             }
@@ -142,10 +142,12 @@ const HeaderInfo = () => {
     
     useEffect(() => {
         // When oraclePrices state is updated, set the missing prices
-        if (oraclePrices.length > 0) {
+        if (oraclePrices.length > 0 && tokenData.length > 0) {
+            console.log(tokenData);
             setMissingPrices();
         }
-        // Update the tokenData state with the new data
+    
+        // Add tokens to supply and borrow lists
         addTokensToLists();
       }, [oraclePrices, tokenData]);
 
@@ -422,7 +424,7 @@ const HeaderInfo = () => {
         var tempSupplyArray = supplyTokensArray;
         // Find the index of the item in the array
         const index = tempSupplyArray.indexOf(tokenToAdd);
-        console.log(index);
+        
 
         // Item already exists in the array
         if (index !== -1) {
@@ -965,7 +967,7 @@ const HeaderInfo = () => {
 
         // Calculate and update Net Worth 
         const netWorthDiv = document.getElementById("info_container_bottom_netWorth_value");
-        netWorthDiv.textContent = (supplySum - borrowSum).toFixed(2);
+        netWorthDiv.textContent = ((supplySum - borrowSum).toFixed(2).toLocaleString('en-US'));
 
     }
 

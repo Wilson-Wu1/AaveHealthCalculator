@@ -207,7 +207,7 @@
 .info_container_top{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px; /* Adjust the gap between grid items */
+  gap: 20px; /* Adjust the gap between grid items */
   background-color: rgb(27, 32, 48);
   width:400px;
   font-size:14px;
@@ -239,7 +239,7 @@ div.textbox {
 .info_container_bottom{
   display:grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px; /* Adjust the gap between grid items */
+  gap: 20px; /* Adjust the gap between grid items */
   background-color: rgb(27, 32, 48);
   width:400px;
   font-size:21px;
