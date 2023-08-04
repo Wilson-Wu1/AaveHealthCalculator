@@ -12,9 +12,13 @@ const HeaderInfo = () => {
     const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
     const [tokenData, setTokenData] = useState(null);
     const [usdPriceEth, setUsdPriceEth] = useState(0);
-    const [aavePosition, setAavePosition] = useState(null);
+    const [aavePosition, setAavePosition] = useState([]);
     const [endpoint , setEndpoint] = useState('https://api.thegraph.com/subgraphs/name/aave/protocol-v3')
-    
+    const [supplyTokensArray, setSupplyTokensArray] = useState([]);
+    const [borrowTokensArray, setBorrowTokensArray] = useState([]);
+    const [sliderTokensArray, setSliderTokensArray] = useState([]);
+    const [healthFactor, setHealthFactor] = useState(0);
+    const [queryCalled, setQueryCalled] = useState(false);
 
     function changeNetwork(newNetwork, newAaveVersion){
        
@@ -81,7 +85,7 @@ const HeaderInfo = () => {
         `;
         try {
             const data = await request(endpoint, query);
-            //console.log(data.reserves);
+
             for (const index in data.reserves) {
               const token = data.reserves[index];
               const decimalConvert = Math.pow(10, 8);
@@ -90,7 +94,6 @@ const HeaderInfo = () => {
             }
             
             setUsdPriceEth(data.priceOracles[0].usdPriceEth);
-            //console.log(chain, aaveVersion);
             setTokenData(data.reserves);
            
           } catch (error) {
@@ -99,7 +102,6 @@ const HeaderInfo = () => {
     }
 
     const symbols = ['WBTC', "LDO", "wstETH", "rETH", "cbETH"]
-    //var oraclePrices = [];
     const [oraclePrices, setOraclePrices] = useState([]);
     
     async function getMissingPricesMainnet() {
@@ -129,7 +131,6 @@ const HeaderInfo = () => {
     function setMissingPrices(){
         if(chain == "Ethereum" && aaveVersion == "V3"){
             for(const index in oraclePrices){
-                console.log("SetMIssingprices: ", index, symbols[index], oraclePrices[index]);
                 const foundObject = tokenData.find((item) => item.symbol === symbols[index]);
                 foundObject.price.priceInUSD = oraclePrices[index];
             }
@@ -152,58 +153,39 @@ const HeaderInfo = () => {
       }, [oraclePrices, tokenData]);
 
 
-    function test(){
-        setMissingPrices();
-        //console.log(chain);
-        //console.log(tokenData);
-        
-
-        // for(const index in tokenData){
-        //     console.log(tokenData[index].price.priceInUSD);
-        // }
-        //console.log(usdPriceEth);
-
-        // for(const index in tokenData){
-        //     tokenData.supplyAmount = 0;
-        //     removeTokenInfo(tokenData[index], true);
-        //     removeTokenInfo(tokenData[index], false);
-        // }
-    } 
     
     // Clear all the supplied and borrowed data. 
     // Including which tokens are being supplied/borrowed, sliders, and general info
     function clearAllSupplyAndBorrowData(){
+        console.log("Clearing...");
+        
+        // Reset supply, borrow, and slider divs
+        const supplyTokens = document.getElementById("assets_supply_tokens_list");
+        const borrowTokens = document.getElementById("assets_borrow_tokens_list");
+        const sliderDiv = document.getElementById("values_container_list");
+        supplyTokens.innerHTML = "";
+        borrowTokens.innerHTML = "";
+        sliderDiv.innerHTML = "";
 
-        // Clear user's aave position from supply and borrow side 
-        for(const index in aavePosition){
-            var key = aavePosition[index]; 
-            var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
-            if(foundObject != undefined){
-                if(key.currentATokenBalance != "0" ){
-                
-                    tempAddSupplySide(foundObject);
-                }
+        // Set all switch buttons to false
+        for (const index in tokenData){
+            const key = tokenData[index];
+            console.log(key.symbol);
+            if(key.usageAsCollateralEnabled){
+                updateSwitchButton(key.symbol, true , false);
+            }
+            if(key.borrowingEnabled){
+                updateSwitchButton(key.symbol, false , false);
+            }
             
-                if(key.currentTotalDebt != "0"){
-                    
-                    tempAddBorrowSide(foundObject);
-                }
-            }    
+            
         }
 
-        // Remove any additionally added supply or borrow tokens
-        var tempSupplyArray = supplyTokensArray;
-        var tempBorrowArray = borrowTokensArray;
-        for (const index in tempSupplyArray){
-            
-            tempAddSupplySide(tempSupplyArray[index]);
-        }
-        for (const index in tempBorrowArray){
-            
-            tempAddBorrowSide(tempBorrowArray[index]);
-        }
-        setAavePosition(null);
-
+        // Reset supply, borrow, and slider information
+        setAavePosition([]);
+        setSupplyTokensArray([]);
+        setBorrowTokensArray([]);
+        setSliderTokensArray([]);
 
         // Reset net worth
         const netWorthDiv = document.getElementById("info_container_bottom_netWorth_value");
@@ -238,6 +220,7 @@ const HeaderInfo = () => {
 
     // Query the graph for a user's Aave position on the current network
     function queryAddressForUserPosition(){
+        clearAllSupplyAndBorrowData();
         const address = document.getElementById("search_div_input").value.toLowerCase();
         const { request } = require('graphql-request');
         const query = `
@@ -257,46 +240,72 @@ const HeaderInfo = () => {
         `;
         request(endpoint, query)
         .then((data) => {
-            // console.log(endpoint);
-            // console.log(data);
-            // console.log(data.userReserves.length);
-            clearAllSupplyAndBorrowData();
-            
+            console.log(data.userReserves);
             setAavePosition(data.userReserves);
-            if(data.userReserves.length != 0){
-                for(const index in data.userReserves){
-                    var key = data.userReserves[index];
-                    
-                    if(key.currentATokenBalance != "0"){
-                        var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
-                        foundObject.supplyAmount = key.currentATokenBalance / Math.pow(10, key.reserve.decimals);
-                        tempAddSupplySide(foundObject);
-                    }
-                    if(key.currentTotalDebt != "0"){
-                        var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
-                        foundObject.borrowAmount = key.currentTotalDebt / Math.pow(10, key.reserve.decimals);
-                        tempAddBorrowSide(foundObject);
-                    }
-                }
-                addSupplySide();
-                addBorrowSide();
-                calculateCurrentHealthValue();
-                displayTotalSuppliedOrBorrowed(0);
-                displayTotalSuppliedOrBorrowed(1)
-            }
-            else{
-                displayErrorMessage(`Error: address does not own an Aave position on the ${chain} network`);
-                //console.log("Error: Address does not have Aave position or invalid address");
-                
-            }
-            
-            
+            setQueryCalled(true);    
         })
         .catch((error) => {
             displayErrorMessage(`Error: invalid address`);
-            //console.error('Error fetching user position:', error);
+            console.error(error);
         });
+
+       
     }
+
+    function updatePositions(){
+        if(aavePosition.length != 0){
+            for(const index in aavePosition){
+                var key = aavePosition[index];
+
+                if(key.currentATokenBalance != "0"){
+                    var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
+                    if(foundObject.usageAsCollateralEnabled){
+                        foundObject.supplyAmount = key.currentATokenBalance / Math.pow(10, key.reserve.decimals);
+                        tempAddSupplySide(foundObject);
+                        updateSwitchButton(key.reserve.symbol, true, true);
+                    }
+                }
+                if(key.currentTotalDebt != "0"){
+                    var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
+                    foundObject.borrowAmount = key.currentTotalDebt / Math.pow(10, key.reserve.decimals);
+                    tempAddBorrowSide(foundObject);                
+                    updateSwitchButton(key.reserve.symbol, false, true);
+                }
+            }
+            addSupplySide();
+            addBorrowSide();
+            calculateCurrentHealthValue();
+            displayTotalSuppliedOrBorrowed(0);
+            displayTotalSuppliedOrBorrowed(1)
+
+        }
+        else{
+            displayErrorMessage(`Error: address does not own an Aave position on the ${chain} network`);
+        }
+    }
+    
+  
+    // Run updatePositions() only if the arrays have been emptied, and a new aavePosition is found
+    useEffect(() => {
+        if(supplyTokensArray.length == 0 && borrowTokensArray.length == 0 && sliderTokensArray.length == 0 && queryCalled == true){
+            updatePositions();
+            setQueryCalled(false);
+        }
+       
+    }, [aavePosition, supplyTokensArray, borrowTokensArray, sliderTokensArray]);
+
+
+    function updateSwitchButton(tokenSymbol, isSupplySide, newValue){
+        if(isSupplySide){
+            const inputDiv = document.getElementById("supply_input_button_" + tokenSymbol);
+            inputDiv.checked = newValue;
+        }
+        else{
+            const inputDiv = document.getElementById("borrow_input_button_" + tokenSymbol);
+            inputDiv.checked = newValue;
+        }
+    }
+
 
     
     function setSupplyModalVisibilityFalse(){
@@ -331,7 +340,6 @@ const HeaderInfo = () => {
         }
     }
 
-
     // Adds tokens to the supply list modal
     function addTokensToLists(){
         
@@ -354,20 +362,17 @@ const HeaderInfo = () => {
                 // Create switch buttons
                 const label = document.createElement("label");
                 label.classList.add("switch");
-                label.id = "supply_input_button_" + item.symbol;
                 label.style.backgroundColor = "rgb(41, 46, 65)";
-
                 const input = document.createElement("input");
-                //input.id = "supply_input_button_" + item.symbol;
                 input.type = "checkbox";
+                input.id = "supply_input_button_" + item.symbol;
                 label.appendChild(input);
-
                 const span = document.createElement("span");
                 span.classList.add("slider");
                 label.appendChild(span);
-
+                // Add event listener to switch buttons
                 input.addEventListener('click', function() {
-                    tempAddSupplySide(item, this);
+                    tempAddSupplySide(item);
                 });
                 outerDiv.appendChild(label);
 
@@ -391,18 +396,16 @@ const HeaderInfo = () => {
                 const label1 = document.createElement("label");
                 label1.classList.add("switch");
                 label1.style.backgroundColor = "rgb(41, 46, 65)";
-
                 const input1 = document.createElement("input");
                 input1.id = "borrow_input_button_" + item.symbol;
                 input1.type = "checkbox";
                 label1.appendChild(input1);
-
                 const span1 = document.createElement("span");
                 span1.classList.add("slider");
-
                 label1.appendChild(span1);
+                //Add event listener to switch button
                 input1.addEventListener('click', function() {
-                    tempAddBorrowSide(item1, this);
+                    tempAddBorrowSide(item1);
                 });
                 outerDiv1.appendChild(label1);
 
@@ -412,59 +415,58 @@ const HeaderInfo = () => {
         }
     }
 
-    const [supplyTokensArray, setSupplyTokensArray] = useState([]);
-    const [borrowTokensArray, setBorrowTokensArray] = useState([]);
-    const [sliderTokensArray, setSliderTokensArray] = useState([]);
-    const [healthFactor, setHealthFactor] = useState(0);
 
     // Add tokens that are being selected in the supply modal
-    function tempAddSupplySide(tokenToAdd, thisBtn){
+    function tempAddSupplySide(tokenToAdd){
         
         // Retrieve the current supply token array 
         var tempSupplyArray = supplyTokensArray;
         // Find the index of the item in the array
         const index = tempSupplyArray.indexOf(tokenToAdd);
-        
 
+        if(index == -1){
+            tempSupplyArray.push(tokenToAdd);
+            setSupplyTokensArray(tempSupplyArray);
+            //supplyTokensArray = tempSupplyArray;
+            displaySlider(tokenToAdd);
+        }
         // Item already exists in the array
-        if (index !== -1) {
+        else if (index !== -1) {
             // Remove the item from the array
             tempSupplyArray.splice(index, 1);
             setSupplyTokensArray(tempSupplyArray);
+            //supplyTokensArray = tempSupplyArray;
             removeSlider(tokenToAdd);
             removeTokenInfo(tokenToAdd, true);
             
         }
-        // Item does not exist in the array
-        else{
-            tempSupplyArray.push(tokenToAdd);
-            setSupplyTokensArray(tempSupplyArray);
-            displaySlider(tokenToAdd);
-        }
+  
     }
 
     // Add tokens that are being selected in the borrow modal
-    function tempAddBorrowSide(tokenToAdd, thisBtn){
+    function tempAddBorrowSide(tokenToAdd){
         // Retrieve the current supply token array 
         var tempBorrowArray = borrowTokensArray;
         // Find the index of the item in the array
         const index = tempBorrowArray.indexOf(tokenToAdd);
+        //console.log(borrowTokensArray);
 
-        // Check if the item exists in the array
-        if (index !== -1) {
-            //console.log("Splicing Borrow: " + tokenToAdd.symbol);
-            // Remove the item from the array
-            tempBorrowArray.splice(index, 1);
-            setBorrowTokensArray(tempBorrowArray);
-            removeSlider(tokenToAdd);
-            removeTokenInfo(tokenToAdd, false);
-        }
-        else{
-            //console.log("Adding Borrow: " + tokenToAdd.symbol);
+        if(index == -1 ){
             tempBorrowArray.push(tokenToAdd);
             setBorrowTokensArray(tempBorrowArray);
             displaySlider(tokenToAdd);
         }
+        // Check if the item exists in the array
+        else if (index !== -1) {
+
+            // Remove the item from the array
+            tempBorrowArray.splice(index, 1);
+            setBorrowTokensArray(tempBorrowArray);
+            
+            removeSlider(tokenToAdd);
+            removeTokenInfo(tokenToAdd, false);
+        }
+        
     }
 
     // Remove a token from the supply or borrow side
@@ -472,12 +474,10 @@ const HeaderInfo = () => {
         
         if(isSupplySide && document.getElementById("supply_outer_div_" + token.symbol)){
             const outerDivToRemove = document.getElementById("supply_outer_div_" + token.symbol);
-            
             outerDivToRemove.remove();
         }
         else if (!isSupplySide && document.getElementById("borrow_outer_div_" + token.symbol)){
             const outerDivToRemove = document.getElementById("borrow_outer_div_" + token.symbol);
-            
             outerDivToRemove.remove();
         }
     }
@@ -499,10 +499,12 @@ const HeaderInfo = () => {
             supplyInfo.style.display = "flex";
  
             for (const token of supplyTokensArray) {
+                
                 // Check if the token has already been added to the list. If it exists, no need to rerender it. 
                 // Otherwise it will lose past input values.
                 const divElement = document.getElementById("supply_outer_div_" + token.symbol);
                 if(!divElement){
+                    console.log("addsupplyside: ", token.symbol);
                     // Create outer div
                     const outerDiv = document.createElement("div");
                     outerDiv.id = "supply_outer_div_" + token.symbol;
@@ -517,7 +519,7 @@ const HeaderInfo = () => {
                     amountElement.id = "supply_input_"+token.symbol;
                     
                     if(token.supplyAmount !== undefined){
-                        //console.log("here");
+
                         amountElement.value = token.supplyAmount;
                     }
                     
@@ -534,6 +536,7 @@ const HeaderInfo = () => {
                     priceElement.addEventListener("input", function() {adjustSliderValue(token.symbol, true, token.price.priceInUSD);});
                     priceElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
                     priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(0);});
+                    priceElement.addEventListener("input", calculateCurrentHealthValue);
                     outerDiv.appendChild(priceElement);
 
                     // Add Value div (Price * Amount)
@@ -574,6 +577,7 @@ const HeaderInfo = () => {
             borrowInfo.style.display = "flex";
             
             for (const token of borrowTokensArray) {
+                
             // Check if the token has already been added to the list. If it exists, no need to rerender it. 
             // Otherwise it will lose past input values.
             const divElement = document.getElementById("borrow_outer_div_" + token.symbol);
@@ -608,6 +612,7 @@ const HeaderInfo = () => {
                     priceElement.addEventListener("input", function() {adjustSliderValue(token.symbol, false, token.price.priceInUSD);});
                     priceElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
                     priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(1);});
+                    priceElement.addEventListener("input", calculateCurrentHealthValue);
                     outerDiv.appendChild(priceElement);
 
                     // Add Value div (Price * Amount)
@@ -652,6 +657,8 @@ const HeaderInfo = () => {
         }
     }
 
+    
+
 
     function displaySlider(token){
         var tempArray = sliderTokensArray;
@@ -663,13 +670,13 @@ const HeaderInfo = () => {
         sliderEmptyText.style.display = "none";
 
         if (index == -1) {
-            // Concat the borrow and supply arrays
+            console.log("displaySlider", token.symbol);
             const sliderList = document.getElementById("values_container_list");
 
             // Create outer div
             const outerDiv = document.createElement("div");
             outerDiv.classList.add('outer_div')
-            outerDiv.id = token.symbol;
+            outerDiv.id = "slider_" + token.symbol;
 
             // Add li element to div
             const liElement = document.createElement("li");
@@ -975,13 +982,16 @@ const HeaderInfo = () => {
     function calculateCurrentHealthValue(){
         var denominator = 0;
         // Calculate the Denominator: ∑ ( Collateral[ith] × LiquidationThreshold[ith] )
+        
         for(var i = 0; i < supplyTokensArray.length; i++){
+            
             const token = supplyTokensArray[i];
             const inputAmount = document.getElementById("supply_input_"+token.symbol).value;
             const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
             const liquidationThreshold = document.getElementById("threshold_input_"+token.symbol).value/100;
             denominator += (currentPrice * inputAmount) * liquidationThreshold;
         }
+        
         // Calculate the Numerator: Total Borrows
         var totalBorrowValue = 0;
         for(var j = 0; j < borrowTokensArray.length; j++){
@@ -989,8 +999,8 @@ const HeaderInfo = () => {
             const inputAmount = document.getElementById("borrow_input_"+token.symbol).value;
             const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
             totalBorrowValue += (inputAmount * currentPrice);
-            
         }
+        console.log(denominator, totalBorrowValue);
         var healthFactor = (denominator/totalBorrowValue).toFixed(2);
         const healthFactorDiv = document.getElementById("info_container_bottom_healthFactorValue");
         if(isNaN(healthFactor)){
@@ -1262,7 +1272,7 @@ const HeaderInfo = () => {
                     
                     </div>
                 </div>
-                <button onClick={test}>est</button>
+            
                 <div className="error-container" id="errorContainer"></div>
                 
             </div>
