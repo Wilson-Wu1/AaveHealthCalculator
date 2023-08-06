@@ -63,6 +63,11 @@ const HeaderInfo = () => {
       }, [endpoint]);
 
     
+    function test(){
+        console.log(supplyTokensArray, borrowTokensArray);
+    }
+
+
     // Query the graph for the tokens that can be supplied/borrowed for a given network
     // Retrieve each token's symbol and price.
     async function getTokens(){
@@ -109,7 +114,7 @@ const HeaderInfo = () => {
         const web3 = new Web3(web3ProviderUrl);
         const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
         const oracleAddresses = ['0x230E0321Cf38F09e247e50Afc7801EA2351fe56F', '0xb01e6C9af83879B8e06a092f0DD94309c0D497E4', '0x8B6851156023f4f5A66F68BEA80851c3D905Ac93', '0x05225Cd708bCa9253789C1374e4337a019e99D56','0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731'];
-        
+
         // For each oracle, retrieve the latest token price.
         var tempOraclePrices = [];
         for(const index in oracleAddresses){
@@ -170,7 +175,6 @@ const HeaderInfo = () => {
         // Set all switch buttons to false
         for (const index in tokenData){
             const key = tokenData[index];
-            console.log(key.symbol);
             if(key.usageAsCollateralEnabled){
                 updateSwitchButton(key.symbol, true , false);
             }
@@ -252,6 +256,7 @@ const HeaderInfo = () => {
        
     }
 
+
     function updatePositions(){
         if(aavePosition.length != 0){
             for(const index in aavePosition){
@@ -272,11 +277,11 @@ const HeaderInfo = () => {
                     updateSwitchButton(key.reserve.symbol, false, true);
                 }
             }
-            addSupplySide();
+            //addSupplySide();
             addBorrowSide();
-            calculateCurrentHealthValue();
-            displayTotalSuppliedOrBorrowed(0);
-            displayTotalSuppliedOrBorrowed(1)
+            //calculateCurrentHealthValue();
+            //displayTotalSuppliedOrBorrowed(0);
+            //displayTotalSuppliedOrBorrowed(1)
 
         }
         else{
@@ -284,7 +289,13 @@ const HeaderInfo = () => {
         }
     }
     
-  
+    useEffect(() => {
+        if(supplyTokensArray.length != 0){
+            addSupplySide();
+        }
+        
+    },[supplyTokensArray]);
+    
     // Run updatePositions() only if the arrays have been emptied, and a new aavePosition is found
     useEffect(() => {
         if(supplyTokensArray.length == 0 && borrowTokensArray.length == 0 && sliderTokensArray.length == 0 && queryCalled == true){
@@ -416,32 +427,26 @@ const HeaderInfo = () => {
     }
 
 
-    // Add tokens that are being selected in the supply modal
-    function tempAddSupplySide(tokenToAdd){
-        
-        // Retrieve the current supply token array 
-        var tempSupplyArray = supplyTokensArray;
-        // Find the index of the item in the array
+    function tempAddSupplySide(tokenToAdd) {
+        // Create a new copy of the array
+        var tempSupplyArray = [...supplyTokensArray];
+      
         const index = tempSupplyArray.indexOf(tokenToAdd);
-
-        if(index == -1){
-            tempSupplyArray.push(tokenToAdd);
-            setSupplyTokensArray(tempSupplyArray);
-            //supplyTokensArray = tempSupplyArray;
-            displaySlider(tokenToAdd);
+      
+        if (index === -1) {
+          tempSupplyArray.push(tokenToAdd);
+          setSupplyTokensArray(tempSupplyArray);
+          displaySlider(tokenToAdd);
+        } else if (index !== -1) {
+            console.log("ere");
+          tempSupplyArray.splice(index, 1);
+          setSupplyTokensArray(tempSupplyArray);
+          removeSlider(tokenToAdd);
+          removeTokenInfo(tokenToAdd, true);
         }
-        // Item already exists in the array
-        else if (index !== -1) {
-            // Remove the item from the array
-            tempSupplyArray.splice(index, 1);
-            setSupplyTokensArray(tempSupplyArray);
-            //supplyTokensArray = tempSupplyArray;
-            removeSlider(tokenToAdd);
-            removeTokenInfo(tokenToAdd, true);
-            
-        }
-  
-    }
+      }
+      
+      
 
     // Add tokens that are being selected in the borrow modal
     function tempAddBorrowSide(tokenToAdd){
@@ -499,12 +504,12 @@ const HeaderInfo = () => {
             supplyInfo.style.display = "flex";
  
             for (const token of supplyTokensArray) {
-                
+                console.log(token.symbol);
                 // Check if the token has already been added to the list. If it exists, no need to rerender it. 
                 // Otherwise it will lose past input values.
                 const divElement = document.getElementById("supply_outer_div_" + token.symbol);
                 if(!divElement){
-                    console.log("addsupplyside: ", token.symbol);
+                    //console.log("addsupplyside: ", token.symbol);
                     // Create outer div
                     const outerDiv = document.createElement("div");
                     outerDiv.id = "supply_outer_div_" + token.symbol;
@@ -634,15 +639,19 @@ const HeaderInfo = () => {
         setBorrowModalVisible(false);
     }
 
-    
+
+
     function removeSlider(token){
-        const sliderToRemove = document.getElementById(token.symbol);
+        const sliderToRemove = document.getElementById("slider_"+token.symbol);
+
         var tempArray = sliderTokensArray;
         var tempArray1 = supplyTokensArray;
         var tempArray2 = borrowTokensArray;
+
         const index = tempArray.indexOf(token);
         const index1 = tempArray1.indexOf(token);
         const index2 = tempArray2.indexOf(token);
+
         if (index1 == -1 && index2 == -1) {
             tempArray.splice(index, 1);
             setSliderTokensArray(tempArray);
@@ -651,6 +660,7 @@ const HeaderInfo = () => {
         
         const sliderHeader = document.getElementById('values_container_header');
         const sliderEmptyText = document.getElementById('values_container_empty');
+
         if(tempArray.length == 0){
             sliderHeader.style.display = "none";
             sliderEmptyText.style.display = "block";
@@ -670,7 +680,7 @@ const HeaderInfo = () => {
         sliderEmptyText.style.display = "none";
 
         if (index == -1) {
-            console.log("displaySlider", token.symbol);
+            
             const sliderList = document.getElementById("values_container_list");
 
             // Create outer div
@@ -1274,7 +1284,7 @@ const HeaderInfo = () => {
                 </div>
             
                 <div className="error-container" id="errorContainer"></div>
-                
+                <button onClick={test}>asdf</button>
             </div>
             
         </div>
