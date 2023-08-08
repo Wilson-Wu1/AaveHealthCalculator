@@ -155,7 +155,44 @@
   border-radius: 4px;
   border: 1px solid rgba(235, 235, 239, 0.08);
   margin-left:10px;
+  cursor: pointer;
+  position: relative;
 }
+
+.search_div_button[disabled] {
+  color: rgb(146, 149, 161);
+  cursor: not-allowed;
+}
+
+.loading{
+  display:none;
+  justify-content: center;
+  align-items: center;
+}
+.loading_circle {
+  border: 4px solid rgba(0, 0, 0, 0.3);
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 2s linear infinite;
+  display: block;
+}
+
+.loading_text{
+  padding-left:10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+.search_div_button:hover{
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
 
 .headerInfo{
   padding-bottom:60px;
@@ -264,6 +301,10 @@ div.textbox {
   transition: border 0.2s;
   
 }
+.b_s_container_borrow_btn[disabled], .b_s_container_supply_btn[disabled] {
+  color: rgb(146, 149, 161);
+  cursor: not-allowed;
+}
 
 .b_s_container_supply_btn:hover, .b_s_container_borrow_btn:hover{
   border: 1px solid rgba(255, 255, 255, 0.8);
@@ -332,7 +373,7 @@ div.textbox {
   align-items: center; /* Center items vertically */
   background-color: rgb(41, 46, 65);
   margin-left:-10px;
-  margin-right:-10px;
+  margin-right:-20px;
   padding-top:35px;
 
 }
@@ -399,9 +440,10 @@ div.textbox {
 .modal_supply_content_header, .modal_borrow_content_header{
   display:flex;
   background-color: rgb(41, 46, 65);
-  justify-content: space-between;
+  justify-content: center;
   margin-bottom: 20px;
   align-items: center;
+  margin-top:10px;
 }
 
 .modal_supply_content_header p{
@@ -419,20 +461,13 @@ div.textbox {
 }
 
 
-.modal_supply_exit, .modal_borrow_exit{
-  width:20px;
-  height:20px;
-  padding:10px;
-  background-color: inherit;
-}
-
 .modal_supply_content_assets_labels, .modal_borrow_content_assets_labels{
   background-color:rgb(41, 46, 65);
   display: grid;
   grid-template-columns: 1fr 1fr;
   justify-items: center;
   align-items: center;
-  border-bottom: 1px solid rgba(235, 235, 239, 0.08);
+  border-bottom: 1.2px solid rgba(235, 235, 239, 0.3);
   margin-left: -10px;
   margin-right: -10px;
   
@@ -468,7 +503,7 @@ div.textbox {
   overflow: auto;
   background-color:rgb(41, 46, 65);
   height: 500px;
-  border-bottom: 1px solid rgba(235, 235, 239, 0.08);
+  border-bottom: 1.2px solid rgba(235, 235, 239, 0.3);
 }
 
 .modal_supply_content_scrollable_list, .modal_borrow_content_scrollable_list{
@@ -539,7 +574,7 @@ div.textbox {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top:15px;
+  padding-top:45px;
   
 }
 
@@ -548,17 +583,18 @@ div.textbox {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top:15px;
+  padding-top:45px;
   
 }
 
 .modal_supply_content_assets_bottom_btn{
   background-color:rgb(41, 46, 65);
-  font-size:x-large;
+  font-size:20px;
   background: rgb(56, 61, 81);
   border-radius: 4px;
   border: 1px solid rgba(235, 235, 239, 0.08);
   transition: border 0.2s;
+  padding:10px;
 }
 
 .modal_supply_content_assets_bottom_btn:hover{
@@ -567,11 +603,12 @@ div.textbox {
 
 .modal_borrow_content_assets_bottom_btn{
   background-color:rgb(41, 46, 65);
-  font-size:x-large;
+  font-size:20px;
   background: rgb(56, 61, 81);
   border-radius: 4px;
   border: 1px solid rgba(235, 235, 239, 0.08);
   transition: border 0.2s;
+  padding:10px;
 }
 
 
@@ -598,7 +635,7 @@ div.textbox {
   justify-items: center; /* Center items horizontally */
   align-items: center; /* Center items vertically */
   margin-left:-10px;
-  margin-right:-10px;
+  margin-right:-20px;
   border-top: 1px solid rgba(235, 235, 239, 0.08);
   padding-top:15px;
   padding-bottom:15px;
@@ -615,10 +652,10 @@ div.textbox {
   justify-items: center; /* Center items horizontally */
   align-items: center; /* Center items vertically */
   margin-left:-10px;
-  margin-right:-10px;
+  margin-right:-20px;
   border-top: 1px solid rgba(235, 235, 239, 0.08);
-  padding-top:10px;
-  padding-bottom:10px;
+  padding-top:15px;
+  padding-bottom:15px;
 }
 
 .assets_supply_tokens_list li{

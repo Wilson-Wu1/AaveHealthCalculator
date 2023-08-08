@@ -14,20 +14,30 @@ const HeaderInfo = () => {
     const [usdPriceEth, setUsdPriceEth] = useState(0);
     const [aavePosition, setAavePosition] = useState([]);
     const [endpoint , setEndpoint] = useState('https://api.thegraph.com/subgraphs/name/aave/protocol-v3')
-    const [supplyTokensArray, setSupplyTokensArray] = useState([]);
-    const [borrowTokensArray, setBorrowTokensArray] = useState([]);
-    const [sliderTokensArray, setSliderTokensArray] = useState([]);
     const [healthFactor, setHealthFactor] = useState(0);
     const [queryCalled, setQueryCalled] = useState(false);
+    const [missingPricesFilled, setMissingPricesFilled] = useState(false);
 
     function changeNetwork(newNetwork, newAaveVersion){
        
             setChain(newNetwork);
             setAaveVersion(newAaveVersion)
+
+            // Show loading div
+            const loadingDiv = document.getElementById("loading");
+            loadingDiv.style.display = "flex";
+
+            // Disable buttons while getting data
+            const searchDiv = document.getElementById("search_div_button");
+            const supplyDiv = document.getElementById("b_s_container_supply_btn");
+            const borrowDiv = document.getElementById("b_s_container_borrow_btn");
+            searchDiv.disabled = true;
+            supplyDiv.disabled = true;
+            borrowDiv.disabled = true;
+
             // Aave V3
             if(newAaveVersion == "V3"){
                 var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
-
                 // Metis network endpoint is different from others.
                 if(newNetwork == "Metis"){
                     tempNewEndpoint = "https://andromeda.thegraph.metis.io/subgraphs/name/aave/protocol-v3-metis"
@@ -39,7 +49,6 @@ const HeaderInfo = () => {
             // Aave V2
             else{
                 var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
-               
                 // Matic network endpoint is different from others.
                 if(newNetwork == "Polygon"){
                     tempNewEndpoint = "https://api.thegraph.com/subgraphs/name/aave/aave-v2-matic";
@@ -54,19 +63,365 @@ const HeaderInfo = () => {
     }
 
     useEffect(() => {
-        // This effect will run when the component mounts and whenever the endpoint changes
         if (endpoint !== null) {
-          console.log(endpoint);
-          clearAllSupplyAndBorrowData();
-          getTokens();
+            removeAllTokenDivs();
+            clearPositionInfo();
+            getTokens();
         }
       }, [endpoint]);
 
-    
-    function test(){
-        console.log(supplyTokensArray, borrowTokensArray);
+    function addOrRemoveSupplyToken(token){
+        const inputDiv = document.getElementById("supply_input_button_" + token.symbol);
+        var checkedValue = inputDiv.checked
+        if(checkedValue){
+            addTokenSupply(token);
+        }
+        else{
+            removeTokenSupply(token);
+        }
+        displayTotalSuppliedOrBorrowed();
+        calculateCurrentHealthValue();
     }
 
+    function addOrRemoveBorrowToken(token){
+        const inputDiv = document.getElementById("borrow_input_button_" + token.symbol);
+        var checkedValue = inputDiv.checked
+        if(checkedValue){
+            addTokenBorrow(token);
+        }
+        else{
+            removeTokenBorrow(token);
+        }
+        displayTotalSuppliedOrBorrowed();
+        calculateCurrentHealthValue();
+    }
+
+    function addTokenSupply(token){
+        const outerDiv = document.getElementById("supply_outer_div_" + token.symbol);
+        outerDiv.style.display = "grid";
+        displayPrice(token.symbol, 0, token.price.priceInUSD);
+        calculateTokenValue(token.symbol, 0);
+        displaySlider(token);
+        displaySupplyLabels();
+    }
+
+    function removeTokenSupply(token){
+        // Hide outer div
+        const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+        supplyOuterDiv.style.display = "none";
+        
+        // Reset amount supplied
+        const inputDiv = document.getElementById("supply_input_" + token.symbol);
+        inputDiv.value = 0;
+
+        const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
+        if(!borrowOuterDiv || borrowOuterDiv.style.display == "none"){
+            removeSlider(token);
+            
+        }
+
+        var remainingSupply = false;
+        for(const index in tokenData){
+            const token = tokenData[index];
+            const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+            if(supplyOuterDiv && supplyOuterDiv.style.display == "grid"){
+                remainingSupply = true;
+                break;
+            }
+        }
+        if(!remainingSupply){
+            const pTag = document.getElementById("assets_supply_nothing");
+            const headerTag = document.getElementById("assets_supply_header");
+            const supplyInfo = document.getElementById("assets_supply_info_box_left");
+            pTag.style.display = "block";
+            headerTag.style.display = "none";
+            supplyInfo.style.display = "none";
+        }
+    }
+
+    function addTokenBorrow(token){
+        const outerDiv = document.getElementById("borrow_outer_div_" + token.symbol);
+        outerDiv.style.display = "grid";
+        displayPrice(token.symbol, 1, token.price.priceInUSD);
+        calculateTokenValue(token.symbol, 1);
+        displaySlider(token);
+        displayBorrowLabels();
+    }
+
+    function removeTokenBorrow(token){
+        // Hide outer div
+        const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
+        borrowOuterDiv.style.display = "none";
+
+        // Reset amount borrowed
+        const inputDiv = document.getElementById("borrow_input_" + token.symbol);
+        inputDiv.value = 0;
+
+        const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+        if(!supplyOuterDiv || supplyOuterDiv.style.display == "none"){
+            removeSlider(token);
+        }
+
+        var remainingBorrow = false;
+        for(const index in tokenData){
+            const token = tokenData[index];
+            const borrowOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+            if(borrowOuterDiv && borrowOuterDiv.style.display == "grid"){
+                remainingBorrow = true;
+                break;
+            }
+        }
+        if(!remainingBorrow){
+            const pTag = document.getElementById("assets_borrow_nothing");
+            const headerTag = document.getElementById("assets_borrow_header");
+            const borrowInfo = document.getElementById("assets_borrow_info");
+            const borrowInfoLeft = document.getElementById("assets_borrow_info_box_left");
+            pTag.style.display = "block";
+            headerTag.style.display = "none";
+            borrowInfo.style.display = "none";
+            borrowInfoLeft.style.display = "none";
+        }
+    }
+
+    function resetTokenData(){
+        for(const index in tokenData){
+            const token  = tokenData[index];
+
+            const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+            if(supplyOuterDiv){
+                supplyOuterDiv.style.display = "none";
+                const supplyInput = document.getElementById("supply_input_" + token.symbol);
+                supplyInput.value = null;
+            }
+
+            const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
+            if(borrowOuterDiv){
+                borrowOuterDiv.style.display = "none";
+                const borrowInput = document.getElementById("borrow_input_" + token.symbol);
+                borrowInput.value = 0;
+            }
+
+            const displaySlider = document.getElementById("slider_" + token.symbol);
+            if(displaySlider){
+                displaySlider.style.display = "none";
+
+                // Reset slider value
+                const sliderInput = document.getElementById("slider_input_"+token.symbol);
+                sliderInput.value = token.price.priceInUSD;
+
+                // Reset token threshold
+                const tokenThreshold = document.getElementById("threshold_input_"+token.symbol);
+                tokenThreshold.value = token.reserveLiquidationThreshold/100;
+            }
+
+            const supplyButton = document.getElementById("supply_input_button_" + token.symbol);
+            if(supplyButton){
+                supplyButton.checked = false;
+            }
+
+            const borrowButton = document.getElementById("borrow_input_button_" + token.symbol);
+            if(borrowButton){
+                borrowButton.checked = false;
+            }
+
+
+        }
+            
+    }
+
+    function removeAllTokenDivs(){
+        for(const index in tokenData){
+            const token  = tokenData[index];
+            const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+            if(supplyOuterDiv){
+                supplyOuterDiv.remove();
+            }
+            const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
+            if(borrowOuterDiv){
+                borrowOuterDiv.remove();
+            }
+            const displaySlider = document.getElementById("slider_" + token.symbol);
+            if(displaySlider){
+                displaySlider.remove();
+            }
+        }
+    }
+
+    function clearPositionInfo(){
+        // Reset net worth
+        const netWorthDiv = document.getElementById("info_container_bottom_netWorth_value");
+        netWorthDiv.textContent = 0;
+
+        // Reset Health Factor
+        const healthFactorDiv = document.getElementById("info_container_bottom_healthFactorValue");
+        healthFactorDiv.style.color = "white";
+        setHealthFactor(0);
+
+        // Reset LTV
+        const ltvDiv = document.getElementById("info_container_bottom_ltv");
+        ltvDiv.textContent = "0.00%";
+
+        // Hide supply info
+        const pTag = document.getElementById("assets_supply_nothing");
+        const headerTag = document.getElementById("assets_supply_header");
+        const supplyInfo = document.getElementById("assets_supply_info_box_left");
+        pTag.style.display = "flex";
+        headerTag.style.display = "none";
+        supplyInfo.style.display = "none";
+
+        // Hide borrow info
+        const pTag1 = document.getElementById("assets_borrow_nothing");
+        const headerTag1 = document.getElementById("assets_borrow_header");
+        const borrowInfo1 = document.getElementById("assets_borrow_info");
+        pTag1.style.display = "flex";
+        headerTag1.style.display = "none";
+        borrowInfo1.style.display = "none";
+    }
+
+    function displaySupplyLabels(){
+        const pTag = document.getElementById("assets_supply_nothing");
+        const headerTag = document.getElementById("assets_supply_header");
+        const supplyInfo = document.getElementById("assets_supply_info_box_left");
+        pTag.style.display = "none";
+        headerTag.style.display = "grid";
+        supplyInfo.style.display = "flex";
+    }
+
+    function displayBorrowLabels(){
+        const pTag = document.getElementById("assets_borrow_nothing");
+        const headerTag = document.getElementById("assets_borrow_header");
+        const borrowInfo = document.getElementById("assets_borrow_info");
+        const borrowInfoLeft = document.getElementById("assets_borrow_info_box_left");
+        pTag.style.display = "none";
+        headerTag.style.display = "grid";
+        borrowInfo.style.display = "flex";
+        borrowInfoLeft.style.display = "flex";
+    }
+
+    function renderSupplySide(){
+        const ulElement = document.getElementById("assets_supply_tokens_list");
+        const pTag = document.getElementById("assets_supply_nothing");
+        const headerTag = document.getElementById("assets_supply_header");
+        const supplyInfo = document.getElementById("assets_supply_info_box_left");
+        pTag.style.display = "flex";
+        headerTag.style.display = "none";
+        supplyInfo.style.display = "none";
+
+        for (const index in tokenData) {
+            const token = tokenData[index];
+            if(token.usageAsCollateralEnabled){
+                // Create outer div
+                const outerDiv = document.createElement("div");
+                outerDiv.id = "supply_outer_div_" + token.symbol;
+                outerDiv.style.display = "none";
+
+                // Add li element to div
+                const liElement = document.createElement("li");
+                liElement.textContent = token.symbol;
+                outerDiv.appendChild(liElement);
+
+                // Add amount input to div
+                const amountElement = document.createElement("input");
+                amountElement.id = "supply_input_"+token.symbol;
+                
+                if(token.supplyAmount !== undefined){
+
+                    amountElement.value = token.supplyAmount;
+                }
+                
+                amountElement.addEventListener("input", calculateCurrentHealthValue);
+                amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 0);});
+                amountElement.addEventListener("input", function() {displayPrice(token.symbol, 0, token.price.priceInUSD);});
+                amountElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed();});
+                outerDiv.appendChild(amountElement);
+
+                // Add price input div
+                const priceElement = document.createElement("input");
+                priceElement.id = "supply_price_"+token.symbol;
+                priceElement.value = 0;
+                priceElement.addEventListener("input", function() {adjustSliderValue(token.symbol, true, token.price.priceInUSD);});
+                priceElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
+                priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed();});
+                priceElement.addEventListener("input", calculateCurrentHealthValue);
+                outerDiv.appendChild(priceElement);
+
+                // Add Value div (Price * Amount)
+                const valueElement = document.createElement("p");
+                valueElement.id = "supply_value_"+token.symbol;
+                valueElement.classList.add('supply_values');
+                valueElement.value = 0;
+                outerDiv.appendChild(valueElement);
+
+                // Finally add the outer div element to the ul element
+                
+                ulElement.appendChild(outerDiv);
+                
+            }
+        }
+    }
+
+    function renderBorrowSide(){
+        const ulElement = document.getElementById("assets_borrow_tokens_list");
+        const pTag = document.getElementById("assets_borrow_nothing");
+        const headerTag = document.getElementById("assets_borrow_header");
+        const borrowInfo = document.getElementById("assets_borrow_info_box_left");
+        // pTag.style.display = "none";
+        // headerTag.style.display = "grid";
+        // supplyInfo.style.display = "flex";
+        pTag.style.display = "flex";
+        headerTag.style.display = "none";
+        borrowInfo.style.display = "none";
+
+        for (const index in tokenData) {
+            const token = tokenData[index];
+            if(token.borrowingEnabled){
+                // Create outer div
+                const outerDiv = document.createElement("div");
+                outerDiv.id = "borrow_outer_div_" + token.symbol;
+                outerDiv.style.display = "none";
+
+                // Add li element to div
+                const liElement = document.createElement("li");
+                liElement.textContent = token.symbol;
+                outerDiv.appendChild(liElement);
+
+                // Add amount input to div
+                const amountElement = document.createElement("input");
+                amountElement.id = "borrow_input_"+token.symbol;
+                
+                if(token.borrowAmount !== undefined){
+                    amountElement.value = token.borrowAmount;
+                }
+                
+                amountElement.addEventListener("input", calculateCurrentHealthValue);
+                amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 1);});
+                amountElement.addEventListener("input", function() {displayPrice(token.symbol, 1, token.price.priceInUSD);});
+                amountElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed();});
+                outerDiv.appendChild(amountElement);
+
+                // Add price input div
+                const priceElement = document.createElement("input");
+                priceElement.id = "borrow_price_"+token.symbol;
+                priceElement.value = 0;
+                priceElement.addEventListener("input", function() {adjustSliderValue(token.symbol, false, token.price.priceInUSD);});
+                priceElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
+                priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed();});
+                priceElement.addEventListener("input", calculateCurrentHealthValue);
+                outerDiv.appendChild(priceElement);
+
+                // Add Value div (Price * Amount)
+                const valueElement = document.createElement("p");
+                valueElement.id = "borrow_value_"+token.symbol;
+                valueElement.classList.add('borrow_values');
+                valueElement.value = 0;
+                outerDiv.appendChild(valueElement);
+
+                // Finally add the outer div element to the ul element
+                ulElement.appendChild(outerDiv);
+
+            }
+        }
+    }
 
     // Query the graph for the tokens that can be supplied/borrowed for a given network
     // Retrieve each token's symbol and price.
@@ -97,7 +452,7 @@ const HeaderInfo = () => {
               token.price.priceInUSD = token.price.priceInEth / decimalConvert;
               
             }
-            
+            console.log(data.reserves);
             setUsdPriceEth(data.priceOracles[0].usdPriceEth);
             setTokenData(data.reserves);
            
@@ -124,7 +479,6 @@ const HeaderInfo = () => {
                 const result = await contract.methods.latestAnswer().call();
                 tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
                 
-                
                 } catch (error) {  
             }
         }
@@ -132,8 +486,8 @@ const HeaderInfo = () => {
 
     }
 
-
     function setMissingPrices(){
+        setMissingPricesFilled(true);
         if(chain == "Ethereum" && aaveVersion == "V3"){
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === symbols[index]);
@@ -149,82 +503,45 @@ const HeaderInfo = () => {
     useEffect(() => {
         // When oraclePrices state is updated, set the missing prices
         if (oraclePrices.length > 0 && tokenData.length > 0) {
-            console.log(tokenData);
             setMissingPrices();
         }
-    
+    }, [oraclePrices, tokenData]);
+
+    useEffect(() => {
         // Add tokens to supply and borrow lists
-        addTokensToLists();
-      }, [oraclePrices, tokenData]);
-
-
-    
-    // Clear all the supplied and borrowed data. 
-    // Including which tokens are being supplied/borrowed, sliders, and general info
-    function clearAllSupplyAndBorrowData(){
-        console.log("Clearing...");
-        
-        // Reset supply, borrow, and slider divs
-        const supplyTokens = document.getElementById("assets_supply_tokens_list");
-        const borrowTokens = document.getElementById("assets_borrow_tokens_list");
-        const sliderDiv = document.getElementById("values_container_list");
-        supplyTokens.innerHTML = "";
-        borrowTokens.innerHTML = "";
-        sliderDiv.innerHTML = "";
-
-        // Set all switch buttons to false
-        for (const index in tokenData){
-            const key = tokenData[index];
-            if(key.usageAsCollateralEnabled){
-                updateSwitchButton(key.symbol, true , false);
-            }
-            if(key.borrowingEnabled){
-                updateSwitchButton(key.symbol, false , false);
-            }
+        if(missingPricesFilled){
+            renderSupplyAndBorrowLists();
+            renderSupplySide();
+            renderBorrowSide();
+            renderSliders();
+            // Re-enable buttons once data has been retrieved
+            const searchDiv = document.getElementById("search_div_button");
+            const supplyDiv = document.getElementById("b_s_container_supply_btn");
+            const borrowDiv = document.getElementById("b_s_container_borrow_btn");
+            searchDiv.disabled = false;
+            supplyDiv.disabled = false;
+            borrowDiv.disabled = false;
+            // Hide loading div
+            const loadingDiv = document.getElementById("loading");
+            loadingDiv.style.display = "none";
             
-            
+            setMissingPricesFilled(false)
         }
 
-        // Reset supply, borrow, and slider information
-        setAavePosition([]);
-        setSupplyTokensArray([]);
-        setBorrowTokensArray([]);
-        setSliderTokensArray([]);
+    }, [tokenData, missingPricesFilled]);
 
-        // Reset net worth
-        const netWorthDiv = document.getElementById("info_container_bottom_netWorth_value");
-        netWorthDiv.textContent = 0;
-
-        // Reset Health Factor
-        const healthFactorDiv = document.getElementById("info_container_bottom_healthFactorValue");
-        healthFactorDiv.style.color = "white";
-        setHealthFactor(0);
-
-        // Reset LTV
-        const ltvDiv = document.getElementById("info_container_bottom_ltv");
-        ltvDiv.textContent = "0.00%";
-
-        // Hide supply info
-        const pTag = document.getElementById("assets_supply_nothing");
-        const headerTag = document.getElementById("assets_supply_header");
-        const supplyInfo = document.getElementById("assets_supply_info_box_left");
-        pTag.style.display = "flex";
-        headerTag.style.display = "none";
-        supplyInfo.style.display = "none";
-
-        // Hide borrow info
-        const pTag1 = document.getElementById("assets_borrow_nothing");
-        const headerTag1 = document.getElementById("assets_borrow_header");
-        const borrowInfo1 = document.getElementById("assets_borrow_info");
-        pTag1.style.display = "flex";
-        headerTag1.style.display = "none";
-        borrowInfo1.style.display = "none";
-
-    }
+    useEffect(() => {
+        if(queryCalled){
+            updatePositions(); 
+            setQueryCalled(false);
+        }
+            
+    }, [aavePosition, queryCalled]);
 
     // Query the graph for a user's Aave position on the current network
     function queryAddressForUserPosition(){
-        clearAllSupplyAndBorrowData();
+        
+        resetTokenData();
         const address = document.getElementById("search_div_input").value.toLowerCase();
         const { request } = require('graphql-request');
         const query = `
@@ -246,79 +563,97 @@ const HeaderInfo = () => {
         .then((data) => {
             console.log(data.userReserves);
             setAavePosition(data.userReserves);
-            setQueryCalled(true);    
+            setQueryCalled(true);
         })
         .catch((error) => {
             displayErrorMessage(`Error: invalid address`);
             console.error(error);
         });
-
-       
     }
-
 
     function updatePositions(){
         if(aavePosition.length != 0){
+            var atLeastOneSupply = false;
+            var atLeastOneBorrow = false;
             for(const index in aavePosition){
-                var key = aavePosition[index];
+                const token = aavePosition[index];
 
-                if(key.currentATokenBalance != "0"){
-                    var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
-                    if(foundObject.usageAsCollateralEnabled){
-                        foundObject.supplyAmount = key.currentATokenBalance / Math.pow(10, key.reserve.decimals);
-                        tempAddSupplySide(foundObject);
-                        updateSwitchButton(key.reserve.symbol, true, true);
+                // Display supplied token
+                if(token.currentATokenBalance != 0){
+                    const outerDiv = document.getElementById("supply_outer_div_" + token.reserve.symbol);
+                    outerDiv.style.display = "grid";
+                    // Display token price
+                    var foundTokenData = tokenData.find((item) => item.symbol === token.reserve.symbol);
+                    displayPrice(foundTokenData.symbol, 0, foundTokenData.price.priceInUSD);
+                    // Display amount supplied
+                    const amountDiv = document.getElementById("supply_input_" + token.reserve.symbol);
+                    amountDiv.value = token.currentATokenBalance / Math.pow(10, token.reserve.decimals);
+                    // Set supply button to true
+                    updateSupplySwitchButton(token.reserve.symbol);
+                    // Calculate token position value
+                    calculateTokenValue(foundTokenData.symbol, 0);    
+                    // Display slider
+                    const sliderDiv = document.getElementById("slider_" + token.reserve.symbol);
+                    sliderDiv.style.display = "grid";
+
+                    if(!atLeastOneSupply){
+                        displaySupplyLabels();
+                        atLeastOneSupply = true;
+                    }
+                    
+                }
+                // Display borrowed token
+                if(token.currentTotalDebt != 0){
+                    const outerDiv = document.getElementById("borrow_outer_div_" + token.reserve.symbol);
+                    outerDiv.style.display = "grid";
+                    // Display token price
+                    var foundTokenData = tokenData.find((item) => item.symbol === token.reserve.symbol);
+                    displayPrice(foundTokenData.symbol, 1, foundTokenData.price.priceInUSD);
+                    // Display amount borrowed
+                    const amountDiv = document.getElementById("borrow_input_" + token.reserve.symbol);
+                    amountDiv.value = token.currentTotalDebt / Math.pow(10, token.reserve.decimals);
+                    // Set borrow button to true
+                    updateBorrowSwitchButton(token.reserve.symbol);
+                    // Calculate token position value
+                    calculateTokenValue(foundTokenData.symbol, 1);
+                    // Display slider 
+                    const sliderDiv = document.getElementById("slider_" + token.reserve.symbol);
+                    sliderDiv.style.display = "grid";
+
+                    if(!atLeastOneBorrow){
+                        displayBorrowLabels();
+                        atLeastOneBorrow = true;
                     }
                 }
-                if(key.currentTotalDebt != "0"){
-                    var foundObject = tokenData.find((item) => item.symbol === key.reserve.symbol);
-                    foundObject.borrowAmount = key.currentTotalDebt / Math.pow(10, key.reserve.decimals);
-                    tempAddBorrowSide(foundObject);                
-                    updateSwitchButton(key.reserve.symbol, false, true);
-                }
             }
-            //addSupplySide();
-            addBorrowSide();
-            //calculateCurrentHealthValue();
-            //displayTotalSuppliedOrBorrowed(0);
-            //displayTotalSuppliedOrBorrowed(1)
-
+            // Display slider labels if at least one supply or one borrow
+            if(atLeastOneBorrow || atLeastOneSupply){
+                
+                const sliderHeader = document.getElementById('values_container_header');
+                const sliderEmptyText = document.getElementById('values_container_empty');
+                sliderHeader.style.display = "grid";
+                sliderEmptyText.style.display = "none";
+            }
+            calculateCurrentHealthValue();
+            displayTotalSuppliedOrBorrowed();
+            
         }
         else{
             displayErrorMessage(`Error: address does not own an Aave position on the ${chain} network`);
         }
-    }
-    
-    useEffect(() => {
-        if(supplyTokensArray.length != 0){
-            addSupplySide();
-        }
         
-    },[supplyTokensArray]);
-    
-    // Run updatePositions() only if the arrays have been emptied, and a new aavePosition is found
-    useEffect(() => {
-        if(supplyTokensArray.length == 0 && borrowTokensArray.length == 0 && sliderTokensArray.length == 0 && queryCalled == true){
-            updatePositions();
-            setQueryCalled(false);
-        }
-       
-    }, [aavePosition, supplyTokensArray, borrowTokensArray, sliderTokensArray]);
-
-
-    function updateSwitchButton(tokenSymbol, isSupplySide, newValue){
-        if(isSupplySide){
-            const inputDiv = document.getElementById("supply_input_button_" + tokenSymbol);
-            inputDiv.checked = newValue;
-        }
-        else{
-            const inputDiv = document.getElementById("borrow_input_button_" + tokenSymbol);
-            inputDiv.checked = newValue;
-        }
     }
 
+    function updateSupplySwitchButton(tokenSymbol){
+        const inputDiv = document.getElementById("supply_input_button_" + tokenSymbol);
+        inputDiv.checked = true;
+    }
 
-    
+    function updateBorrowSwitchButton(tokenSymbol){
+        const inputDiv = document.getElementById("borrow_input_button_" + tokenSymbol);
+        inputDiv.checked = true;
+    }
+
     function setSupplyModalVisibilityFalse(){
         setSupplyModalVisible(false); 
     }
@@ -351,8 +686,8 @@ const HeaderInfo = () => {
         }
     }
 
-    // Adds tokens to the supply list modal
-    function addTokensToLists(){
+    // // Adds tokens to the supply list modal
+    function renderSupplyAndBorrowLists(){
         
         const ulElementSupply = document.getElementById("modal_supply_content_scrollable_list");
         const ulElementBorrow = document.getElementById("modal_borrow_content_scrollable_list");
@@ -377,13 +712,14 @@ const HeaderInfo = () => {
                 const input = document.createElement("input");
                 input.type = "checkbox";
                 input.id = "supply_input_button_" + item.symbol;
+
                 label.appendChild(input);
                 const span = document.createElement("span");
                 span.classList.add("slider");
                 label.appendChild(span);
                 // Add event listener to switch buttons
                 input.addEventListener('click', function() {
-                    tempAddSupplySide(item);
+                    addOrRemoveSupplyToken(item);
                 });
                 outerDiv.appendChild(label);
 
@@ -416,7 +752,7 @@ const HeaderInfo = () => {
                 label1.appendChild(span1);
                 //Add event listener to switch button
                 input1.addEventListener('click', function() {
-                    tempAddBorrowSide(item1);
+                    addOrRemoveBorrowToken(item1);
                 });
                 outerDiv1.appendChild(label1);
 
@@ -426,267 +762,62 @@ const HeaderInfo = () => {
         }
     }
 
-
-    function tempAddSupplySide(tokenToAdd) {
-        // Create a new copy of the array
-        var tempSupplyArray = [...supplyTokensArray];
-      
-        const index = tempSupplyArray.indexOf(tokenToAdd);
-      
-        if (index === -1) {
-          tempSupplyArray.push(tokenToAdd);
-          setSupplyTokensArray(tempSupplyArray);
-          displaySlider(tokenToAdd);
-        } else if (index !== -1) {
-            console.log("ere");
-          tempSupplyArray.splice(index, 1);
-          setSupplyTokensArray(tempSupplyArray);
-          removeSlider(tokenToAdd);
-          removeTokenInfo(tokenToAdd, true);
-        }
-      }
-      
-      
-
-    // Add tokens that are being selected in the borrow modal
-    function tempAddBorrowSide(tokenToAdd){
-        // Retrieve the current supply token array 
-        var tempBorrowArray = borrowTokensArray;
-        // Find the index of the item in the array
-        const index = tempBorrowArray.indexOf(tokenToAdd);
-        //console.log(borrowTokensArray);
-
-        if(index == -1 ){
-            tempBorrowArray.push(tokenToAdd);
-            setBorrowTokensArray(tempBorrowArray);
-            displaySlider(tokenToAdd);
-        }
-        // Check if the item exists in the array
-        else if (index !== -1) {
-
-            // Remove the item from the array
-            tempBorrowArray.splice(index, 1);
-            setBorrowTokensArray(tempBorrowArray);
-            
-            removeSlider(tokenToAdd);
-            removeTokenInfo(tokenToAdd, false);
-        }
-        
-    }
-
-    // Remove a token from the supply or borrow side
-    function removeTokenInfo(token, isSupplySide){
-        
-        if(isSupplySide && document.getElementById("supply_outer_div_" + token.symbol)){
-            const outerDivToRemove = document.getElementById("supply_outer_div_" + token.symbol);
-            outerDivToRemove.remove();
-        }
-        else if (!isSupplySide && document.getElementById("borrow_outer_div_" + token.symbol)){
-            const outerDivToRemove = document.getElementById("borrow_outer_div_" + token.symbol);
-            outerDivToRemove.remove();
-        }
-    }
-    
-    // Add tokens to the supply side from the selected tokens
-    function addSupplySide() {
-        const ulElement = document.getElementById("assets_supply_tokens_list");
-        const pTag = document.getElementById("assets_supply_nothing");
-        const headerTag = document.getElementById("assets_supply_header");
-        const supplyInfo = document.getElementById("assets_supply_info_box_left");
-        if(supplyTokensArray.length == 0){
-            pTag.style.display = "flex";
-            headerTag.style.display = "none";
-            supplyInfo.style.display = "none";
-        }
-        else{
-            pTag.style.display = "none";
-            headerTag.style.display = "grid";
-            supplyInfo.style.display = "flex";
- 
-            for (const token of supplyTokensArray) {
-                console.log(token.symbol);
-                // Check if the token has already been added to the list. If it exists, no need to rerender it. 
-                // Otherwise it will lose past input values.
-                const divElement = document.getElementById("supply_outer_div_" + token.symbol);
-                if(!divElement){
-                    //console.log("addsupplyside: ", token.symbol);
-                    // Create outer div
-                    const outerDiv = document.createElement("div");
-                    outerDiv.id = "supply_outer_div_" + token.symbol;
-                        
-                    // Add li element to div
-                    const liElement = document.createElement("li");
-                    liElement.textContent = token.symbol;
-                    outerDiv.appendChild(liElement);
-
-                    // Add amount input to div
-                    const amountElement = document.createElement("input");
-                    amountElement.id = "supply_input_"+token.symbol;
-                    
-                    if(token.supplyAmount !== undefined){
-
-                        amountElement.value = token.supplyAmount;
-                    }
-                    
-                    amountElement.addEventListener("input", calculateCurrentHealthValue);
-                    amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 0);});
-                    amountElement.addEventListener("input", function() {displayPrice(token.symbol, 0, token.price.priceInUSD);});
-                    amountElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(0);});
-                    outerDiv.appendChild(amountElement);
-
-                    // Add price input div
-                    const priceElement = document.createElement("input");
-                    priceElement.id = "supply_price_"+token.symbol;
-                    priceElement.value = 0;
-                    priceElement.addEventListener("input", function() {adjustSliderValue(token.symbol, true, token.price.priceInUSD);});
-                    priceElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
-                    priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(0);});
-                    priceElement.addEventListener("input", calculateCurrentHealthValue);
-                    outerDiv.appendChild(priceElement);
-
-                    // Add Value div (Price * Amount)
-                    const valueElement = document.createElement("p");
-                    valueElement.id = "supply_value_"+token.symbol;
-                    valueElement.classList.add('supply_values');
-                    valueElement.value = 0;
-                    outerDiv.appendChild(valueElement);
-
-                    // Finally add the outer div element to the ul element
-                    ulElement.appendChild(outerDiv);
-                    
-                }
-                displayPrice(token.symbol, 0, token.price.priceInUSD);
-                calculateTokenValue(token.symbol, 0);
-  
-            }
-        }
-        setSupplyModalVisible(false);
-    }
-
-    // Add tokens to the borrow side from the selected tokens
-    function addBorrowSide() {
-        const ulElement = document.getElementById("assets_borrow_tokens_list");
-        const pTag = document.getElementById("assets_borrow_nothing");
-        const headerTag = document.getElementById("assets_borrow_header");
-        const borrowInfo = document.getElementById("assets_borrow_info");
-
-        if(borrowTokensArray.length == 0){
-            pTag.style.display = "flex";
-            headerTag.style.display = "none";
-            borrowInfo.style.display = "none";
-            
-        }
-        else{
-            pTag.style.display = "none";
-            headerTag.style.display = "grid";
-            borrowInfo.style.display = "flex";
-            
-            for (const token of borrowTokensArray) {
-                
-            // Check if the token has already been added to the list. If it exists, no need to rerender it. 
-            // Otherwise it will lose past input values.
-            const divElement = document.getElementById("borrow_outer_div_" + token.symbol);
-                
-                if(!divElement){
-                    // Create outer div
-                    const outerDiv = document.createElement("div");
-                    outerDiv.id = "borrow_outer_div_" + token.symbol;
-
-                    // Add li element to div
-                    const liElement = document.createElement("li");
-                    liElement.textContent = token.symbol;
-                    outerDiv.appendChild(liElement);
-                    
-                    // Add amount input to div
-                    const amountElement = document.createElement("input");
-                    amountElement.id = "borrow_input_"+token.symbol;
-                    if(token.borrowAmount !== undefined){
-                        amountElement.value = token.borrowAmount;
-                    }
-
-                    amountElement.addEventListener("input", calculateCurrentHealthValue);
-                    amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 1);}); 
-                    amountElement.addEventListener("input", function() {displayPrice(token.symbol, 1, token.price.priceInUSD);});
-                    amountElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(1);});
-                    outerDiv.appendChild(amountElement);
-
-                    // Add price div
-                    const priceElement = document.createElement("input");
-                    priceElement.id = "borrow_price_"+token.symbol;
-                    priceElement.value = 0;
-                    priceElement.addEventListener("input", function() {adjustSliderValue(token.symbol, false, token.price.priceInUSD);});
-                    priceElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
-                    priceElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(1);});
-                    priceElement.addEventListener("input", calculateCurrentHealthValue);
-                    outerDiv.appendChild(priceElement);
-
-                    // Add Value div (Price * Amount)
-                    const valueElement = document.createElement("p");
-                    valueElement.id = "borrow_value_"+token.symbol;
-                    valueElement.classList.add('borrow_values');
-                    valueElement.value = 0;
-                    outerDiv.appendChild(valueElement);
-
-                    // Finally add the outer div element to the ul element
-                    ulElement.appendChild(outerDiv);
-                }
-                displayPrice(token.symbol, 1, token.price.priceInUSD);
-                calculateTokenValue(token.symbol, 1);
-            
-            }
-
-        }
-        setBorrowModalVisible(false);
-    }
-
-
-
-    function removeSlider(token){
-        const sliderToRemove = document.getElementById("slider_"+token.symbol);
-
-        var tempArray = sliderTokensArray;
-        var tempArray1 = supplyTokensArray;
-        var tempArray2 = borrowTokensArray;
-
-        const index = tempArray.indexOf(token);
-        const index1 = tempArray1.indexOf(token);
-        const index2 = tempArray2.indexOf(token);
-
-        if (index1 == -1 && index2 == -1) {
-            tempArray.splice(index, 1);
-            setSliderTokensArray(tempArray);
-            sliderToRemove.remove();
-        }
-        
-        const sliderHeader = document.getElementById('values_container_header');
-        const sliderEmptyText = document.getElementById('values_container_empty');
-
-        if(tempArray.length == 0){
-            sliderHeader.style.display = "none";
-            sliderEmptyText.style.display = "block";
-        }
-    }
-
-    
-
-
     function displaySlider(token){
-        var tempArray = sliderTokensArray;
-        const index = tempArray.indexOf(token);
-
+        const sliderDiv = document.getElementById("slider_" + token.symbol);
+        sliderDiv.style.display = "grid";
+        
         const sliderHeader = document.getElementById('values_container_header');
         const sliderEmptyText = document.getElementById('values_container_empty');
         sliderHeader.style.display = "grid";
         sliderEmptyText.style.display = "none";
+    }
 
-        if (index == -1) {
-            
-            const sliderList = document.getElementById("values_container_list");
+    function removeSlider(token){
+        // Hide Slider
+        const sliderDiv = document.getElementById("slider_" + token.symbol);
+        sliderDiv.style.display = "none";
 
+        // Reset slider value
+        const sliderInput = document.getElementById("slider_input_"+token.symbol);
+        sliderInput.value = token.price.priceInUSD;
+
+        // Reset token threshold
+        const tokenThreshold = document.getElementById("threshold_input_"+token.symbol);
+        tokenThreshold.value = token.reserveLiquidationThreshold/100;
+        
+        // Remove labels if no remaining sliders
+        var remainingSliders = false;
+        for(const key in tokenData){
+            const token = tokenData[key];
+            const sliderDivs = document.getElementById("slider_" + token.symbol);
+            if(sliderDivs && sliderDivs.style.display == "grid"){
+                remainingSliders = true;
+                break;
+            }
+        }
+        if(!remainingSliders){
+            const sliderHeader = document.getElementById('values_container_header');
+            const sliderEmptyText = document.getElementById('values_container_empty');
+            sliderHeader.style.display = "none";
+            sliderEmptyText.style.display = "block";
+        }
+
+    }
+
+    function renderSliders(){
+        const sliderHeader = document.getElementById('values_container_header');
+        const sliderEmptyText = document.getElementById('values_container_empty');
+        sliderHeader.style.display = "none";
+        sliderEmptyText.style.display = "block";
+        
+        const sliderList = document.getElementById("values_container_list");
+        for(const key in tokenData){
+            const token = tokenData[key];
             // Create outer div
             const outerDiv = document.createElement("div");
             outerDiv.classList.add('outer_div')
             outerDiv.id = "slider_" + token.symbol;
+            outerDiv.style.display = "none";
 
             // Add li element to div
             const liElement = document.createElement("li");
@@ -721,7 +852,7 @@ const HeaderInfo = () => {
             const valueInputElement = document.createElement("input");
             valueInputElement.type = "range";
             valueInputElement.min = "0";
-            valueInputElement.step="0.01"
+            valueInputElement.step= "0.01"
             valueInputElement.max = (token.price.priceInUSD * 3);
             valueInputElement.value = token.price.priceInUSD;
             valueInputElement.id = "slider_input_"+token.symbol;
@@ -729,7 +860,7 @@ const HeaderInfo = () => {
             valueInputElement.addEventListener("input", calculateCurrentHealthValue);
             valueInputElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 2);});
             valueInputElement.addEventListener("input", function() {displayPrice(token.symbol, 2, token.price.priceInUSD);});
-            valueInputElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed(2);});
+            valueInputElement.addEventListener("input", function() {displayTotalSuppliedOrBorrowed();});
 
             // Create div below the slider
             const sliderBottomDiv = document.createElement("div");
@@ -764,18 +895,16 @@ const HeaderInfo = () => {
             thresholdInputElement.value = token.reserveLiquidationThreshold/100;
             thresholdInputElement.addEventListener("input", calculateCurrentHealthValue);
             thresholdInputElement.id = "threshold_input_"+token.symbol;
-           
+            
             outerDiv.appendChild(thresholdInputElement);
 
             // Finally add the outer div element to the sliderList 
             sliderList.appendChild(outerDiv);
-
-            tempArray.push(token);
-            setSliderTokensArray(tempArray);
         }
+       
     }
 
-    // Calculate the Value of a borrow/supply, and update the display
+    // // Calculate the Value of a borrow/supply, and update the display
     function calculateTokenValue(tokenID, caller){
 
         // Get the price from the slider input 
@@ -815,30 +944,25 @@ const HeaderInfo = () => {
         }
     }
 
-    // Update the token price in both or either the supply and borrow sides
+    // // Update the token price in both or either the supply and borrow sides
     function displayPrice(tokenID, caller, currentTokenPrice){
         const price = document.getElementById("slider_input_"+tokenID).value;
         if(caller == 0){
-            
             const priceElement = document.getElementById("supply_price_"+tokenID);
             priceElement.value = price;
         }
         else if (caller == 1){
-            
             const priceElement = document.getElementById("borrow_price_"+tokenID);
             priceElement.value = price;
-
         }
         else if (caller == 2){
             
             const supplyDiv = document.getElementById("supply_price_"+tokenID);
             if(supplyDiv){
-                
                 supplyDiv.value = price;
             }
             const borrowDiv = document.getElementById("borrow_price_"+tokenID);
             if(borrowDiv){
-                
                 borrowDiv.value = price;
             }
 
@@ -872,7 +996,7 @@ const HeaderInfo = () => {
         
     }
 
-    // Update the token price in the slider, and possibly the borrow/supply side
+    // // Update the token price in the slider, and possibly the borrow/supply side
     function adjustSliderValue(tokenID, isSupplySide, currentTokenPrice){
         const slider = document.getElementById("slider_input_"+tokenID);
         const supply = document.getElementById("supply_price_"+tokenID);
@@ -911,9 +1035,6 @@ const HeaderInfo = () => {
                 sliderPriceChange.textContent = "(-$" + Math.abs((price - currentTokenPrice)).toFixed(2) + ")";
                 sliderPriceChange.style.color = "red";
             }
-
-            
-            
         }
         else{
             price = borrow.value;
@@ -951,32 +1072,41 @@ const HeaderInfo = () => {
 
     }
 
-    function displayTotalSuppliedOrBorrowed(caller){
-        
+    function displayTotalSuppliedOrBorrowed(){
         // Calculate and update total value supplied 
-        const supplyElements = document.getElementsByClassName("supply_values");
         var supplySum = 0;
-        for (let i = 0; i < supplyElements.length; i++) {
-            const divElement = supplyElements[i];
-            supplySum += divElement.value;
+        for(const index in tokenData){
+            const token = tokenData[index];
+            const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+            if(supplyOuterDiv && supplyOuterDiv.style.display == "grid"){
+                const supplyValue = document.getElementById("supply_value_" + token.symbol);
+                supplySum += supplyValue.value;
+            }
         }
         const totalSupplyDiv = document.getElementById("info_container_bottom_totalSupplied");
         totalSupplyDiv.textContent = supplySum.toFixed(2);
 
         // Calculate and update total value borrowed 
-        const borrowElements = document.getElementsByClassName("borrow_values");
         var borrowSum = 0;
-        for (let i = 0; i < borrowElements.length; i++) {
-            const divElement = borrowElements[i];
-            borrowSum += divElement.value;
+        for(const index in tokenData){
+            const token = tokenData[index];
+            const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
+            if(borrowOuterDiv && borrowOuterDiv.style.display == "grid"){
+                const borrowValue = document.getElementById("borrow_value_" + token.symbol);
+                borrowSum += borrowValue.value;
+            }
         }
         const totalBorrowDiv = document.getElementById("info_container_bottom_totalBorrowed");
         totalBorrowDiv.textContent = borrowSum.toFixed(2);
     
         // Calculate and update Loan-to-Value ratio (Total Supplied / Total borrowed)
         const ltvDiv = document.getElementById("info_container_bottom_ltv");
-        if(isNaN(borrowSum/supplySum)){
+        const ltvPercent = borrowSum/supplySum;
+        if(isNaN(ltvPercent)){
             ltvDiv.textContent = "0%";
+        }
+        else if (!isFinite(ltvPercent)){
+            ltvDiv.textContent = "∞%";
         }
         else{
             ltvDiv.textContent = (borrowSum/supplySum*100).toFixed(2) + "%";
@@ -988,29 +1118,30 @@ const HeaderInfo = () => {
 
     }
 
-    // Calculate the current health value
+    // // Calculate the current health value
     function calculateCurrentHealthValue(){
         var denominator = 0;
+        var totalBorrowValue = 0;
         // Calculate the Denominator: ∑ ( Collateral[ith] × LiquidationThreshold[ith] )
         
-        for(var i = 0; i < supplyTokensArray.length; i++){
+        for(const index in tokenData){
+            const token = tokenData[index];
+            const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+            if(supplyOuterDiv && supplyOuterDiv.style.display == "grid"){
+                const inputAmount = document.getElementById("supply_input_"+token.symbol).value;
+                const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
+                const liquidationThreshold = document.getElementById("threshold_input_"+token.symbol).value/100;
+                denominator += (currentPrice * inputAmount) * liquidationThreshold;
+            }
+            const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
+            if(borrowOuterDiv && borrowOuterDiv.style.display == "grid"){
+                const inputAmount = document.getElementById("borrow_input_"+token.symbol).value;
+                const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
+                totalBorrowValue += (currentPrice * inputAmount)
+            }
             
-            const token = supplyTokensArray[i];
-            const inputAmount = document.getElementById("supply_input_"+token.symbol).value;
-            const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
-            const liquidationThreshold = document.getElementById("threshold_input_"+token.symbol).value/100;
-            denominator += (currentPrice * inputAmount) * liquidationThreshold;
         }
         
-        // Calculate the Numerator: Total Borrows
-        var totalBorrowValue = 0;
-        for(var j = 0; j < borrowTokensArray.length; j++){
-            const token = borrowTokensArray[j];
-            const inputAmount = document.getElementById("borrow_input_"+token.symbol).value;
-            const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
-            totalBorrowValue += (inputAmount * currentPrice);
-        }
-        console.log(denominator, totalBorrowValue);
         var healthFactor = (denominator/totalBorrowValue).toFixed(2);
         const healthFactorDiv = document.getElementById("info_container_bottom_healthFactorValue");
         if(isNaN(healthFactor)){
@@ -1094,7 +1225,6 @@ const HeaderInfo = () => {
                 <div className = "modal_supply_content">
                     <div className="modal_supply_content_header">
                         <p>Assets to Supply</p>
-                        <ExitSymbol className = "modal_supply_exit" onClick = {setSupplyModalVisibilityFalse}/>
                     </div>
 
                     <div className="modal_supply_content_assets">
@@ -1107,7 +1237,7 @@ const HeaderInfo = () => {
                                 <ul id = "modal_supply_content_scrollable_list" className = "modal_supply_content_scrollable_list"></ul>
                             </div>
                             <div className = "modal_supply_content_assets_bottom">
-                                <button className = "modal_supply_content_assets_bottom_btn" onClick = {addSupplySide}>Add Supply Tokens</button>
+                                <button className = "modal_supply_content_assets_bottom_btn" onClick={setSupplyModalVisibilityFalse}>Confirm</button>
                             </div>
                         </div>
                     </div>
@@ -1120,7 +1250,6 @@ const HeaderInfo = () => {
                 <div className = "modal_borrow_content">
                     <div className="modal_borrow_content_header">
                         <p>Assets to Borrow</p>
-                        <ExitSymbol className = "modal_borrow_exit" onClick = {setBorrowModalVisibilityFalse}/>
                     </div>
 
                     <div className="modal_borrow_content_assets">
@@ -1134,7 +1263,7 @@ const HeaderInfo = () => {
                                 </ul>
                             </div>
                             <div className = "modal_borrow_content_assets_bottom">
-                                <button className = "modal_borrow_content_assets_bottom_btn" onClick = {addBorrowSide}>Add Borrow Tokens</button>
+                                <button className = "modal_borrow_content_assets_bottom_btn" onClick={setBorrowModalVisibilityFalse}>Confirm</button>
                             </div>
                          </div>
                     </div>
@@ -1161,14 +1290,18 @@ const HeaderInfo = () => {
                         <a href="#" onClick={ () => changeNetwork("Avalanche", "V2") }>Avalanche V2</a>
                         <a href="#" onClick={ () => changeNetwork("Polygon", "V2") }>Polygon V2</a>
                     </div>
-                   
                 </div>
+                
+            </div>
+            <div className = "loading" id = "loading">
+                <div className="loading_circle" id="loading_circle"></div>
+                <p className = "loading_text">Loading Token Data...</p>
             </div>
      
             <div className = "search">
                 <div className = "search_div">
                     <input id = "search_div_input" className = "search_div_input"></input>
-                    <button className = "search_div_button" onClick = {queryAddressForUserPosition}>Search</button>
+                    <button className = "search_div_button" id = "search_div_button" onClick = {queryAddressForUserPosition} >Search</button>
                 </div>
             </div>
 
@@ -1213,7 +1346,7 @@ const HeaderInfo = () => {
                     <div className = "assets_supply" id="assets_supply">
                         <div className = "assets_supply_top">
                             <p className = "assets_supply_top_header">Supplies</p>
-                            <button className = "b_s_container_supply_btn" onClick = {setSupplyModalVisibilityTrue}>Supply</button>
+                            <button className = "b_s_container_supply_btn" id = "b_s_container_supply_btn" onClick = {setSupplyModalVisibilityTrue}>Supply</button>
                         </div>
                         <p className = "assets_supply_nothing" id = "assets_supply_nothing">Nothing supplied yet</p>
                         <div className = "assets_supply_info">
@@ -1239,12 +1372,12 @@ const HeaderInfo = () => {
                     <div className = "assets_borrow" id="assets_borrow">
                         <div className = "assets_borrow_top">
                             <p className = "assets_borrow_top_header">Borrows</p>
-                            <button className = "b_s_container_borrow_btn" onClick = {setBorrowModalVisibilityTrue}>Borrow</button>
+                            <button className = "b_s_container_borrow_btn" id = "b_s_container_borrow_btn" onClick = {setBorrowModalVisibilityTrue}>Borrow</button>
                         </div>
                         <p className = "assets_borrow_nothing" id = "assets_borrow_nothing">Nothing borrowed yet</p>
                         <div className = "assets_borrow_info" id = "assets_borrow_info">
-                            <div className = "assets_borrow_info_box_left">
-                                <div className = "assets_borrow_info_box_left_inner">
+                            <div className = "assets_borrow_info_box_left" id = "assets_borrow_info_box_left" >
+                                <div className = "assets_borrow_info_box_left_inner" >
                                     <p>Total Borrowed $</p>  
                                     <div className="info_container_bottom_totalBorrowed" id = "info_container_bottom_totalBorrowed">0.00</div>
                                 </div>
@@ -1284,7 +1417,6 @@ const HeaderInfo = () => {
                 </div>
             
                 <div className="error-container" id="errorContainer"></div>
-                <button onClick={test}>asdf</button>
             </div>
             
         </div>

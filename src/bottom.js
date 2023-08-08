@@ -7,7 +7,7 @@ const Bottom = () => {
             
             
             <ul className="bottom_socials">
-                <li><a href="https://github.com/Wilson-Wu1/CurrencyConverter" target="_blank" rel="noopener noreferrer"><GitHubImage/>
+                <li><a href="https://github.com/Wilson-Wu1/AaveLiquidationCalculator" target="_blank" rel="noopener noreferrer"><GitHubImage/>
                     </a></li>
                 <li><a href="https://www.linkedin.com/in/wilson--wu/" target="_blank" rel="noopener noreferrer"><LinkedInImage style = {{width:"31px", height: "31px"}}/></a></li>
             </ul>
