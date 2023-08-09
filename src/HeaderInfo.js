@@ -310,7 +310,10 @@ const HeaderInfo = () => {
     }
 
     function renderSupplySide(){
+        // Clear supply div
         const ulElement = document.getElementById("assets_supply_tokens_list");
+        ulElement.innerHTML = "";
+
         const pTag = document.getElementById("assets_supply_nothing");
         const headerTag = document.getElementById("assets_supply_header");
         const supplyInfo = document.getElementById("assets_supply_info_box_left");
@@ -372,7 +375,10 @@ const HeaderInfo = () => {
     }
 
     function renderBorrowSide(){
+        // Clear borrow div
         const ulElement = document.getElementById("assets_borrow_tokens_list");
+        ulElement.innerHTML = "";
+
         const pTag = document.getElementById("assets_borrow_nothing");
         const headerTag = document.getElementById("assets_borrow_header");
         const borrowInfo = document.getElementById("assets_borrow_info_box_left");
@@ -437,6 +443,7 @@ const HeaderInfo = () => {
     // Query the graph for the tokens that can be supplied/borrowed for a given network
     // Retrieve each token's symbol and price.
     async function queryTokenDataFromTheGraph(){
+        
         const { request } = require('graphql-request');
         const query = `
         {
@@ -481,7 +488,6 @@ const HeaderInfo = () => {
     const [oraclePrices, setOraclePrices] = useState([]);
     
     async function getMissingPrices() {
-        console.log("getMissingPrices", chain, aaveVersion);
         if(chain == "Ethereum" && (aaveVersion == "V3" || aaveVersion == "V2")){
             const web3ProviderUrl = `https://mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
@@ -496,7 +502,6 @@ const HeaderInfo = () => {
                 try {
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
-                    console.log(result);
                     
                     } catch (error) {  
                 }
@@ -518,7 +523,6 @@ const HeaderInfo = () => {
                 try {
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
-                    console.log(result);
                     } catch (error) {  
                 }
             }
@@ -538,7 +542,6 @@ const HeaderInfo = () => {
                 try {
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
-                    console.log(result);
                     } catch (error) {  
                 }
             }
@@ -559,7 +562,7 @@ const HeaderInfo = () => {
                 try {
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
-                    console.log(result);
+                    
                     } catch (error) {  
                 }
             }
@@ -581,8 +584,6 @@ const HeaderInfo = () => {
                 try {
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
-                    console.log(result);
-                    console.log(result);
                     } catch (error) {  
                 }
             }
@@ -593,7 +594,7 @@ const HeaderInfo = () => {
     }
 
     function setMissingPrices(){
-        setMissingPricesFilled(true);
+        setMissingPricesFilled(false);
         
         if(chain == "Ethereum" && (aaveVersion == "V3"|| aaveVersion == "V2")){
             for(const index in oraclePrices){
@@ -611,7 +612,6 @@ const HeaderInfo = () => {
             for(const index in oraclePrices){
                 
                 const foundObject = tokenData.find((item) => item.symbol === missingAvalancheSymbols[index]);
-                console.log(missingAvalancheSymbols[index],foundObject);
                 foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
@@ -639,15 +639,14 @@ const HeaderInfo = () => {
     useEffect(() => {
         // When oraclePrices state is updated, set the missing prices
         if (oraclePrices.length > 0 && oraclePricesChanged && tokenDataChanged) {
-            console.log("Here")
+      
             setMissingPrices();
-
         }
     }, [oraclePrices, oraclePricesChanged, tokenDataChanged, tokenData]);
 
     useEffect(() => {
-        // Add tokens to supply and borrow lists
-        if(missingPricesFilled){
+        
+        if(!missingPricesFilled){
             renderSupplyAndBorrowLists();
             renderSupplySide();
             renderBorrowSide();
@@ -662,8 +661,7 @@ const HeaderInfo = () => {
             // Hide loading div
             const loadingDiv = document.getElementById("loading");
             loadingDiv.style.display = "none";
-            
-            setMissingPricesFilled(false)
+            setMissingPricesFilled(true);
         }
 
     }, [tokenData, missingPricesFilled]);
@@ -793,15 +791,48 @@ const HeaderInfo = () => {
     }
 
     function setSupplyModalVisibilityFalse(){
+        // Disable supply buttons as they are still clickable when modal is not visible 
+        for(const index in tokenData){
+            const token = tokenData[index];
+            const supplyInputButton = document.getElementById("supply_input_button_" + token.symbol);
+            if(supplyInputButton){              
+                supplyInputButton.disabled = true;
+            }
+        }
         setSupplyModalVisible(false); 
     }
     function setSupplyModalVisibilityTrue(){
+        // Re-enable supply buttons
+        for(const index in tokenData){
+            const token = tokenData[index];
+            const supplyInputButton = document.getElementById("supply_input_button_" + token.symbol);
+            if(supplyInputButton){
+                supplyInputButton.disabled = false;
+            }
+        }
         setSupplyModalVisible(true);      
     }
     function setBorrowModalVisibilityTrue(){
+        // Re-enable borrow buttons
+        for(const index in tokenData){
+            const token = tokenData[index];
+            const borrowInputButton = document.getElementById("borrow_input_button_" + token.symbol);
+            if(borrowInputButton){ 
+                borrowInputButton.disabled = false;
+            }
+        }
         setBorrowModalVisible(true);
     }
     function setBorrowModalVisibilityFalse(){
+        // Disable borrow buttons as they are still clickable when modal is not visible 
+        for(const index in tokenData){
+            const token = tokenData[index];
+            const borrowInputButton = document.getElementById("borrow_input_button_" + token.symbol);
+            if(borrowInputButton){
+                
+                borrowInputButton.disabled = true;
+            }
+        }
         setBorrowModalVisible(false);   
     }
 
@@ -949,6 +980,7 @@ const HeaderInfo = () => {
         sliderEmptyText.style.display = "block";
         
         const sliderList = document.getElementById("values_container_list");
+        sliderList.innerHTML = "";
         for(const key in tokenData){
             const token = tokenData[key];
             // Create outer div
