@@ -38,27 +38,33 @@
   display: inline-block;
 }
 
-.dropDown_text{
+.dropdown_icon{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right:5px;
+}
+
+.dropdown_text{
   display:flex;
 }
 
 /* Dropdown Button */
-.dropbtn {
+.dropdown_btn {
   margin: 0;
   display:block;
   font-weight: 700;
   letter-spacing: 0.015625rem;
   line-height: 123.5%;
-  font-size:26px;
-  
+  font-size:33px;
   background-color: none;
   color: white;
-
   padding-right:5px;
   border: none;
   cursor: pointer;
   
 }
+
 
 .dropdown_version{
   text-align: center;
@@ -89,6 +95,32 @@
 }
 
 
+.dropdown_content button{
+  color: rgb(255, 255, 255);
+  padding:0;
+  background-color: rgb(56, 61, 81);
+  text-decoration: none;
+  display: flex;
+  border:none;
+  align-items: center;
+ 
+  width:100%;
+}
+
+.dropdown_content button:hover {
+  background-color: rgba(56, 61, 81, 0.01);
+}
+
+.dropdown_content button p{
+  color: rgb(255, 255, 255);
+  background-color: inherit;
+  text-decoration: none;
+  font-size: 17px;
+  padding-left:16px;
+
+}
+
+
 .dropdown_content a:hover {
   background-color: rgba(0, 0, 0, 0.01);
 }
@@ -110,6 +142,8 @@
   padding-left: 8px;
   padding-right: 8px;
   border-radius: 12px;
+  padding-top:1px;
+  padding-bottom:1px;
   background: linear-gradient(248.86deg, #B6509E 10.51%, #2EBAC6 93.41%);
   margin:0;
   width:20px;
@@ -246,7 +280,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 20px; /* Adjust the gap between grid items */
   background-color: rgb(27, 32, 48);
-  width:400px;
+  width:600px;
   font-size:14px;
 }
 
@@ -278,7 +312,7 @@ div.textbox {
   grid-template-columns: repeat(3, 1fr);
   gap: 20px; /* Adjust the gap between grid items */
   background-color: rgb(27, 32, 48);
-  width:400px;
+  width:600px;
   font-size:21px;
 }
 
@@ -725,7 +759,7 @@ div.textbox {
 .assets_supply_info_box{
   display:flex;
   background-color:rgb(41, 46, 65);
-  padding-left:10
+  padding-left:10px;
 }
 .assets_borrow_info_box_right{
   display:flex;
@@ -825,15 +859,14 @@ div.textbox {
   
 }
 .slider_div_top{
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: block;
+
   background-color: rgb(41, 46, 65);
 }
 
 .slider_outer_div p{
   margin:0;
-  padding-left:10px;
+  text-align: center;
 }
 
 #slider_div_top_min_max{
@@ -970,6 +1003,19 @@ input:checked + .slider:before {
   -webkit-transform: translateX(26px);
   -ms-transform: translateX(26px);
   transform: translateX(26px);
+}
+
+.threshold_input{
+  padding: 5px;
+  background-color: rgb(56, 61, 81);
+  border: 1px solid rgba(235, 235, 239, 0.08);
+  border-radius: 4px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.threshold_input:focus {
+  border-color: #ffffff;
 }
 
 .error-container {

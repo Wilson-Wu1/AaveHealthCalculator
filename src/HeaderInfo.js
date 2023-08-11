@@ -1,10 +1,16 @@
 import {useEffect, useState, useRef} from 'react';
 import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
 import {ReactComponent as InfoIcon} from './images/infoIcon.svg'
+import {ReactComponent as EthereumSymbol} from './images/ethereum.svg'
+import {ReactComponent as ArbitrumSymbol} from './images/arbitrum.svg'
+import {ReactComponent as OptimismSymbol} from './images/optimism.svg'
+import {ReactComponent as AvalancheSymbol} from './images/avalanche.svg'
+import {ReactComponent as PolygonSymbol} from './images/polygon.svg'
+import {ReactComponent as MetisSymbol} from './images/metis.svg'
+
 import Web3 from 'web3';
 const HeaderInfo = () => {
 
-    
 
     const [chain, setChain] = useState("Ethereum")
     const [aaveVersion, setAaveVersion] = useState("V3");
@@ -25,8 +31,9 @@ const HeaderInfo = () => {
         if(newNetwork != chain || newAaveVersion != aaveVersion){
             setTokenDataChanged(false);
             setOraclePricesChanged(false);
-
+            
             setChain(newNetwork);
+            
             setAaveVersion(newAaveVersion)
 
             // Show loading div
@@ -68,6 +75,16 @@ const HeaderInfo = () => {
         }
     }
 
+    
+    const iconComponents = {
+        Ethereum: <EthereumSymbol />,
+        Arbitrum: <ArbitrumSymbol />,
+        Polygon: <PolygonSymbol />,
+        Optimism: <OptimismSymbol />,
+        Metis: <MetisSymbol />,
+        Avalanche: <AvalancheSymbol />
+      };
+      
     useEffect(() => {
         if (endpoint !== null) {
             removeAllTokenDivs();
@@ -209,7 +226,7 @@ const HeaderInfo = () => {
             if(borrowOuterDiv){
                 borrowOuterDiv.style.display = "none";
                 const borrowInput = document.getElementById("borrow_input_" + token.symbol);
-                borrowInput.value = 0;
+                borrowInput.value = null;
             }
 
             const displaySlider = document.getElementById("slider_" + token.symbol);
@@ -528,7 +545,8 @@ const HeaderInfo = () => {
             }
             setOraclePrices(tempOraclePrices);
         }
-        else if(chain == "Optimsim" && aaveVersion == "V3"){
+        else if(chain == "Optimism"){
+   
             const web3ProviderUrl = `https://optimism-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
             const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
@@ -542,6 +560,7 @@ const HeaderInfo = () => {
                 try {
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
+                    
                     } catch (error) {  
                 }
             }
@@ -595,7 +614,7 @@ const HeaderInfo = () => {
 
     function setMissingPrices(){
         setMissingPricesFilled(false);
-        
+        console.log(chain, oraclePrices);
         if(chain == "Ethereum" && (aaveVersion == "V3"|| aaveVersion == "V2")){
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingEthereumSymbols[index]);
@@ -622,6 +641,7 @@ const HeaderInfo = () => {
             }
         }
         else if(chain == "Optimism"){
+            
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingOptimismSymbols[index]);
                 foundObject.price.priceInUSD = oraclePrices[index];
@@ -843,7 +863,7 @@ const HeaderInfo = () => {
     
     // Close the dropdown menu if the user clicks outside of it
     window.onclick = function(event) {
-        if (!event.target.matches('.dropbtn')) {
+        if (!event.target.matches('.dropdown_btn')) {
             var dropdowns = document.getElementsByClassName("dropdown_content");
             var i;
             for (i = 0; i < dropdowns.length; i++) {
@@ -1065,6 +1085,7 @@ const HeaderInfo = () => {
             thresholdInputElement.value = token.reserveLiquidationThreshold/100;
             thresholdInputElement.addEventListener("input", calculateCurrentHealthValue);
             thresholdInputElement.id = "threshold_input_"+token.symbol;
+            thresholdInputElement.classList.add("threshold_input");
             
             outerDiv.appendChild(thresholdInputElement);
 
@@ -1074,26 +1095,29 @@ const HeaderInfo = () => {
        
     }
 
-    // // Calculate the Value of a borrow/supply, and update the display
+    // Calculate the Value of a borrow/supply, and update the display
     function calculateTokenValue(tokenID, caller){
 
         // Get the price from the slider input 
         const price = document.getElementById("slider_input_"+tokenID).value;
-
+        console.log("slider price", tokenID, price);
         // Update supply side
         if(caller == 0){
             const amount = document.getElementById("supply_input_"+tokenID).value;
             const valueElement = document.getElementById("supply_value_"+tokenID);
-            valueElement.textContent = (amount*price).toFixed(2) + " USD";
-            valueElement.value = (amount*price)
+            valueElement.textContent = parseFloat((amount*price).toFixed(2)).toLocaleString() + " USD";
+            //valueElement.textContent = amount*price;
+            valueElement.value = amount*price;
         }
         // Update borrow side
         else if (caller == 1){
             const amount = document.getElementById("borrow_input_"+tokenID).value;
             const valueElement = document.getElementById("borrow_value_"+tokenID);
-            valueElement.textContent = (amount*price).toFixed(2)+ " USD";
-            valueElement.value = (amount*price)
+            valueElement.textContent = parseFloat((amount*price).toFixed(2)).toLocaleString() + " USD";
+            valueElement.value = amount*price;
+            //valueElement.textContent = amount*price;
         }
+
         
         else if (caller == 2){
             // Caller is from slider. Potentially update both sides.
@@ -1101,46 +1125,53 @@ const HeaderInfo = () => {
             const supplyDiv= document.getElementById("supply_input_"+tokenID);
             if(supplyDiv){
                 const valueElement = document.getElementById("supply_value_"+tokenID);
-                valueElement.textContent = (supplyDiv.value * price).toFixed(2) + " USD";
-                valueElement.value = (supplyDiv.value * price);
+                valueElement.textContent = parseFloat((supplyDiv.value*price).toFixed(2)).toLocaleString() + " USD";
+                valueElement.value = supplyDiv.value*price;
+                //valueElement.textContent = supplyDiv.value*price;
 
             }
             const borrowDiv = document.getElementById("borrow_input_"+tokenID);
             if(borrowDiv){
                 const valueElement = document.getElementById("borrow_value_"+tokenID);
-                valueElement.textContent = (borrowDiv.value * price).toFixed(2) + " USD";
-                valueElement.value = (borrowDiv.value * price);
+                valueElement.textContent = parseFloat((borrowDiv.value*price).toFixed(2)).toLocaleString() + " USD";
+                valueElement.value = borrowDiv.value*price;
+                //valueElement.textContent = borrowDiv.value*price;
             }
         }
     }
 
-    // // Update the token price in both or either the supply and borrow sides
+    // Update the token price in both or either the supply and borrow sides
     function displayPrice(tokenID, caller, currentTokenPrice){
-        const price = document.getElementById("slider_input_"+tokenID).value;
+        var price = document.getElementById("slider_input_"+tokenID).value;
+        price = parseFloat(price);
         if(caller == 0){
             const priceElement = document.getElementById("supply_price_"+tokenID);
             priceElement.value = price;
+            
         }
         else if (caller == 1){
             const priceElement = document.getElementById("borrow_price_"+tokenID);
-            priceElement.value = price;
+            priceElement.value = price
+           
         }
         else if (caller == 2){
             
             const supplyDiv = document.getElementById("supply_price_"+tokenID);
             if(supplyDiv){
                 supplyDiv.value = price;
+                
             }
             const borrowDiv = document.getElementById("borrow_price_"+tokenID);
             if(borrowDiv){
                 borrowDiv.value = price;
+                
             }
 
         }
 
         // Change price
         const sliderPrice = document.getElementById('slider_outer_top_price_' + tokenID);
-        sliderPrice.textContent = "$" +price;
+        sliderPrice.textContent = "$" + parseFloat(price.toFixed(2)).toLocaleString();
 
         // Change percent value
         const sliderPercent = document.getElementById('slider_outer_top_percent_' + tokenID);
@@ -1166,7 +1197,7 @@ const HeaderInfo = () => {
         
     }
 
-    // // Update the token price in the slider, and possibly the borrow/supply side
+    // Change the price located in the sliders. Called by token supply and borrow divs
     function adjustSliderValue(tokenID, isSupplySide, currentTokenPrice){
         const slider = document.getElementById("slider_input_"+tokenID);
         const supply = document.getElementById("supply_price_"+tokenID);
@@ -1175,16 +1206,20 @@ const HeaderInfo = () => {
         const sliderPercent = document.getElementById('slider_outer_top_percent_' + tokenID);
         const sliderPriceChange = document.getElementById('slider_outer_top_priceChange_' + tokenID);
         var price;
+        
         if(isSupplySide){
             price = supply.value;
-            if(price == ""){
+            const priceAsNum = parseFloat(price);
+            if(isNaN(price)){
                 price = 0;
             }
             if(borrow){
                 borrow.value = price;
+                //borrow.textContent = parseFloat(priceAsNum.toFixed(2)).toLocaleString();
             }
+            sliderPrice.textContent = "$" + parseFloat(priceAsNum.toFixed(2)).toLocaleString();
+            sliderPrice.value = price;
             slider.value = price;
-            sliderPrice.textContent = price;
 
             // Change percent value    
             if((price /currentTokenPrice) * 100 >= 100){
@@ -1208,16 +1243,19 @@ const HeaderInfo = () => {
         }
         else{
             price = borrow.value;
-            if(price == ""){
+            const priceAsNum = parseFloat(price);
+            if(isNaN(price)){
                 price = 0;
             }
             if(supply){
                 supply.value = price;
+                //supply.textContent = parseFloat(priceAsNum.toFixed(2)).toLocaleString();
             }
 
             // Change price value
+            sliderPrice.textContent = "$" + parseFloat(priceAsNum.toFixed(2)).toLocaleString();
+            sliderPrice.value = price;
             slider.value = price;
-            sliderPrice.textContent = price;
 
             // Change percent value
             if((price /currentTokenPrice) * 100 >= 100){
@@ -1254,7 +1292,7 @@ const HeaderInfo = () => {
             }
         }
         const totalSupplyDiv = document.getElementById("info_container_bottom_totalSupplied");
-        totalSupplyDiv.textContent = supplySum.toFixed(2);
+        totalSupplyDiv.textContent = parseFloat(supplySum.toFixed(2)).toLocaleString();
 
         // Calculate and update total value borrowed 
         var borrowSum = 0;
@@ -1264,10 +1302,11 @@ const HeaderInfo = () => {
             if(borrowOuterDiv && borrowOuterDiv.style.display == "grid"){
                 const borrowValue = document.getElementById("borrow_value_" + token.symbol);
                 borrowSum += borrowValue.value;
+                
             }
         }
         const totalBorrowDiv = document.getElementById("info_container_bottom_totalBorrowed");
-        totalBorrowDiv.textContent = borrowSum.toFixed(2);
+        totalBorrowDiv.textContent = parseFloat(borrowSum.toFixed(2)).toLocaleString();
     
         // Calculate and update Loan-to-Value ratio (Total Supplied / Total borrowed)
         const ltvDiv = document.getElementById("info_container_bottom_ltv");
@@ -1284,7 +1323,7 @@ const HeaderInfo = () => {
 
         // Calculate and update Net Worth 
         const netWorthDiv = document.getElementById("info_container_bottom_netWorth_value");
-        netWorthDiv.textContent = ((supplySum - borrowSum).toFixed(2).toLocaleString('en-US'));
+        netWorthDiv.textContent = parseFloat((supplySum - borrowSum).toFixed(2)).toLocaleString();
 
     }
 
@@ -1436,28 +1475,40 @@ const HeaderInfo = () => {
                 </div>
             </div>
             <div className = "drop">
-                <div className="dropdown" >
-                    <div className = "dropDown_text">
-                        <div onClick={showDropDown} className="dropbtn">{chain} Market</div>
+                <div className="dropdown">
+                    <div className = "dropdown_text">
+                        <div className = "dropdown_icon" id="dropdown_icon">{iconComponents[chain]}</div>       
+                        <div onClick={showDropDown} className="dropdown_btn">{chain} Market</div>
                         <div className="dropdown_version" >
                             <p className="dropdown_version_text" id = "dropdown_version_text"  >{aaveVersion} </p>
                         </div>
                     </div>
                     <div id="myDropdown" className="dropdown_content">
                         <p className = "dropdown_content_text">Select Aave Market</p>
-                        <a href="#" onClick={ () => changeNetwork("Ethereum", "V3") }>Ethereum</a>
-                        <a href="#" onClick={ () => changeNetwork("Arbitrum", "V3") }>Arbitrum</a>
-                        <a href="#" onClick={ () => changeNetwork("Avalanche", "V3") }>Avalanche</a>
-                        <a href="#" onClick={ () => changeNetwork("Optimism", "V3") }>Optimism</a>
-                        <a href="#" onClick={ () => changeNetwork("Polygon", "V3") }>Polygon</a>
-                        <a href="#" onClick={ () => changeNetwork("Metis", "V3") }>Metis</a>
-                        <a href="#" onClick={ () => changeNetwork("Ethereum", "V2") }>Ethereum V2</a>
-                        <a href="#" onClick={ () => changeNetwork("Avalanche", "V2") }>Avalanche V2</a>
-                        <a href="#" onClick={ () => changeNetwork("Polygon", "V2") }>Polygon V2</a>
+                        <button onClick={ () => changeNetwork("Ethereum", "V3") }>
+                            <p>Ethereum</p>
+                        </button>
+                        <button onClick={ () => changeNetwork("Arbitrum", "V3") }>
+                            <p>Arbitrum</p>
+                        </button>
+                        <button onClick={ () => changeNetwork("Avalanche", "V3") }>
+                            <p>Avalanche</p>
+                        </button>
+                        <button onClick={ () => changeNetwork("Optimism", "V3") }>
+                            <p>Optimism</p>
+                        </button>
+                        <button onClick={ () => changeNetwork("Polygon", "V3") }>
+                            <p>Polygon</p>
+                        </button>
+                        <button onClick={ () => changeNetwork("Metis", "V3") }>
+                            <p>Metis</p>
+                        </button>
                     </div>
                 </div>
                 
             </div>
+
+
             <div className = "loading" id = "loading">
                 <div className="loading_circle" id="loading_circle"></div>
                 <p className = "loading_text">Loading Token Data...</p>
@@ -1582,6 +1633,7 @@ const HeaderInfo = () => {
                 </div>
             
                 <div className="error-container" id="errorContainer"></div>
+           
             </div>
             
         </div>
