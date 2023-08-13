@@ -1,6 +1,7 @@
 import {useEffect, useState, useRef} from 'react';
 import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
 import {ReactComponent as InfoIcon} from './images/infoIcon.svg'
+import {ReactComponent as SearchIcon} from './images/search.svg'
 import {ReactComponent as EthereumSymbol} from './images/ethereum.svg'
 import {ReactComponent as ArbitrumSymbol} from './images/arbitrum.svg'
 import {ReactComponent as OptimismSymbol} from './images/optimism.svg'
@@ -41,7 +42,7 @@ const HeaderInfo = () => {
             loadingDiv.style.display = "flex";
 
             // Disable buttons while getting data
-            const searchDiv = document.getElementById("search_div_button");
+            const searchDiv = document.getElementById("search_div_search");
             const supplyDiv = document.getElementById("b_s_container_supply_btn");
             const borrowDiv = document.getElementById("b_s_container_borrow_btn");
             searchDiv.disabled = true;
@@ -614,7 +615,6 @@ const HeaderInfo = () => {
 
     function setMissingPrices(){
         setMissingPricesFilled(false);
-        console.log(chain, oraclePrices);
         if(chain == "Ethereum" && (aaveVersion == "V3"|| aaveVersion == "V2")){
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingEthereumSymbols[index]);
@@ -672,7 +672,7 @@ const HeaderInfo = () => {
             renderBorrowSide();
             renderSliders();
             // Re-enable buttons once data has been retrieved
-            const searchDiv = document.getElementById("search_div_button");
+            const searchDiv = document.getElementById("search_div_search");
             const supplyDiv = document.getElementById("b_s_container_supply_btn");
             const borrowDiv = document.getElementById("b_s_container_borrow_btn");
             searchDiv.disabled = false;
@@ -1100,7 +1100,6 @@ const HeaderInfo = () => {
 
         // Get the price from the slider input 
         const price = document.getElementById("slider_input_"+tokenID).value;
-        console.log("slider price", tokenID, price);
         // Update supply side
         if(caller == 0){
             const amount = document.getElementById("supply_input_"+tokenID).value;
@@ -1385,7 +1384,10 @@ const HeaderInfo = () => {
         }, 5000);
     }
     
+    var switchScreenVersion = false;
     useEffect(() => {
+
+
         const svg = document.getElementById("info_container_top_netWorth_icon");
         const textBox = document.getElementById("textbox");
     
@@ -1401,15 +1403,68 @@ const HeaderInfo = () => {
         getMissingPrices();
         queryTokenDataFromTheGraph();
         handleResize();
+
         function handleResize() {
-            const supplyDiv = document.getElementById("assets_supply").offsetWidth;
-            const borrowDiv = document.getElementById("assets_borrow").offsetWidth;
+            const supplyDiv = document.getElementById("assets_supply");
+            const borrowDiv = document.getElementById("assets_borrow");
+            const supplyDivWidth = document.getElementById("assets_supply").offsetWidth;
+            const borrowDivWidth = document.getElementById("assets_borrow").offsetWidth;
             const sliderDiv = document.getElementById("values_container");
-            const infoDiv = document.getElementById("info_container");
-            sliderDiv.style.width = `${supplyDiv + borrowDiv-7}px`;
-            infoDiv.style.width = `${supplyDiv + borrowDiv+15}px`;
+            const switchSupplyAndBorrowBtn = document.getElementById("switchSupplyAndBorrow");
+            const screenWidth = window.innerWidth;
+            const threshold = 992;
+            // If screen size is less than threshold
+            if(screenWidth < threshold && !switchScreenVersion){
+                switchScreenVersion = true;
+                switchSupplyAndBorrowBtn.style.display = "flex";
+                borrowDiv.style.display = "none";
+                sliderDiv.style.width = "80%";
+                borrowDiv.style.width = "80%";
+                supplyDiv.style.width =  sliderDiv.style.width;
+                supplyDiv.style.margin = "0";
+                sliderDiv.style.paddingLeft = "15px";
+                sliderDiv.style.paddingRight = "15px";
+            }
+            else if (screenWidth >= threshold){
+                switchSupplyAndBorrowBtn.style.display = "none";
+                borrowDiv.style.width = "40%";
+                supplyDiv.style.width = "40%";
+                supplyDiv.style.marginRight = "15px";
+                sliderDiv.style.paddingRight = "10px";
+                switchScreenVersion = false;
+
+                supplyDiv.style.display = "block";
+                borrowDiv.style.display = "block";
+
+                sliderDiv.style.width = `${supplyDivWidth + borrowDivWidth-11}px`;
+                
+            }
+
             
         }
+
+        const supplyButton = document.getElementById('supply_button');
+        const borrowButton = document.getElementById('borrow_button');
+        const supplyDiv = document.getElementById("assets_supply");
+        const borrowDiv = document.getElementById("assets_borrow");
+        
+        supplyButton.addEventListener('click', () => {
+            supplyButton.classList.add('active');
+            borrowButton.classList.remove('active');
+            // Add logic here to switch to "supply" mode
+            supplyDiv.style.display = "block";
+            borrowDiv.style.display = "none";
+        });
+
+        borrowButton.addEventListener('click', () => {
+            borrowButton.classList.add('active');
+            supplyButton.classList.remove('active');
+            // Add logic here to switch to "borrow" mode
+            supplyDiv.style.display = "none";
+            borrowDiv.style.display = "block";
+        });
+
+
         // Attach the event listener for window resize
         window.addEventListener('resize', handleResize);
         // Clean up the event listener when the component unmounts
@@ -1420,6 +1475,8 @@ const HeaderInfo = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         }, []
     );
+
+
 
 
     return ( 
@@ -1503,6 +1560,15 @@ const HeaderInfo = () => {
                         <button onClick={ () => changeNetwork("Metis", "V3") }>
                             <p>Metis</p>
                         </button>
+                        <button onClick={ () => changeNetwork("Ethereum", "V2") }>
+                            <p>Ethereum V2</p>
+                        </button>
+                        <button onClick={ () => changeNetwork("Polygon", "V2") }>
+                            <p>Polygon V2</p>
+                        </button>
+                        <button onClick={ () => changeNetwork("Avalanche", "V2") }>
+                            <p>Avalanche V2</p>
+                        </button>
                     </div>
                 </div>
                 
@@ -1517,7 +1583,9 @@ const HeaderInfo = () => {
             <div className = "search">
                 <div className = "search_div">
                     <input id = "search_div_input" className = "search_div_input"></input>
-                    <button className = "search_div_button" id = "search_div_button" onClick = {queryAddressForUserPosition} >Search</button>
+                    <div className = "search_div_search" id = "search_div_search" onClick = {queryAddressForUserPosition}>
+                        <SearchIcon className = "search_div_search_icon"/>
+                    </div>
                 </div>
             </div>
 
@@ -1557,7 +1625,18 @@ const HeaderInfo = () => {
                     </div>     
                     </div>                         
                 </div>
-
+                <div className = "switchSupplyAndBorrow" id = "switchSupplyAndBorrow">
+                    <div className="switchSupplyAndBorrow_container">
+                            <button id="supply_button" class="switchSupplyAndBorrow_button active">
+                                <div className = "supply_button_div" id = "supply_button_div"></div>
+                                <p className = "supply_button_text">Supply</p>
+                            </button>
+                            <button id="borrow_button" class="switchSupplyAndBorrow_button">
+                                <div className = "borrow_button_div" id = "borrow_button_div"></div>
+                                <p className = "borrow_button_text">Borrow</p>
+                            </button>
+                    </div>
+                </div>
                 <div className = "assets">
                     <div className = "assets_supply" id="assets_supply">
                         <div className = "assets_supply_top">
@@ -1584,7 +1663,7 @@ const HeaderInfo = () => {
                         </div>
                         
                     </div>
-
+                    
                     <div className = "assets_borrow" id="assets_borrow">
                         <div className = "assets_borrow_top">
                             <p className = "assets_borrow_top_header">Borrows</p>

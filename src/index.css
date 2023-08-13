@@ -42,7 +42,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-right:5px;
+  padding-right:7px;
 }
 
 .dropdown_text{
@@ -56,7 +56,7 @@
   font-weight: 700;
   letter-spacing: 0.015625rem;
   line-height: 123.5%;
-  font-size:33px;
+  font-size:31px;
   background-color: none;
   color: white;
   padding-right:5px;
@@ -103,7 +103,7 @@
   display: flex;
   border:none;
   align-items: center;
- 
+  cursor: pointer;
   width:100%;
 }
 
@@ -134,7 +134,8 @@
   color: rgb(165, 168, 182);
   background-color: rgb(56, 61, 81);
   padding: 16px;
- 
+  border-bottom: 1px solid rgba(235, 235, 239, 0.08);
+
 }
 
 .dropdown_version_text{
@@ -178,22 +179,38 @@
   border-radius: 4px;
   border: 1px solid rgba(235, 235, 239, 0.08);
   height:30px;
-  width: 500px;
+  width: 527px;
   cursor: pointer;
   transition: border 0.2s;
   
 }
-
-.search_div_button{
+.search_div_search{
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: 10px;
+  cursor: pointer;
+  position: relative;
   background: rgb(56, 61, 81);
   border-radius: 4px;
   border: 1px solid rgba(235, 235, 239, 0.08);
-  margin-left:10px;
-  cursor: pointer;
-  position: relative;
+  display:flex;
+  justify-content:center;
+  align-items: center;
 }
 
-.search_div_button[disabled] {
+.search_div_search:hover{
+  border: 1px solid rgba(235, 235, 239, 1);
+}
+
+
+.search_div_search_icon{
+  width: 23px;
+  height:23px;
+  background: rgb(56, 61, 81);
+}
+
+
+.search_div_search[disabled] {
   color: rgb(146, 149, 161);
   cursor: not-allowed;
 }
@@ -222,12 +239,6 @@
   100% { transform: rotate(360deg); }
 }
 
-
-.search_div_button:hover{
-  border: 1px solid rgba(255, 255, 255, 0.8);
-}
-
-
 .headerInfo{
   padding-bottom:60px;
 }
@@ -238,8 +249,6 @@
   align-items: center;
   padding-top:30px;
   padding-bottom:0px;
-
-  
 }
 
 .info_container{
@@ -290,14 +299,16 @@
 
 div.textbox {
   display: none;
-  position: absolute;
+  position:absolute;
   background-color: rgb(41, 46, 65);
+  color: white;
   padding: 5px;
   border: 1px solid rgba(235, 235, 239, 0.08);
   border-radius: 5px;
-  top: 98px; /* Adjust this value to position the textbox above the SVG */
-  transform: translateX(-10%);
+  top:240px; /* Initial top position */
 }
+
+
 
 .info_container_top_netWorth_icon, .info_container_top_icon_healthFactor_icon, .info_container_top_icon_ltv_icon{
   width:15px;
@@ -306,6 +317,7 @@ div.textbox {
   cursor: pointer;
  
 }
+
 
 .info_container_bottom{
   display:grid;
@@ -343,8 +355,58 @@ div.textbox {
 .b_s_container_supply_btn:hover, .b_s_container_borrow_btn:hover{
   border: 1px solid rgba(255, 255, 255, 0.8);
 }
+.switchSupplyAndBorrow{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom:20px;
+}
+.switchSupplyAndBorrow_container{
+  background-color:rgb(56, 61, 81);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding:5px;
+  border-radius: 4px;
+  border: 1px solid rgba(235, 235, 239, 0.08);
+  
+}
+
+.switchSupplyAndBorrow_button{
+  width:150px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: inherit;
+  color: rgba(235, 235, 239, 0.56);
+  border-radius: 4px;
+}
 
 
+.switchSupplyAndBorrow_button p {
+  color:rgb(140, 149, 181);
+  background-color:rgb(56, 61, 81);
+}
+
+
+
+.switchSupplyAndBorrow_button.active p {
+  background-image: linear-gradient(90deg, rgb(46, 186, 198) 16%, rgba(182, 80, 158, 1) 91%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.switchSupplyAndBorrow_button.active {
+  background-color: rgb(255, 255, 255);
+}
+
+
+
+.supply_button_text, .borrow_button_text{
+  margin:0;
+}
 
 .assets{
   display: flex;
@@ -802,6 +864,8 @@ div.textbox {
 }
 .values_container{
   padding:10px;
+  padding-right:15px;
+  padding-left:15px;
   padding-bottom:0;
   background-color: rgb(41, 46, 65);
   border: 1px solid rgba(235, 235, 239, 0.08);
@@ -1023,10 +1087,10 @@ input:checked + .slider:before {
   bottom: 20px;
   right: 20px;
   display:none;
-  background-color: #ff0000; /* Replace with your desired background color */
-  color: #ffffff; /* Replace with your desired text color */
+  background-color: rgb(87, 10, 10);
+  color: #ffffff;
   padding: 10px;
   border-radius: 5px;
-  opacity: 1; /* Initially visible */
-  transition: opacity 0.5s ease-in-out; /* CSS transition for fading */
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
 }
