@@ -1407,15 +1407,21 @@ const HeaderInfo = () => {
         function handleResize() {
             const supplyDiv = document.getElementById("assets_supply");
             const borrowDiv = document.getElementById("assets_borrow");
+            const supplyButton = document.getElementById('supply_button');
+            const borrowButton = document.getElementById('borrow_button');
+            const infoContainerOuter = document.getElementById('info_container_outer');
+            const infoContainer = document.getElementById("info_container_top");
+            
             const supplyDivWidth = document.getElementById("assets_supply").offsetWidth;
             const borrowDivWidth = document.getElementById("assets_borrow").offsetWidth;
             const sliderDiv = document.getElementById("values_container");
             const switchSupplyAndBorrowBtn = document.getElementById("switchSupplyAndBorrow");
             const screenWidth = window.innerWidth;
-            const threshold = 992;
+
+            const tabletThreshold = 992;
+            const mobileThreshold = 450;
             // If screen size is less than threshold
-            if(screenWidth < threshold && !switchScreenVersion){
-                switchScreenVersion = true;
+            if(screenWidth < tabletThreshold){
                 switchSupplyAndBorrowBtn.style.display = "flex";
                 borrowDiv.style.display = "none";
                 sliderDiv.style.width = "80%";
@@ -1424,21 +1430,39 @@ const HeaderInfo = () => {
                 supplyDiv.style.margin = "0";
                 sliderDiv.style.paddingLeft = "15px";
                 sliderDiv.style.paddingRight = "15px";
+
+                // Set the supply/borrow button to supply
+                supplyButton.classList.add('active');
+                borrowButton.classList.remove('active');
+                
+                
             }
-            else if (screenWidth >= threshold){
+            else{
                 switchSupplyAndBorrowBtn.style.display = "none";
                 borrowDiv.style.width = "40%";
                 supplyDiv.style.width = "40%";
                 supplyDiv.style.marginRight = "15px";
                 sliderDiv.style.paddingRight = "10px";
-                switchScreenVersion = false;
+                
 
                 supplyDiv.style.display = "block";
                 borrowDiv.style.display = "block";
+                infoContainerOuter.style.display = "block";
 
                 sliderDiv.style.width = `${supplyDivWidth + borrowDivWidth-11}px`;
-                
             }
+            
+            if(screenWidth < mobileThreshold){
+                // Change the info container grid layout
+                infoContainer.style.gridTemplateColumns = 'repeat(1, 1fr)';
+                infoContainer.style.gridTemplateRows = 'repeat(6, auto)';
+            }
+            else{
+                // Change the info container grid layout
+                infoContainer.style.gridTemplateColumns ='repeat(3, 1fr)';
+                infoContainer.style.gridTemplateRows =  'repeat(2, auto)';
+            }
+            
 
             
         }
@@ -1582,7 +1606,7 @@ const HeaderInfo = () => {
      
             <div className = "search">
                 <div className = "search_div">
-                    <input id = "search_div_input" className = "search_div_input"></input>
+                    <input id = "search_div_input" className = "search_div_input" placeholder = "Search by Address"></input>
                     <div className = "search_div_search" id = "search_div_search" onClick = {queryAddressForUserPosition}>
                         <SearchIcon className = "search_div_search_icon"/>
                     </div>
@@ -1593,36 +1617,37 @@ const HeaderInfo = () => {
 
             <div className ="b_s">
                 <div className='info'>
-                
                     <div className = "info_container" id='info_container'>
-                    <div className = "info_container_outer"> 
-                        <div className = "info_container_top">   
-                            <div>
-                                <p className = "info_container_top_netWorth">Net Worth</p> 
-                                <InfoIcon className = "info_container_top_netWorth_icon" id ="info_container_top_netWorth_icon"></InfoIcon>
-                                <div className="textbox" id="textbox">Value supplied minus value borrowed.</div>
-                            </div>   
-                            <div>
-                                <p className = "info_container_top_healthFactor">Health Factor</p>
-                                <InfoIcon className = "info_container_top_icon_healthFactor_icon"></InfoIcon>
+                        <div className = "info_container_outer" id = "info_container_outer"> 
+                            <div className = "info_container_top" id="info_container_top"> 
+
+                                <div>
+                                    <p className = "info_container_top_netWorth">Net Worth</p> 
+                                    <InfoIcon className = "info_container_top_netWorth_icon" id ="info_container_top_netWorth_icon"></InfoIcon>
+                                    <div className="textbox" id="textbox">Value supplied minus value borrowed.</div>
+                                </div>   
+                                <div className = "info_container_bottom_netWorth">
+                                    <div className='info_container_bottom_netWorth_symbol'>$</div>
+                                    <div className="info_container_bottom_netWorth_value" id = "info_container_bottom_netWorth_value">0.00</div>
+                                </div>
+
+
+                                <div>
+                                    <p className = "info_container_top_healthFactor">Health Factor</p>
+                                    <InfoIcon className = "info_container_top_icon_healthFactor_icon"></InfoIcon>
+                                </div>
+                                <div className = "info_container_bottom_healthFactorValue" id = "info_container_bottom_healthFactorValue">{healthFactor}</div>
+                                
+
+                                <div>
+                                    <p className='info_container_top_ltv'>Current LTV</p>
+                                    <InfoIcon className = "info_container_top_icon_ltv_icon"></InfoIcon>
+                                </div>  
+                                
+                                <div className="info_container_bottom_ltv" id = "info_container_bottom_ltv">0.00%</div>                                                              
                             </div>
-                            <div>
-                                <p className='info_container_top_ltv'>Current LTV</p>
-                                <InfoIcon className = "info_container_top_icon_ltv_icon"></InfoIcon>
-                            </div>
-                            
-                                                                                            
-                        </div>
-                        <div className = "info_container_bottom">
-                            <div className = "info_container_bottom_netWorth">
-                                <div className='info_container_bottom_netWorth_symbol'>$</div>
-                                <div className="info_container_bottom_netWorth_value" id = "info_container_bottom_netWorth_value">0.00</div>
-                            </div>
-                            <div className = "info_container_bottom_healthFactorValue" id = "info_container_bottom_healthFactorValue">{healthFactor}</div>
-                            <div className="info_container_bottom_ltv" id = "info_container_bottom_ltv">0.00%</div> 
-                            
-                        </div>
-                    </div>     
+
+                        </div>     
                     </div>                         
                 </div>
                 <div className = "switchSupplyAndBorrow" id = "switchSupplyAndBorrow">
@@ -1677,10 +1702,6 @@ const HeaderInfo = () => {
                                     <div className="info_container_bottom_totalBorrowed" id = "info_container_bottom_totalBorrowed">0.00</div>
                                 </div>
                             </div> 
-                            <div className = "assets_borrow_info_box_right">
-                                <p>Borrowing Power Used</p>  
-                                <div className="info_container_bottom_borrowPower" id = "info_container_bottom_borrowPower">0.00%</div>
-                            </div>  
                         </div>
                
                        

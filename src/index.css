@@ -179,10 +179,13 @@
   border-radius: 4px;
   border: 1px solid rgba(235, 235, 239, 0.08);
   height:30px;
-  width: 527px;
-  cursor: pointer;
+  width:527px;
+  cursor: text;
   transition: border 0.2s;
-  
+  color: white;
+  padding-left: 10px;
+  font-size:15px;
+  outline: none;
 }
 .search_div_search{
   padding-left: 10px;
@@ -259,13 +262,23 @@
 }
 
 .info_container_outer{
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
   padding-top:48px;
   padding-bottom:48px;
-  display:block;
+
 }
+
+.info_container_top{
+  display:grid;
+  grid-template-rows: repeat(2, auto); /* 2 rows with dynamic heights */
+  grid-auto-flow: column; /* Items fill in columns first */
+  gap:0px;
+  background-color: rgb(27, 32, 48);
+  font-size:14px;
+  column-gap: 40px; /* Adjust the horizontal gap as needed */
+}
+
+
 .info_container_top p{
   background-color: rgb(27, 32, 48);
   font-weight: 400;
@@ -284,14 +297,6 @@
   word-break:break-all;
 }
 
-.info_container_top{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px; /* Adjust the gap between grid items */
-  background-color: rgb(27, 32, 48);
-  width:600px;
-  font-size:14px;
-}
 
 .info_container_top div{
   display: flex;
@@ -318,22 +323,17 @@ div.textbox {
  
 }
 
-
-.info_container_bottom{
-  display:grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px; /* Adjust the gap between grid items */
-  background-color: rgb(27, 32, 48);
-  width:600px;
-  font-size:21px;
-}
-
-.info_container_bottom_netWorth{
-  display: flex;
-}
 .info_container_bottom_netWorth_symbol{
   color: rgb(165, 168, 182);
   padding-right: 2px;
+}
+
+.info_container_bottom_ltv, .info_container_bottom_healthFactorValue, .info_container_bottom_netWorth_symbol, .info_container_bottom_netWorth_value{
+  font-size:21px;
+  font-weight: 800;
+  line-height: 133.4%;
+  font-size: 1.3125rem;
+  word-break:break-all;
 }
 
 .b_s_container_borrow_btn, .b_s_container_supply_btn{
@@ -823,13 +823,7 @@ div.textbox {
   background-color:rgb(41, 46, 65);
   padding-left:10px;
 }
-.assets_borrow_info_box_right{
-  display:flex;
-  padding: 2px 4px;
-  border: 1px solid rgba(235, 235, 239, 0.08);
-  border-radius:4px;
-  background-color:rgb(41, 46, 65);
-}
+
 
 .assets_supply_info_box_left{
   display:none;
@@ -839,7 +833,7 @@ div.textbox {
   background-color:rgb(41, 46, 65);
 }
 
-.assets_borrow_info_box_left p, .assets_borrow_info_box_right p, .assets_supply_info_box_left p{
+.assets_borrow_info_box_left p, .assets_supply_info_box_left p{
   margin:0;
   background-color:rgb(41, 46, 65);
   font-weight: 400;
@@ -848,7 +842,7 @@ div.textbox {
   color: rgb(165, 168, 182);
 }
 
-.assets_borrow_info_box_right div, .info_container_bottom_totalBorrowed, .info_container_bottom_borrowPower, .info_container_bottom_totalSupplied{
+.info_container_bottom_totalBorrowed, .info_container_bottom_totalSupplied{
   background-color:rgb(41, 46, 65);
   letter-spacing: 0.029375rem;
   font-size: 1rem;
@@ -979,7 +973,7 @@ div.textbox {
 }
 
 .bottom_info{
-  padding:40px;
+  padding-top:40px;
   display: grid;
   place-items: center;
   text-align: center;
@@ -992,7 +986,6 @@ div.textbox {
   list-style: none; /* Remove the default bullet points */
   padding: 0; /* Remove any default padding */
   margin: 0; /* Remove any default margin */
-
 }
 
 .bottom_socials li {
@@ -1011,6 +1004,13 @@ div.textbox {
 .bottom_info_address p{
   margin:0;
   padding:4px;
+  white-space: normal;
+}
+
+.bottom_info_address p span{
+  overflow-wrap: break-word;
+  inline-size: 150px;
+  display:none;
 }
 
 /* The switch - the box around the slider */
