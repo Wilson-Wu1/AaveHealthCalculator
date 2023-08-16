@@ -1407,8 +1407,6 @@ const HeaderInfo = () => {
             const borrowDiv = document.getElementById("assets_borrow");
             const supplyButton = document.getElementById('supply_button');
             const borrowButton = document.getElementById('borrow_button');
-            const supplyHeaders = document.getElementById("assets_supply_header");
-            const borrowHeaders = document.getElementById("assets_borrow_header");
             const infoContainerOuter = document.getElementById('info_container_outer');
             const infoContainer = document.getElementById("info_container_top");
             const supplyModal = document.getElementById("modal_supply_content");
