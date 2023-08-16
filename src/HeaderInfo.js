@@ -345,6 +345,7 @@ const HeaderInfo = () => {
                 // Create outer div
                 const outerDiv = document.createElement("div");
                 outerDiv.id = "supply_outer_div_" + token.symbol;
+                outerDiv.classList.add("supply_outer_div");
                 outerDiv.style.display = "none";
 
                 // Add li element to div
@@ -360,7 +361,7 @@ const HeaderInfo = () => {
 
                     amountElement.value = token.supplyAmount;
                 }
-                
+
                 amountElement.addEventListener("input", calculateCurrentHealthValue);
                 amountElement.addEventListener("input", function() {calculateTokenValue(token.symbol, 0);});
                 amountElement.addEventListener("input", function() {displayPrice(token.symbol, 0, token.price.priceInUSD);});
@@ -385,7 +386,6 @@ const HeaderInfo = () => {
                 outerDiv.appendChild(valueElement);
 
                 // Finally add the outer div element to the ul element
-                
                 ulElement.appendChild(outerDiv);
                 
             }
@@ -413,6 +413,7 @@ const HeaderInfo = () => {
                 // Create outer div
                 const outerDiv = document.createElement("div");
                 outerDiv.id = "borrow_outer_div_" + token.symbol;
+                outerDiv.classList.add("borrow_outer_div");
                 outerDiv.style.display = "none";
 
                 // Add li element to div
@@ -795,7 +796,7 @@ const HeaderInfo = () => {
             
         }
         else{
-            displayErrorMessage(`Error: address does not own an Aave position on the ${chain} network`);
+            displayErrorMessage(`Error: Address does not own an Aave position on the ${chain} network`);
         }
         
     }
@@ -1384,10 +1385,7 @@ const HeaderInfo = () => {
         }, 5000);
     }
     
-    var switchScreenVersion = false;
     useEffect(() => {
-
-
         const svg = document.getElementById("info_container_top_netWorth_icon");
         const textBox = document.getElementById("textbox");
     
@@ -1409,24 +1407,30 @@ const HeaderInfo = () => {
             const borrowDiv = document.getElementById("assets_borrow");
             const supplyButton = document.getElementById('supply_button');
             const borrowButton = document.getElementById('borrow_button');
+            const supplyHeaders = document.getElementById("assets_supply_header");
+            const borrowHeaders = document.getElementById("assets_borrow_header");
             const infoContainerOuter = document.getElementById('info_container_outer');
             const infoContainer = document.getElementById("info_container_top");
+            const supplyModal = document.getElementById("modal_supply_content");
+            const borrowModal = document.getElementById("modal_borrow_content");
             
             const supplyDivWidth = document.getElementById("assets_supply").offsetWidth;
             const borrowDivWidth = document.getElementById("assets_borrow").offsetWidth;
             const sliderDiv = document.getElementById("values_container");
             const switchSupplyAndBorrowBtn = document.getElementById("switchSupplyAndBorrow");
+            const swithSupplyAndBorrowDiv = document.getElementById("switchSupplyAndBorrow_container");
             const screenWidth = window.innerWidth;
 
             const tabletThreshold = 992;
-            const mobileThreshold = 450;
+            const mobileThreshold = 570;
             // If screen size is less than threshold
             if(screenWidth < tabletThreshold){
                 switchSupplyAndBorrowBtn.style.display = "flex";
                 borrowDiv.style.display = "none";
-                sliderDiv.style.width = "80%";
-                borrowDiv.style.width = "80%";
-                supplyDiv.style.width =  sliderDiv.style.width;
+                supplyDiv.style.display = "block";
+                sliderDiv.style.width = "90%";
+                borrowDiv.style.width = "90%";
+                supplyDiv.style.width = sliderDiv.style.width;
                 supplyDiv.style.margin = "0";
                 sliderDiv.style.paddingLeft = "15px";
                 sliderDiv.style.paddingRight = "15px";
@@ -1434,8 +1438,7 @@ const HeaderInfo = () => {
                 // Set the supply/borrow button to supply
                 supplyButton.classList.add('active');
                 borrowButton.classList.remove('active');
-                
-                
+
             }
             else{
                 switchSupplyAndBorrowBtn.style.display = "none";
@@ -1444,7 +1447,6 @@ const HeaderInfo = () => {
                 supplyDiv.style.marginRight = "15px";
                 sliderDiv.style.paddingRight = "10px";
                 
-
                 supplyDiv.style.display = "block";
                 borrowDiv.style.display = "block";
                 infoContainerOuter.style.display = "block";
@@ -1456,15 +1458,22 @@ const HeaderInfo = () => {
                 // Change the info container grid layout
                 infoContainer.style.gridTemplateColumns = 'repeat(1, 1fr)';
                 infoContainer.style.gridTemplateRows = 'repeat(6, auto)';
+                swithSupplyAndBorrowDiv.style.width = "75%";
+
+                //Adjust modal width
+                supplyModal.style.width = "90%";
+                borrowModal.style.width = "90%";
             }
             else{
                 // Change the info container grid layout
                 infoContainer.style.gridTemplateColumns ='repeat(3, 1fr)';
                 infoContainer.style.gridTemplateRows =  'repeat(2, auto)';
+                swithSupplyAndBorrowDiv.style.width = "";
+                //Adjust modal width
+                supplyModal.style.width = "50%";
+                borrowModal.style.width = "50%";
             }
-            
 
-            
         }
 
         const supplyButton = document.getElementById('supply_button');
@@ -1507,9 +1516,10 @@ const HeaderInfo = () => {
         <div className='headerInfo'>
             <div className={`modal_supply ${modalSupplyVisible ? 'visible' : ''}`} id="modal_supply">
 
-                <div className = "modal_supply_content">
+                <div className = "modal_supply_content" id = "modal_supply_content">
                     <div className="modal_supply_content_header">
                         <p>Assets to Supply</p>
+                        <button className = "modal_supply_content_header_btn">Clear Supply</button>
                     </div>
 
                     <div className="modal_supply_content_assets">
@@ -1532,9 +1542,10 @@ const HeaderInfo = () => {
             </div>
 
             <div className={`modal_borrow ${modalBorrowVisible ? 'visible' : ''}`} id="modal_borrow">
-                <div className = "modal_borrow_content">
+                <div className = "modal_borrow_content" id = "modal_borrow_content">
                     <div className="modal_borrow_content_header">
                         <p>Assets to Borrow</p>
+                        <button className = "modal_borrow_content_header_btn">Clear Borrow</button>
                     </div>
 
                     <div className="modal_borrow_content_assets">
@@ -1640,7 +1651,7 @@ const HeaderInfo = () => {
                                 
 
                                 <div>
-                                    <p className='info_container_top_ltv'>Current LTV</p>
+                                    <p className='info_container_top_ltv'>Loan-To-Value Ratio</p>
                                     <InfoIcon className = "info_container_top_icon_ltv_icon"></InfoIcon>
                                 </div>  
                                 
@@ -1651,7 +1662,7 @@ const HeaderInfo = () => {
                     </div>                         
                 </div>
                 <div className = "switchSupplyAndBorrow" id = "switchSupplyAndBorrow">
-                    <div className="switchSupplyAndBorrow_container">
+                    <div className="switchSupplyAndBorrow_container" id ="switchSupplyAndBorrow_container">
                             <button id="supply_button" class="switchSupplyAndBorrow_button active">
                                 <div className = "supply_button_div" id = "supply_button_div"></div>
                                 <p className = "supply_button_text">Supply</p>
@@ -1667,6 +1678,7 @@ const HeaderInfo = () => {
                         <div className = "assets_supply_top">
                             <p className = "assets_supply_top_header">Supplies</p>
                             <button className = "b_s_container_supply_btn" id = "b_s_container_supply_btn" onClick = {setSupplyModalVisibilityTrue}>Supply</button>
+                        
                         </div>
                         <p className = "assets_supply_nothing" id = "assets_supply_nothing">Nothing supplied yet</p>
                         <div className = "assets_supply_info">
