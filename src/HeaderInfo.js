@@ -84,13 +84,12 @@ const HeaderInfo = () => {
         Optimism: <OptimismSymbol />,
         Metis: <MetisSymbol />,
         Avalanche: <AvalancheSymbol />
-      };
+    };
       
     useEffect(() => {
         if (endpoint !== null) {
             removeAllTokenDivs();
             clearPositionInfo();
-            //console.log("ER");
             //Todo: THis is being called unnecessarily at the begining
             getMissingPrices();
             queryTokenDataFromTheGraph();
@@ -252,10 +251,7 @@ const HeaderInfo = () => {
             if(borrowButton){
                 borrowButton.checked = false;
             }
-
-
         }
-            
     }
 
     function removeAllTokenDivs(){
@@ -1384,6 +1380,118 @@ const HeaderInfo = () => {
           errorContainer.style.opacity = 0; // Fade out the error message
         }, 5000);
     }
+
+    function clearSupplySide(){
+        const pTag = document.getElementById("assets_supply_nothing");
+        const headerTag = document.getElementById("assets_supply_header");
+        const supplyInfo = document.getElementById("assets_supply_info_box_left");
+        pTag.style.display = "block";
+        headerTag.style.display = "none";
+        supplyInfo.style.display = "none";
+
+        for(const index in tokenData){
+            const token  = tokenData[index];
+
+            const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+            if(supplyOuterDiv){
+                supplyOuterDiv.style.display = "none";
+                const supplyInput = document.getElementById("supply_input_" + token.symbol);
+                supplyInput.value = null;
+            }
+            const displaySlider = document.getElementById("slider_" + token.symbol);
+            const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
+            
+            if(displaySlider && borrowOuterDiv && borrowOuterDiv.style.display == "none"){
+                displaySlider.style.display = "none";
+
+                // Reset slider value
+                const sliderInput = document.getElementById("slider_input_"+token.symbol);
+                sliderInput.value = token.price.priceInUSD;
+
+                // Reset token threshold
+                const tokenThreshold = document.getElementById("threshold_input_"+token.symbol);
+                tokenThreshold.value = token.reserveLiquidationThreshold/100;
+            }
+
+            const supplyButton = document.getElementById("supply_input_button_" + token.symbol);
+            if(supplyButton){
+                supplyButton.checked = false;
+            }
+        }
+
+        // Remove labels if no remaining sliders
+        var remainingSliders = false;
+        for(const key in tokenData){
+            const token = tokenData[key];
+            const sliderDivs = document.getElementById("slider_" + token.symbol);
+            if(sliderDivs && sliderDivs.style.display == "grid"){
+                remainingSliders = true;
+                break;
+            }
+        }
+        if(!remainingSliders){
+            const sliderHeader = document.getElementById('values_container_header');
+            const sliderEmptyText = document.getElementById('values_container_empty');
+            sliderHeader.style.display = "none";
+            sliderEmptyText.style.display = "block";
+        }
+    }
+
+    function clearBorrowSide(){
+        const pTag = document.getElementById("assets_borrow_nothing");
+        const headerTag = document.getElementById("assets_borrow_header");
+        const borrowInfo = document.getElementById("assets_borrow_info_box_left");
+        pTag.style.display = "block";
+        headerTag.style.display = "none";
+        borrowInfo.style.display = "none";
+
+        for(const index in tokenData){
+            const token  = tokenData[index];
+
+            const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
+            if(borrowOuterDiv){
+                borrowOuterDiv.style.display = "none";
+                const borrowInput = document.getElementById("borrow_input_" + token.symbol);
+                borrowInput.value = null;
+            }
+            const displaySlider = document.getElementById("slider_" + token.symbol);
+            const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+            
+            if(displaySlider && (!supplyOuterDiv || supplyOuterDiv.style.display == "none")){
+                displaySlider.style.display = "none";
+
+                // Reset slider value
+                const sliderInput = document.getElementById("slider_input_"+token.symbol);
+                sliderInput.value = token.price.priceInUSD;
+
+                // Reset token threshold
+                const tokenThreshold = document.getElementById("threshold_input_"+token.symbol);
+                tokenThreshold.value = token.reserveLiquidationThreshold/100;
+            }
+
+            const borrowButton = document.getElementById("borrow_input_button_" + token.symbol);
+            if(borrowButton){
+                borrowButton.checked = false;
+            }
+        }
+
+        // Remove labels if no remaining sliders
+        var remainingSliders = false;
+        for(const key in tokenData){
+            const token = tokenData[key];
+            const sliderDivs = document.getElementById("slider_" + token.symbol);
+            if(sliderDivs && sliderDivs.style.display == "grid"){
+                remainingSliders = true;
+                break;
+            }
+        }
+        if(!remainingSliders){
+            const sliderHeader = document.getElementById('values_container_header');
+            const sliderEmptyText = document.getElementById('values_container_empty');
+            sliderHeader.style.display = "none";
+            sliderEmptyText.style.display = "block";
+        }
+    }
     
     useEffect(() => {
         const svg = document.getElementById("info_container_top_netWorth_icon");
@@ -1517,7 +1625,7 @@ const HeaderInfo = () => {
                 <div className = "modal_supply_content" id = "modal_supply_content">
                     <div className="modal_supply_content_header">
                         <p>Assets to Supply</p>
-                        <button className = "modal_supply_content_header_btn">Clear Supply</button>
+                        <button className = "modal_supply_content_header_btn" onClick={clearSupplySide}>Clear Supply</button>
                     </div>
 
                     <div className="modal_supply_content_assets">
@@ -1543,7 +1651,7 @@ const HeaderInfo = () => {
                 <div className = "modal_borrow_content" id = "modal_borrow_content">
                     <div className="modal_borrow_content_header">
                         <p>Assets to Borrow</p>
-                        <button className = "modal_borrow_content_header_btn">Clear Borrow</button>
+                        <button className = "modal_borrow_content_header_btn" onClick={clearBorrowSide}>Clear Borrow</button>
                     </div>
 
                     <div className="modal_borrow_content_assets">

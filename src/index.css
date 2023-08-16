@@ -17,8 +17,9 @@
 }
 .navbar h1{
   margin:0;
-  margin-left:10px;
-  font-size: xx-large;
+  padding-left:15px;
+  font-weight: 550;
+  font-size: 27px;
   background: linear-gradient(90deg, rgb(46,186,198) 16%, rgba(182, 80, 158, 1) 91%);
   -webkit-background-clip: text; /* For Safari */
   -webkit-text-fill-color: transparent; /* For Safari */
@@ -570,6 +571,13 @@ div.textbox {
   border: 1px solid rgba(235, 235, 239, 0.08);
   transition: border 0.2s;
   padding:10px;
+  cursor:pointer;
+}
+
+.modal_supply_content_header_btn:hover, .modal_borrow_content_header_btn:hover{
+
+  border: 1px solid rgba(235, 235, 239);
+
 }
 
 
@@ -1067,6 +1075,8 @@ div.textbox {
 .bottom_info_address_div_symbol{
   font-size:20px;
   margin:5px;
+  margin-left:0px;
+
 }
 
 /* The switch - the box around the slider */
