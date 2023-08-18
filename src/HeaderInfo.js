@@ -284,7 +284,7 @@ const HeaderInfo = () => {
 
         // Reset LTV
         const ltvDiv = document.getElementById("info_container_bottom_ltv");
-        ltvDiv.textContent = "0.00%";
+        ltvDiv.textContent = "0.00";
 
         // Hide supply info
         const pTag = document.getElementById("assets_supply_nothing");
@@ -458,7 +458,7 @@ const HeaderInfo = () => {
     // Query the graph for the tokens that can be supplied/borrowed for a given network
     // Retrieve each token's symbol and price.
     async function queryTokenDataFromTheGraph(){
-        
+    
         const { request } = require('graphql-request');
         const query = `
         {
@@ -687,13 +687,37 @@ const HeaderInfo = () => {
         if(queryCalled){
             updatePositions(); 
             setQueryCalled(false);
+
+            // Hide loading div
+            const loadingDiv = document.getElementById("loading");
+            loadingDiv.style.display = "none";
+
+            // Re-enable buttons once data has been retrieved
+            const searchDiv = document.getElementById("search_div_search");
+            const supplyDiv = document.getElementById("b_s_container_supply_btn");
+            const borrowDiv = document.getElementById("b_s_container_borrow_btn");
+            searchDiv.disabled = false;
+            supplyDiv.disabled = false;
+            borrowDiv.disabled = false;
         }
             
     }, [aavePosition, queryCalled]);
 
     // Query the graph for a user's Aave position on the current network
     function queryAddressForUserPosition(){
-        
+
+        // Show loading div
+        const loadingDiv = document.getElementById("loading");
+        loadingDiv.style.display = "flex";
+
+        // Disable buttons while getting data
+        const searchDiv = document.getElementById("search_div_search");
+        const supplyDiv = document.getElementById("b_s_container_supply_btn");
+        const borrowDiv = document.getElementById("b_s_container_borrow_btn");
+        searchDiv.disabled = true;
+        supplyDiv.disabled = true;
+        borrowDiv.disabled = true;
+
         resetTokenData();
         const address = document.getElementById("search_div_input").value.toLowerCase();
         const { request } = require('graphql-request');
@@ -1308,13 +1332,13 @@ const HeaderInfo = () => {
         const ltvDiv = document.getElementById("info_container_bottom_ltv");
         const ltvPercent = borrowSum/supplySum;
         if(isNaN(ltvPercent)){
-            ltvDiv.textContent = "0%";
+            ltvDiv.textContent = "0";
         }
         else if (!isFinite(ltvPercent)){
-            ltvDiv.textContent = "∞%";
+            ltvDiv.textContent = "∞";
         }
         else{
-            ltvDiv.textContent = (borrowSum/supplySum*100).toFixed(2) + "%";
+            ltvDiv.textContent = (borrowSum/supplySum*100).toFixed(2);
         }
 
         // Calculate and update Net Worth 
@@ -1757,11 +1781,14 @@ const HeaderInfo = () => {
                                 
 
                                 <div>
-                                    <p className='info_container_top_ltv'>Loan-To-Value Ratio</p>
+                                    <p className='info_container_top_ltv'>Loan-to-Value Ratio</p>
                                     <InfoIcon className = "info_container_top_icon_ltv_icon"></InfoIcon>
                                 </div>  
-                                
-                                <div className="info_container_bottom_ltv" id = "info_container_bottom_ltv">0.00%</div>                                                              
+
+                                <div>
+                                    <div className="info_container_bottom_ltv" id = "info_container_bottom_ltv">0.00</div> 
+                                    <div className='info_container_bottom_ltv_symbol'>%</div>         
+                                </div>                                                    
                             </div>
 
                         </div>     

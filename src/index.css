@@ -335,7 +335,12 @@ div.textbox {
   padding-right: 2px;
 }
 
-.info_container_bottom_ltv, .info_container_bottom_healthFactorValue, .info_container_bottom_netWorth_symbol, .info_container_bottom_netWorth_value{
+.info_container_bottom_ltv_symbol{
+  color: rgb(165, 168, 182);
+  padding-left:2px;
+}
+
+.info_container_bottom_ltv, .info_container_bottom_healthFactorValue, .info_container_bottom_netWorth_symbol, .info_container_bottom_netWorth_value, .info_container_bottom_ltv_symbol{
   font-size:21px;
   font-weight: 800;
   line-height: 133.4%;
