@@ -39,12 +39,15 @@ const HeaderInfo = () => {
 
             // Show loading div
             const loadingDiv = document.getElementById("loading");
+            const loadingText = document.getElementById("loading_text");
+            loadingText.textContent = `Loading ${newNetwork} network token data`;
             loadingDiv.style.display = "flex";
 
             // Disable buttons while getting data
             const searchDiv = document.getElementById("search_div_search");
             const supplyDiv = document.getElementById("b_s_container_supply_btn");
             const borrowDiv = document.getElementById("b_s_container_borrow_btn");
+            //Todo: Disable the search button 
             searchDiv.disabled = true;
             supplyDiv.disabled = true;
             borrowDiv.disabled = true;
@@ -98,9 +101,25 @@ const HeaderInfo = () => {
 
 
 
+    function setCheckedValueSupply(token){
+        const inputDiv = document.getElementById("supply_input_button_" + token.symbol);
+        inputDiv.checked = false;
+        removeTokenSupply(token);
+        displayTotalSuppliedOrBorrowed();
+        calculateCurrentHealthValue();
+    }
+
+    function setCheckedValueBorrow(token){
+        const inputDiv = document.getElementById("borrow_input_button_" + token.symbol);
+        inputDiv.checked = false;
+        addOrRemoveBorrowToken(token);
+        displayTotalSuppliedOrBorrowed();
+        calculateCurrentHealthValue();
+    }
+
     function addOrRemoveSupplyToken(token){
         const inputDiv = document.getElementById("supply_input_button_" + token.symbol);
-        var checkedValue = inputDiv.checked
+        var checkedValue = inputDiv.checked;
         if(checkedValue){
             addTokenSupply(token);
         }
@@ -193,7 +212,7 @@ const HeaderInfo = () => {
         var remainingBorrow = false;
         for(const index in tokenData){
             const token = tokenData[index];
-            const borrowOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
+            const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
             if(borrowOuterDiv && borrowOuterDiv.style.display == "grid"){
                 remainingBorrow = true;
                 break;
@@ -381,6 +400,13 @@ const HeaderInfo = () => {
                 valueElement.value = 0;
                 outerDiv.appendChild(valueElement);
 
+                // Add remove button 
+                const removeButton = document.createElement("button");
+                removeButton.id = "supply_button_"+token.symbol;
+                removeButton.classList.add('supply_buttons');
+                removeButton.addEventListener("click", function() {setCheckedValueSupply(token);});
+                outerDiv.appendChild(removeButton);
+               
                 // Finally add the outer div element to the ul element
                 ulElement.appendChild(outerDiv);
                 
@@ -448,6 +474,13 @@ const HeaderInfo = () => {
                 valueElement.value = 0;
                 outerDiv.appendChild(valueElement);
 
+                 // Add remove button 
+                 const removeButton = document.createElement("button");
+                 removeButton.id = "borrow_button_"+token.symbol;
+                 removeButton.classList.add('borrow_buttons');
+                 removeButton.addEventListener("click", function() {setCheckedValueBorrow(token);});
+                 outerDiv.appendChild(removeButton);
+
                 // Finally add the outer div element to the ul element
                 ulElement.appendChild(outerDiv);
 
@@ -490,9 +523,24 @@ const HeaderInfo = () => {
             setTokenData(data.reserves);
             setTokenDataChanged(true);
            
-          } catch (error) {
+        } 
+        catch (error) {
             console.error('Error fetching token info:', error);
-          }
+            displayErrorMessage('Error fetching token info. ' + error);
+
+            // Re-enable buttons once error is caught
+            const searchDiv = document.getElementById("search_div_search");
+            const supplyDiv = document.getElementById("b_s_container_supply_btn");
+            const borrowDiv = document.getElementById("b_s_container_borrow_btn");
+            searchDiv.disabled = false;
+            supplyDiv.disabled = false;
+            borrowDiv.disabled = false;
+
+            // Hide loading div
+            const loadingDiv = document.getElementById("loading");
+            loadingDiv.style.display = "none";
+            setMissingPricesFilled(true);
+        }
     }
 
     const missingEthereumSymbols = ['WBTC', "LDO", "wstETH", "rETH", "cbETH"];
@@ -514,11 +562,12 @@ const HeaderInfo = () => {
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
-                try {
+                try{
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
-                    
-                    } catch (error) {  
+                } 
+                catch (error){  
+                    displayErrorMessage('Error fetching oracle token info. ' + error);
                 }
             }
             setOraclePrices(tempOraclePrices);
@@ -535,10 +584,12 @@ const HeaderInfo = () => {
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
-                try {
+                try{
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
-                    } catch (error) {  
+                } 
+                catch (error){  
+                    displayErrorMessage('Error fetching oracle token info. ' + error);
                 }
             }
             setOraclePrices(tempOraclePrices);
@@ -555,11 +606,13 @@ const HeaderInfo = () => {
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
-                try {
+                try{
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
                     
-                    } catch (error) {  
+                } 
+                catch (error){
+                    displayErrorMessage('Error fetching oracle token info. ' + error);  
                 }
             }
             setOraclePrices(tempOraclePrices);
@@ -576,11 +629,13 @@ const HeaderInfo = () => {
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
-                try {
+                try{
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
                     
-                    } catch (error) {  
+                } 
+                catch (error){  
+                    displayErrorMessage('Error fetching oracle token info. ' + error);
                 }
             }
             setOraclePrices(tempOraclePrices);
@@ -598,10 +653,13 @@ const HeaderInfo = () => {
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
-                try {
+                try{
                     const result = await contract.methods.latestAnswer().call();
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
-                    } catch (error) {  
+                } 
+                catch (error) 
+                {  
+                    displayErrorMessage('Error fetching oracle token info. ' + error);
                 }
             }
             setOraclePrices(tempOraclePrices);
@@ -708,6 +766,8 @@ const HeaderInfo = () => {
 
         // Show loading div
         const loadingDiv = document.getElementById("loading");
+        const loadingText = document.getElementById("loading_text");
+        loadingText.textContent = `Searching for user's Aave position`;
         loadingDiv.style.display = "flex";
 
         // Disable buttons while getting data
@@ -743,8 +803,22 @@ const HeaderInfo = () => {
             setQueryCalled(true);
         })
         .catch((error) => {
-            displayErrorMessage(`Error: invalid address`);
+            displayErrorMessage(error);
             console.error(error);
+
+            // Re-enable buttons once error is caught
+            const searchDiv = document.getElementById("search_div_search");
+            const supplyDiv = document.getElementById("b_s_container_supply_btn");
+            const borrowDiv = document.getElementById("b_s_container_borrow_btn");
+            searchDiv.disabled = false;
+            supplyDiv.disabled = false;
+            borrowDiv.disabled = false;
+
+            // Hide loading div
+            const loadingDiv = document.getElementById("loading");
+            loadingDiv.style.display = "none";
+            setMissingPricesFilled(true);
+        
         });
     }
 
@@ -1551,8 +1625,8 @@ const HeaderInfo = () => {
             const swithSupplyAndBorrowDiv = document.getElementById("switchSupplyAndBorrow_container");
             const screenWidth = window.innerWidth;
 
-            const tabletThreshold = 992;
-            const mobileThreshold = 570;
+            const tabletThreshold = 1000;
+            const mobileThreshold = 682;
             // If screen size is less than threshold
             if(screenWidth < tabletThreshold){
                 switchSupplyAndBorrowBtn.style.display = "flex";
@@ -1580,15 +1654,16 @@ const HeaderInfo = () => {
                 supplyDiv.style.display = "block";
                 borrowDiv.style.display = "block";
                 infoContainerOuter.style.display = "block";
-
-                sliderDiv.style.width = `${supplyDivWidth + borrowDivWidth-11}px`;
+                
+                sliderDiv.style.width = `${supplyDivWidth + borrowDivWidth}px`;
+                
             }
             
             if(screenWidth < mobileThreshold){
                 // Change the info container grid layout
                 infoContainer.style.gridTemplateColumns = 'repeat(1, 1fr)';
                 infoContainer.style.gridTemplateRows = 'repeat(6, auto)';
-                swithSupplyAndBorrowDiv.style.width = "75%";
+                swithSupplyAndBorrowDiv.style.width = "200px";
 
                 //Adjust modal width
                 supplyModal.style.width = "90%";
@@ -1742,7 +1817,7 @@ const HeaderInfo = () => {
 
             <div className = "loading" id = "loading">
                 <div className="loading_circle" id="loading_circle"></div>
-                <p className = "loading_text">Loading Token Data...</p>
+                <p className = "loading_text" id = "loading_text">Loading Token Data...</p>
             </div>
      
             <div className = "search">
@@ -1796,11 +1871,11 @@ const HeaderInfo = () => {
                 </div>
                 <div className = "switchSupplyAndBorrow" id = "switchSupplyAndBorrow">
                     <div className="switchSupplyAndBorrow_container" id ="switchSupplyAndBorrow_container">
-                            <button id="supply_button" class="switchSupplyAndBorrow_button active">
+                            <button id="supply_button" className="switchSupplyAndBorrow_button active">
                                 <div className = "supply_button_div" id = "supply_button_div"></div>
                                 <p className = "supply_button_text">Supply</p>
                             </button>
-                            <button id="borrow_button" class="switchSupplyAndBorrow_button">
+                            <button id="borrow_button" className="switchSupplyAndBorrow_button">
                                 <div className = "borrow_button_div" id = "borrow_button_div"></div>
                                 <p className = "borrow_button_text">Borrow</p>
                             </button>
@@ -1827,6 +1902,7 @@ const HeaderInfo = () => {
                             <h3>Amount</h3>
                             <h3>Price</h3>
                             <h3>Value</h3>
+                            <h3></h3>
                         </div>
                         <div className="assets_supply_tokens">
                             <ul id = "assets_supply_tokens_list" className = "assets_supply_tokens_list"></ul>
