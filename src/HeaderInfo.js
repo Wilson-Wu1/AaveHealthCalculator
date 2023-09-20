@@ -1592,18 +1592,47 @@ const HeaderInfo = () => {
     }
     
     useEffect(() => {
-        const svg = document.getElementById("info_container_top_netWorth_icon");
-        const textBox = document.getElementById("textbox");
+        // Display or hide net worth, health factor, and ltv textboxs
+        const netWorthInfoIcon = document.getElementById("info_container_top_netWorth_icon");
+        const netWorthTextBox = document.getElementById("netWorth_textbox");
+        const healthFactorInfoIcon = document.getElementById("info_container_top_icon_healthFactor_icon");
+        const healthFactorTextBox = document.getElementById("healthFactor_textbox");
+        const ltvInfoIcon = document.getElementById("info_container_top_icon_ltv_icon");
+        const ltvTextBox = document.getElementById("ltv_textbox");
     
-        svg.addEventListener("click", () => {
-        textBox.style.display = "block";
+        netWorthInfoIcon.addEventListener("click", () => {
+            netWorthTextBox.style.opacity = "1";
+            netWorthTextBox.style.visibility = "visible";
+            
+        });
+        healthFactorInfoIcon.addEventListener("click", () => {
+            healthFactorTextBox.style.opacity = "1";
+            healthFactorTextBox.style.visibility = "visible";
+        });
+        ltvInfoIcon.addEventListener("click", () => {
+            ltvTextBox.style.opacity = "1";
+            ltvTextBox.style.visibility = "visible"
+           
         });
     
         document.addEventListener("click", (event) => {
-        if (!svg.contains(event.target) && !textBox.contains(event.target)) {
-            textBox.style.display = "none";
+        if (!netWorthInfoIcon.contains(event.target) && !netWorthTextBox.contains(event.target)) {
+            netWorthTextBox.style.opacity = "0";
+            netWorthTextBox.style.visibility = "hidden";
+           
         }
-        });
+        if (!healthFactorInfoIcon.contains(event.target) && !healthFactorTextBox.contains(event.target)) {
+            healthFactorTextBox.style.opacity = "0";
+            healthFactorTextBox.style.visibility = "hidden";
+        }
+        if (!ltvInfoIcon.contains(event.target) && !ltvTextBox.contains(event.target)) {
+            ltvTextBox.style.opacity = "0";
+            ltvTextBox.style.visibility = "hidden";
+        }
+    });
+        
+
+
         getMissingPrices();
         queryTokenDataFromTheGraph();
         handleResize();
@@ -1837,10 +1866,10 @@ const HeaderInfo = () => {
                         <div className = "info_container_outer" id = "info_container_outer"> 
                             <div className = "info_container_top" id="info_container_top"> 
 
-                                <div>
+                                <div className = "info_container_top_div">
                                     <p className = "info_container_top_netWorth">Net Worth</p> 
                                     <InfoIcon className = "info_container_top_netWorth_icon" id ="info_container_top_netWorth_icon"></InfoIcon>
-                                    <div className="textbox" id="textbox">Value supplied minus value borrowed.</div>
+                                    <div className="textbox" id="netWorth_textbox">Value supplied minus value borrowed.</div>
                                 </div>   
                                 <div className = "info_container_bottom_netWorth">
                                     <div className='info_container_bottom_netWorth_symbol'>$</div>
@@ -1848,16 +1877,18 @@ const HeaderInfo = () => {
                                 </div>
 
 
-                                <div>
+                                <div className = "info_container_top_div">
                                     <p className = "info_container_top_healthFactor">Health Factor</p>
-                                    <InfoIcon className = "info_container_top_icon_healthFactor_icon"></InfoIcon>
+                                    <InfoIcon className = "info_container_top_icon_healthFactor_icon" id = "info_container_top_icon_healthFactor_icon"></InfoIcon>
+                                    <div className="textbox" id="healthFactor_textbox">A numeric representation of the safety of your deposited assets against the borrowed assets and its underlying value. The higher the value is, the safer the state of your funds are against liquidation. If the health factor reaches 1, the liquidation of your deposits will be triggered.</div>   
                                 </div>
                                 <div className = "info_container_bottom_healthFactorValue" id = "info_container_bottom_healthFactorValue">{healthFactor}</div>
                                 
 
-                                <div>
+                                <div className = "info_container_top_div">
                                     <p className='info_container_top_ltv'>Loan-to-Value Ratio</p>
-                                    <InfoIcon className = "info_container_top_icon_ltv_icon"></InfoIcon>
+                                    <InfoIcon className = "info_container_top_icon_ltv_icon" id = "info_container_top_icon_ltv_icon"></InfoIcon>
+                                    <div className="textbox" id="ltv_textbox">The Loan to Value (”LTV”) ratio defines the maximum amount of assets that can be borrowed with a specific collateral. It is expressed as a percentage (e.g., at LTV=75%, for every 1 ETH worth of collateral, borrowers will be able to borrow 0.75 ETH worth of the corresponding currency).</div>
                                 </div>  
 
                                 <div>
@@ -1900,7 +1931,7 @@ const HeaderInfo = () => {
                         <div className = "assets_supply_header" id ="assets_supply_header">
                             <h3>Asset</h3>
                             <h3>Amount</h3>
-                            <h3>Price</h3>
+                            <h3>Price (USD)</h3>
                             <h3>Value</h3>
                             <h3></h3>
                         </div>
@@ -1929,7 +1960,7 @@ const HeaderInfo = () => {
                         <div className = "assets_borrow_header" id = "assets_borrow_header">
                             <h3>Asset</h3>
                             <h3>Amount</h3>
-                            <h3>Price</h3>
+                            <h3>Price (USD)</h3>
                             <h3>Value</h3>
                         </div>
                         <div className="assets_borrow_tokens">

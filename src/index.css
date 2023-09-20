@@ -23,7 +23,7 @@ body{
   padding-left:15px;
   font-weight: 550;
   font-size: 27px;
-  color:rgb(204, 204, 255);
+  color:rgb(255, 255, 255);
   
   /*
   background: linear-gradient(90deg, rgb(46,186,198) 16%, rgba(182, 80, 158, 1) 91%);
@@ -315,15 +315,25 @@ body{
   display: flex;
 }
 
+.info_container_top_div{
+  display: flex;
+  position:relative;
+}
+
 div.textbox {
-  display: none;
   position:absolute;
   background-color: rgb(41, 46, 65);
   color: white;
-  padding: 5px;
-  border: 1px solid rgba(235, 235, 239, 0.08);
+  padding: 20px;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.5); /* Small shadow */
   border-radius: 5px;
-  top:240px; /* Initial top position */
+  font-size: 13px;
+  width:250px;
+  bottom: 30px;
+
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
 }
 
 
