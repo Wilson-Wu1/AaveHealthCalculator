@@ -300,7 +300,6 @@ body{
   font-size: 17px;
   color: rgb(165, 168, 182);
   margin:0;
-  padding-bottom:5px;
 }
 
 .info_container_bottom div{
@@ -318,6 +317,12 @@ body{
 .info_container_top_div{
   display: flex;
   position:relative;
+  padding-bottom:5px;
+}
+
+.info_container_top_iconDiv{
+  display:flex;
+  align-items: center;
 }
 
 div.textbox {
@@ -988,7 +993,7 @@ div.textbox {
   text-align: center;
 }
 
-#slider_div_top_min_max{
+#slider_div_top_min{
   padding:0;
 }
 

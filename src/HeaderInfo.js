@@ -1153,10 +1153,10 @@ const HeaderInfo = () => {
 
             // Create p tags for the min and max values
             const lowValueText = document.createElement("p");
-            lowValueText.id = 'slider_div_top_min_max';
+            lowValueText.id = 'slider_div_top_min';
             lowValueText.textContent = "$ 0";
             const maxValueText = document.createElement("p");
-            maxValueText.id = 'slider_div_top_min_max';
+            maxValueText.id = 'slider_div_top_max_'+token.symbol;
             maxValueText.textContent = '$ ' + (token.price.priceInUSD*3).toFixed(2);
 
             sliderBottomDiv.appendChild(lowValueText);
@@ -1299,6 +1299,8 @@ const HeaderInfo = () => {
         const sliderPrice = document.getElementById('slider_outer_top_price_' + tokenID);
         const sliderPercent = document.getElementById('slider_outer_top_percent_' + tokenID);
         const sliderPriceChange = document.getElementById('slider_outer_top_priceChange_' + tokenID);
+        const sliderMaxValueText = document.getElementById('slider_div_top_max_'+tokenID);
+        const sliderMaxValue = slider.max;
         var price;
         
         if(isSupplySide){
@@ -1311,6 +1313,11 @@ const HeaderInfo = () => {
                 borrow.value = price;
                 //borrow.textContent = parseFloat(priceAsNum.toFixed(2)).toLocaleString();
             }
+
+            // Change max price according to current price
+            slider.max = price * 3;
+            sliderMaxValueText.textContent = '$ ' + (price*3).toFixed(2);
+            // Change price values 
             sliderPrice.textContent = "$" + parseFloat(priceAsNum.toFixed(2)).toLocaleString();
             sliderPrice.value = price;
             slider.value = price;
@@ -1345,7 +1352,10 @@ const HeaderInfo = () => {
                 supply.value = price;
                 //supply.textContent = parseFloat(priceAsNum.toFixed(2)).toLocaleString();
             }
-
+            
+            // Change max price according to current price
+            slider.max = price * 3;
+            sliderMaxValueText.textContent = '$ ' + (price*3).toFixed(2);
             // Change price value
             sliderPrice.textContent = "$" + parseFloat(priceAsNum.toFixed(2)).toLocaleString();
             sliderPrice.value = price;
@@ -1868,7 +1878,9 @@ const HeaderInfo = () => {
 
                                 <div className = "info_container_top_div">
                                     <p className = "info_container_top_netWorth">Net Worth</p> 
-                                    <InfoIcon className = "info_container_top_netWorth_icon" id ="info_container_top_netWorth_icon"></InfoIcon>
+                                    <div className = "info_container_top_iconDiv">
+                                        <InfoIcon className = "info_container_top_netWorth_icon" id ="info_container_top_netWorth_icon"></InfoIcon>
+                                    </div>  
                                     <div className="textbox" id="netWorth_textbox">Value supplied minus value borrowed.</div>
                                 </div>   
                                 <div className = "info_container_bottom_netWorth">
@@ -1879,7 +1891,9 @@ const HeaderInfo = () => {
 
                                 <div className = "info_container_top_div">
                                     <p className = "info_container_top_healthFactor">Health Factor</p>
-                                    <InfoIcon className = "info_container_top_icon_healthFactor_icon" id = "info_container_top_icon_healthFactor_icon"></InfoIcon>
+                                    <div className = "info_container_top_iconDiv">
+                                        <InfoIcon className = "info_container_top_icon_healthFactor_icon" id = "info_container_top_icon_healthFactor_icon"></InfoIcon>
+                                    </div>
                                     <div className="textbox" id="healthFactor_textbox">A numeric representation of the safety of your deposited assets against the borrowed assets and its underlying value. The higher the value is, the safer the state of your funds are against liquidation. If the health factor reaches 1, the liquidation of your deposits will be triggered.</div>   
                                 </div>
                                 <div className = "info_container_bottom_healthFactorValue" id = "info_container_bottom_healthFactorValue">{healthFactor}</div>
@@ -1887,7 +1901,9 @@ const HeaderInfo = () => {
 
                                 <div className = "info_container_top_div">
                                     <p className='info_container_top_ltv'>Loan-to-Value Ratio</p>
-                                    <InfoIcon className = "info_container_top_icon_ltv_icon" id = "info_container_top_icon_ltv_icon"></InfoIcon>
+                                    <div className = "info_container_top_iconDiv">
+                                        <InfoIcon className = "info_container_top_icon_ltv_icon" id = "info_container_top_icon_ltv_icon"></InfoIcon>
+                                    </div>
                                     <div className="textbox" id="ltv_textbox">The Loan to Value (”LTV”) ratio defines the maximum amount of assets that can be borrowed with a specific collateral. It is expressed as a percentage (e.g., at LTV=75%, for every 1 ETH worth of collateral, borrowers will be able to borrow 0.75 ETH worth of the corresponding currency).</div>
                                 </div>  
 
