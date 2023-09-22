@@ -1675,9 +1675,8 @@ const HeaderInfo = () => {
                 borrowDiv.style.width = "90%";
                 supplyDiv.style.width = sliderDiv.style.width;
                 supplyDiv.style.margin = "0";
-                sliderDiv.style.paddingLeft = "15px";
-                sliderDiv.style.paddingRight = "15px";
-
+                sliderDiv.style.paddingRight = "20px";
+                sliderDiv.style.paddingLeft = "10px";
                 // Set the supply/borrow button to supply
                 supplyButton.classList.add('active');
                 borrowButton.classList.remove('active');
@@ -1688,13 +1687,15 @@ const HeaderInfo = () => {
                 borrowDiv.style.width = "40%";
                 supplyDiv.style.width = "40%";
                 supplyDiv.style.marginRight = "15px";
+                
                 sliderDiv.style.paddingRight = "10px";
+                sliderDiv.style.paddingLeft = "10px";
                 
                 supplyDiv.style.display = "block";
                 borrowDiv.style.display = "block";
                 infoContainerOuter.style.display = "block";
                 
-                sliderDiv.style.width = `${supplyDivWidth + borrowDivWidth}px`;
+                sliderDiv.style.width = `${supplyDivWidth + borrowDivWidth -7}px`;
                 
             }
             

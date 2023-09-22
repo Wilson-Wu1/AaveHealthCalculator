@@ -924,8 +924,8 @@ div.textbox {
 }
 .values_container{
   padding:10px;
-  padding-right:15px;
-  padding-left:15px;
+  padding-right:0px;
+  padding-left:0px;
   padding-bottom:0;
   background-color: rgb(41, 46, 65);
   border: 1px solid rgba(235, 235, 239, 0.08);
