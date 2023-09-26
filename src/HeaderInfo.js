@@ -1,5 +1,5 @@
-import {useEffect, useState, useRef} from 'react';
-import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
+import {useEffect, useState} from 'react';
+//import {ReactComponent as ExitSymbol} from './images/x-symbol.svg'
 import {ReactComponent as InfoIcon} from './images/infoIcon.svg'
 import {ReactComponent as SearchIcon} from './images/search.svg'
 import {ReactComponent as EthereumSymbol} from './images/ethereum.svg'

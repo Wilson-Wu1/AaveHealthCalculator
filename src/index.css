@@ -21,7 +21,7 @@ body{
 .navbar h1{
   margin:0;
   padding-left:15px;
-  font-weight: 550;
+  
   font-size: 27px;
   color:rgb(255, 255, 255);
   
@@ -35,6 +35,7 @@ body{
 }
 
 .navbar_questionIcon{
+  display:none;
   background-color: rgb(27, 32, 48);
   padding-right:30px;
 }
