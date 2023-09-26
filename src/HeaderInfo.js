@@ -29,7 +29,7 @@ const HeaderInfo = () => {
 
     function changeNetwork(newNetwork, newAaveVersion){
         // Only continue if the network and version has changed. Otherwise do nothing
-        if(newNetwork != chain || newAaveVersion != aaveVersion){
+        if(newNetwork !== chain || newAaveVersion !== aaveVersion){
             setTokenDataChanged(false);
             setOraclePricesChanged(false);
             
@@ -53,13 +53,13 @@ const HeaderInfo = () => {
             borrowDiv.disabled = true;
 
             // Aave V3
-            if(newAaveVersion == "V3"){
+            if(newAaveVersion === "V3"){
                 var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
                 // Metis network endpoint is different from others.
-                if(newNetwork == "Metis"){
+                if(newNetwork === "Metis"){
                     tempNewEndpoint = "https://andromeda.thegraph.metis.io/subgraphs/name/aave/protocol-v3-metis"
                 }
-                else if(newNetwork != "Ethereum"){
+                else if(newNetwork !== "Ethereum"){
                     tempNewEndpoint += ('-'+(newNetwork.toLowerCase()));
                 }
             }
@@ -67,10 +67,10 @@ const HeaderInfo = () => {
             else{
                 var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
                 // Matic network endpoint is different from others.
-                if(newNetwork == "Polygon"){
+                if(newNetwork === "Polygon"){
                     tempNewEndpoint = "https://api.thegraph.com/subgraphs/name/aave/aave-v2-matic";
                 }
-                else if (newNetwork != "Ethereum"){
+                else if (newNetwork !== "Ethereum"){
                     tempNewEndpoint += ('-'+(newNetwork.toLowerCase()));
                 }
                 
@@ -90,6 +90,7 @@ const HeaderInfo = () => {
     };
       
     useEffect(() => {
+         // eslint-disable-next-line react-hooks/exhaustive-deps
         if (endpoint !== null) {
             removeAllTokenDivs();
             clearPositionInfo();
@@ -162,7 +163,7 @@ const HeaderInfo = () => {
         inputDiv.value = 0;
 
         const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
-        if(!borrowOuterDiv || borrowOuterDiv.style.display == "none"){
+        if(!borrowOuterDiv || borrowOuterDiv.style.display === "none"){
             removeSlider(token);
             
         }
@@ -171,7 +172,7 @@ const HeaderInfo = () => {
         for(const index in tokenData){
             const token = tokenData[index];
             const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
-            if(supplyOuterDiv && supplyOuterDiv.style.display == "grid"){
+            if(supplyOuterDiv && supplyOuterDiv.style.display === "grid"){
                 remainingSupply = true;
                 break;
             }
@@ -205,7 +206,7 @@ const HeaderInfo = () => {
         inputDiv.value = 0;
 
         const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
-        if(!supplyOuterDiv || supplyOuterDiv.style.display == "none"){
+        if(!supplyOuterDiv || supplyOuterDiv.style.display === "none"){
             removeSlider(token);
         }
 
@@ -213,7 +214,7 @@ const HeaderInfo = () => {
         for(const index in tokenData){
             const token = tokenData[index];
             const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
-            if(borrowOuterDiv && borrowOuterDiv.style.display == "grid"){
+            if(borrowOuterDiv && borrowOuterDiv.style.display === "grid"){
                 remainingBorrow = true;
                 break;
             }
@@ -551,14 +552,14 @@ const HeaderInfo = () => {
     const [oraclePrices, setOraclePrices] = useState([]);
     
     async function getMissingPrices() {
-        if(chain == "Ethereum" && (aaveVersion == "V3" || aaveVersion == "V2")){
+        var tempOraclePrices = [];
+        if(chain === "Ethereum" && (aaveVersion === "V3" || aaveVersion === "V2")){
             const web3ProviderUrl = `https://mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
             const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
             const oracleAddresses = ['0x230E0321Cf38F09e247e50Afc7801EA2351fe56F', '0xb01e6C9af83879B8e06a092f0DD94309c0D497E4', '0x8B6851156023f4f5A66F68BEA80851c3D905Ac93', '0x05225Cd708bCa9253789C1374e4337a019e99D56','0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731'];
     
             // For each oracle, retrieve the latest token price.
-            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
@@ -572,7 +573,7 @@ const HeaderInfo = () => {
             }
             setOraclePrices(tempOraclePrices);
         }
-        else if(chain == "Arbitrum" && aaveVersion == "V3"){
+        else if(chain === "Arbitrum" && aaveVersion === "V3"){
             
             const web3ProviderUrl = `https://arbitrum-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
@@ -580,7 +581,6 @@ const HeaderInfo = () => {
             const oracleAddresses = ['0x945fD405773973d286De54E44649cc0d9e264F78','0x04c28D6fE897859153eA753f986cc249Bf064f71'];
     
             // For each oracle, retrieve the latest token price.
-            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
@@ -602,7 +602,6 @@ const HeaderInfo = () => {
             const oracleAddresses = ['0x52d5F9f884CA21C27E2100735d793C6771eAB793'];
     
             // For each oracle, retrieve the latest token price.
-            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
@@ -618,14 +617,13 @@ const HeaderInfo = () => {
             setOraclePrices(tempOraclePrices);
            
         }
-        else if(chain == "Polygon" && aaveVersion == "V3"){
+        else if(chain === "Polygon" && aaveVersion === "V3"){
             const web3ProviderUrl = `https://polygon-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
             const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
             const oracleAddresses = ['0xe34949A48cd2E6f5CD41753e449bd2d43993C9AC'];
     
             // For each oracle, retrieve the latest token price.
-            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
@@ -649,7 +647,6 @@ const HeaderInfo = () => {
             const oracleAddresses = ['0xc9245871D69BF4c36c6F2D15E0D68Ffa883FE1A7'];
     
             // For each oracle, retrieve the latest token price.
-            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
