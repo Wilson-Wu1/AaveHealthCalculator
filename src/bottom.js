@@ -29,6 +29,7 @@ const Bottom = () => {
             <div className = "bottom_info_address">
                 <p>Consider Donating </p>
                 <div className = "bottom_info_address_div">
+                    {/*}
                     <button onClick = {() => copyToClipboard("0x536366a0E8d6cd2c3424f0469a7CDC839E1bF786", "BTC address copied to clipboard")}>
                         <div>
                             <p className = "bottom_info_address_div_symbol">BTC</p>
@@ -36,13 +37,17 @@ const Bottom = () => {
                         </div>
                         
                     </button>
+                    
                     <p className = "bottom_info_address_div_divider">|</p>
+                    */}
+                    
                     <button onClick = {() => copyToClipboard("0x536366a0E8d6cd2c3424f0469a7CDC839E1bF786", "ERC20 address copied to clipboard")}>
                         <div>
                             <p className = "bottom_info_address_div_symbol">ERC20</p>
                             <CopyIcon className = "bottom_info_address_icon"/>
                         </div>
                     </button>
+                    
                 </div>
             </div>
             

@@ -1072,6 +1072,11 @@ div.textbox {
   width:175px;
 
 }
+
+.bottom_info_address p {
+  margin-bottom:8px;
+}
+
 .bottom_info_address button{
   margin:0;
   border:none;
@@ -1082,10 +1087,12 @@ div.textbox {
 }
 .bottom_info_address_div{
   display:flex;
-  justify-content: space-between;
+  /*justify-content: space-between;*/
+  justify-content:center;
 }
 
 .bottom_info_address_div_divider{
+  display:none;
   margin:0;
   padding-left:5px;
   padding-right:5px;
