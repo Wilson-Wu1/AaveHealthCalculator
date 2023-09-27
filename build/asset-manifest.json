@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/static/css/main.b4412344.css",
+    "main.js": "/static/js/main.2bd15bf0.js",
+    "static/media/polygon.svg": "/static/media/polygon.1ca2acacf7d1f296b0ef07918620a391.svg",
+    "static/media/arbitrum.svg": "/static/media/arbitrum.fe4d99d8646fc084a934afd1bc54a73d.svg",
+    "static/media/ethereum.svg": "/static/media/ethereum.db4eee148b9f20c744a7df6d7899962c.svg",
+    "static/media/optimism.svg": "/static/media/optimism.1caaf8671cc6ae7a7ec9a61a2cea885d.svg",
+    "static/media/search.svg": "/static/media/search.9b653c14db3f901c171d49c614b0961c.svg",
+    "static/media/questionIcon.svg": "/static/media/questionIcon.74cd946b3801ef8e23b0a971d1174a97.svg",
+    "static/media/metis.svg": "/static/media/metis.0dda861115cf7e0f56cda3c40aa0ffd2.svg",
+    "static/media/copy.svg": "/static/media/copy.193d114bcbc44434d95e0470466f06d7.svg",
+    "static/media/linkedIn.svg": "/static/media/linkedIn.f40f2240ce9e0219d345bcb92f8631fa.svg",
+    "static/media/githubLogo.svg": "/static/media/githubLogo.21059ace29a97992fd605abbaf1b4a02.svg",
+    "static/media/avalanche.svg": "/static/media/avalanche.dedddb4cc27cdccfbc5241272014fb5a.svg",
+    "static/media/x-symbol.svg": "/static/media/x-symbol.3727737e6a6a7c2adcac.svg",
+    "index.html": "/index.html",
+    "static/media/infoIcon.svg": "/static/media/infoIcon.9f21a15f3030a2ba8c5411415fcebb5a.svg",
+    "main.b4412344.css.map": "/static/css/main.b4412344.css.map",
+    "main.2bd15bf0.js.map": "/static/js/main.2bd15bf0.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b4412344.css",
+    "static/js/main.2bd15bf0.js"
+  ]
+}
