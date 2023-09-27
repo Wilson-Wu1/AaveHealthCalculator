@@ -18,7 +18,7 @@
     "react-scripts": "5.0.1",
     "react-slider": "^2.0.6",
     "web-vitals": "^2.1.4",
-    "web3": "^4.0.3"
+    "web3": "^4.1.2"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -34,9 +34,11 @@
   },
   "browserslist": {
     "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
+      "chrome >= 67",
+      "edge >= 79",
+      "firefox >= 68",
+      "opera >= 54",
+      "safari >= 14"
     ],
     "development": [
       "last 1 chrome version",

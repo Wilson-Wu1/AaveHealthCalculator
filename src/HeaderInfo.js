@@ -18,7 +18,7 @@ const HeaderInfo = () => {
     const [modalSupplyVisible, setSupplyModalVisible] = useState(false);
     const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
     const [tokenData, setTokenData] = useState(null);
-    //const [usdPriceEth, setUsdPriceEth] = useState(0);
+    const [usdPriceEth, setUsdPriceEth] = useState(0);
     const [aavePosition, setAavePosition] = useState([]);
     const [endpoint , setEndpoint] = useState('https://api.thegraph.com/subgraphs/name/aave/protocol-v3')
     const [healthFactor, setHealthFactor] = useState(0);
@@ -29,7 +29,7 @@ const HeaderInfo = () => {
 
     function changeNetwork(newNetwork, newAaveVersion){
         // Only continue if the network and version has changed. Otherwise do nothing
-        if(newNetwork !== chain || newAaveVersion !== aaveVersion){
+        if(newNetwork != chain || newAaveVersion != aaveVersion){
             setTokenDataChanged(false);
             setOraclePricesChanged(false);
             
@@ -47,29 +47,30 @@ const HeaderInfo = () => {
             const searchDiv = document.getElementById("search_div_search");
             const supplyDiv = document.getElementById("b_s_container_supply_btn");
             const borrowDiv = document.getElementById("b_s_container_borrow_btn");
-            //Todo: Disable the search button 
-            searchDiv.disabled = true;
+            //Todo: Disable the search button. Probably have to set its color because it is a div and not a button
+            searchDiv.disabled = true;  
             supplyDiv.disabled = true;
             borrowDiv.disabled = true;
 
             // Aave V3
-            var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
-            if(newAaveVersion === "V3"){
+            if(newAaveVersion == "V3"){
+                var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
                 // Metis network endpoint is different from others.
-                if(newNetwork === "Metis"){
+                if(newNetwork == "Metis"){
                     tempNewEndpoint = "https://andromeda.thegraph.metis.io/subgraphs/name/aave/protocol-v3-metis"
                 }
-                else if(newNetwork !== "Ethereum"){
+                else if(newNetwork != "Ethereum"){
                     tempNewEndpoint += ('-'+(newNetwork.toLowerCase()));
                 }
             }
             // Aave V2
             else{
+                var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
                 // Matic network endpoint is different from others.
-                if(newNetwork === "Polygon"){
+                if(newNetwork == "Polygon"){
                     tempNewEndpoint = "https://api.thegraph.com/subgraphs/name/aave/aave-v2-matic";
                 }
-                else if (newNetwork !== "Ethereum"){
+                else if (newNetwork != "Ethereum"){
                     tempNewEndpoint += ('-'+(newNetwork.toLowerCase()));
                 }
                 
@@ -96,7 +97,6 @@ const HeaderInfo = () => {
             getMissingPrices();
             queryTokenDataFromTheGraph();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [endpoint, aaveVersion]);
 
 
@@ -162,7 +162,7 @@ const HeaderInfo = () => {
         inputDiv.value = 0;
 
         const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
-        if(!borrowOuterDiv || borrowOuterDiv.style.display === "none"){
+        if(!borrowOuterDiv || borrowOuterDiv.style.display == "none"){
             removeSlider(token);
             
         }
@@ -171,7 +171,7 @@ const HeaderInfo = () => {
         for(const index in tokenData){
             const token = tokenData[index];
             const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
-            if(supplyOuterDiv && supplyOuterDiv.style.display === "grid"){
+            if(supplyOuterDiv && supplyOuterDiv.style.display == "grid"){
                 remainingSupply = true;
                 break;
             }
@@ -205,7 +205,7 @@ const HeaderInfo = () => {
         inputDiv.value = 0;
 
         const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
-        if(!supplyOuterDiv || supplyOuterDiv.style.display === "none"){
+        if(!supplyOuterDiv || supplyOuterDiv.style.display == "none"){
             removeSlider(token);
         }
 
@@ -213,7 +213,7 @@ const HeaderInfo = () => {
         for(const index in tokenData){
             const token = tokenData[index];
             const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
-            if(borrowOuterDiv && borrowOuterDiv.style.display === "grid"){
+            if(borrowOuterDiv && borrowOuterDiv.style.display == "grid"){
                 remainingBorrow = true;
                 break;
             }
@@ -320,6 +320,8 @@ const HeaderInfo = () => {
         pTag1.style.display = "flex";
         headerTag1.style.display = "none";
         borrowInfo1.style.display = "none";
+
+        //TODO: Hide headers of sliders and switch to the nothing supplied or borrowed message
     }
 
     function displaySupplyLabels(){
@@ -519,7 +521,7 @@ const HeaderInfo = () => {
               
             }
             console.log(data.reserves);
-            //setUsdPriceEth(data.priceOracles[0].usdPriceEth);
+            setUsdPriceEth(data.priceOracles[0].usdPriceEth);
             setTokenData(data.reserves);
             setTokenDataChanged(true);
            
@@ -551,14 +553,14 @@ const HeaderInfo = () => {
     const [oraclePrices, setOraclePrices] = useState([]);
     
     async function getMissingPrices() {
-        var tempOraclePrices = [];
-        if(chain === "Ethereum" && (aaveVersion === "V3" || aaveVersion === "V2")){
+        if(chain == "Ethereum" && (aaveVersion == "V3" || aaveVersion == "V2")){
             const web3ProviderUrl = `https://mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
             const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
             const oracleAddresses = ['0x230E0321Cf38F09e247e50Afc7801EA2351fe56F', '0xb01e6C9af83879B8e06a092f0DD94309c0D497E4', '0x8B6851156023f4f5A66F68BEA80851c3D905Ac93', '0x05225Cd708bCa9253789C1374e4337a019e99D56','0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731'];
     
             // For each oracle, retrieve the latest token price.
+            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
@@ -572,7 +574,7 @@ const HeaderInfo = () => {
             }
             setOraclePrices(tempOraclePrices);
         }
-        else if(chain === "Arbitrum" && aaveVersion === "V3"){
+        else if(chain == "Arbitrum" && aaveVersion == "V3"){
             
             const web3ProviderUrl = `https://arbitrum-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
@@ -580,6 +582,7 @@ const HeaderInfo = () => {
             const oracleAddresses = ['0x945fD405773973d286De54E44649cc0d9e264F78','0x04c28D6fE897859153eA753f986cc249Bf064f71'];
     
             // For each oracle, retrieve the latest token price.
+            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
@@ -593,7 +596,7 @@ const HeaderInfo = () => {
             }
             setOraclePrices(tempOraclePrices);
         }
-        else if(chain === "Optimism"){
+        else if(chain == "Optimism"){
    
             const web3ProviderUrl = `https://optimism-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
@@ -601,6 +604,7 @@ const HeaderInfo = () => {
             const oracleAddresses = ['0x52d5F9f884CA21C27E2100735d793C6771eAB793'];
     
             // For each oracle, retrieve the latest token price.
+            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
@@ -616,13 +620,14 @@ const HeaderInfo = () => {
             setOraclePrices(tempOraclePrices);
            
         }
-        else if(chain === "Polygon" && aaveVersion === "V3"){
+        else if(chain == "Polygon" && aaveVersion == "V3"){
             const web3ProviderUrl = `https://polygon-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
             const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
             const oracleAddresses = ['0xe34949A48cd2E6f5CD41753e449bd2d43993C9AC'];
     
             // For each oracle, retrieve the latest token price.
+            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
@@ -638,7 +643,7 @@ const HeaderInfo = () => {
             setOraclePrices(tempOraclePrices);
             
         }
-        else if(chain === "Avalanche" && (aaveVersion === "V3" || aaveVersion === "V2")){
+        else if(chain == "Avalanche" && (aaveVersion == "V3" || aaveVersion == "V2")){
             
             const web3ProviderUrl = `https://avalanche-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
@@ -646,6 +651,7 @@ const HeaderInfo = () => {
             const oracleAddresses = ['0xc9245871D69BF4c36c6F2D15E0D68Ffa883FE1A7'];
     
             // For each oracle, retrieve the latest token price.
+            var tempOraclePrices = [];
             for(const index in oracleAddresses){
                 const oracle = oracleAddresses[index];
                 const contract = new web3.eth.Contract(contractABI, oracle);
@@ -666,32 +672,32 @@ const HeaderInfo = () => {
 
     function setMissingPrices(){
         setMissingPricesFilled(false);
-        if(chain === "Ethereum" && (aaveVersion === "V3"|| aaveVersion === "V2")){
+        if(chain == "Ethereum" && (aaveVersion == "V3"|| aaveVersion == "V2")){
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingEthereumSymbols[index]);
                 foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
-        else if(chain === "Arbitrum"){
+        else if(chain == "Arbitrum"){
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingArbitrumSymbols[index]);
                 foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
-        else if(chain === "Avalanche" && (aaveVersion === "V3"|| aaveVersion === "V2")){
+        else if(chain == "Avalanche" && (aaveVersion == "V3"|| aaveVersion == "V2")){
             for(const index in oraclePrices){
                 
                 const foundObject = tokenData.find((item) => item.symbol === missingAvalancheSymbols[index]);
                 foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
-        else if(chain === "Polygon" && aaveVersion === "V3"){
+        else if(chain == "Polygon" && aaveVersion == "V3"){
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingPolygonSymbols[index]);
                 foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
-        else if(chain === "Optimism"){
+        else if(chain == "Optimism"){
             
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingOptimismSymbols[index]);
@@ -713,7 +719,6 @@ const HeaderInfo = () => {
       
             setMissingPrices();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [oraclePrices, oraclePricesChanged, tokenDataChanged, tokenData]);
 
     useEffect(() => {
@@ -735,7 +740,7 @@ const HeaderInfo = () => {
             loadingDiv.style.display = "none";
             setMissingPricesFilled(true);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps 
+
     }, [tokenData, missingPricesFilled]);
 
     useEffect(() => {
@@ -755,7 +760,7 @@ const HeaderInfo = () => {
             supplyDiv.disabled = false;
             borrowDiv.disabled = false;
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps  
+            
     }, [aavePosition, queryCalled]);
 
     // Query the graph for a user's Aave position on the current network
@@ -820,14 +825,14 @@ const HeaderInfo = () => {
     }
 
     function updatePositions(){
-        if(aavePosition.length !== 0){
+        if(aavePosition.length != 0){
             var atLeastOneSupply = false;
             var atLeastOneBorrow = false;
             for(const index in aavePosition){
                 const token = aavePosition[index];
 
                 // Display supplied token
-                if(token.currentATokenBalance !== 0){
+                if(token.currentATokenBalance != 0){
                     const outerDiv = document.getElementById("supply_outer_div_" + token.reserve.symbol);
                     outerDiv.style.display = "grid";
                     // Display token price
@@ -851,11 +856,10 @@ const HeaderInfo = () => {
                     
                 }
                 // Display borrowed token
-                if(token.currentTotalDebt !== 0){
+                if(token.currentTotalDebt != 0){
                     const outerDiv = document.getElementById("borrow_outer_div_" + token.reserve.symbol);
                     outerDiv.style.display = "grid";
                     // Display token price
-                    // eslint-disable-next-line
                     var foundTokenData = tokenData.find((item) => item.symbol === token.reserve.symbol);
                     displayPrice(foundTokenData.symbol, 1, foundTokenData.price.priceInUSD);
                     // Display amount borrowed
@@ -888,6 +892,8 @@ const HeaderInfo = () => {
             
         }
         else{
+            //TODO: Remove position info (net worth etc., total supplied, total borrowed)
+            clearPositionInfo();
             displayErrorMessage(`Error: Address does not own an Aave position on the ${chain} network`);
         }
         
@@ -1072,7 +1078,7 @@ const HeaderInfo = () => {
         for(const key in tokenData){
             const token = tokenData[key];
             const sliderDivs = document.getElementById("slider_" + token.symbol);
-            if(sliderDivs && sliderDivs.style.display === "grid"){
+            if(sliderDivs && sliderDivs.style.display == "grid"){
                 remainingSliders = true;
                 break;
             }
@@ -1194,7 +1200,7 @@ const HeaderInfo = () => {
         // Get the price from the slider input 
         const price = document.getElementById("slider_input_"+tokenID).value;
         // Update supply side
-        if(caller === 0){
+        if(caller == 0){
             const amount = document.getElementById("supply_input_"+tokenID).value;
             const valueElement = document.getElementById("supply_value_"+tokenID);
             valueElement.textContent = parseFloat((amount*price).toFixed(2)).toLocaleString() + " USD";
@@ -1202,7 +1208,7 @@ const HeaderInfo = () => {
             valueElement.value = amount*price;
         }
         // Update borrow side
-        else if (caller === 1){
+        else if (caller == 1){
             const amount = document.getElementById("borrow_input_"+tokenID).value;
             const valueElement = document.getElementById("borrow_value_"+tokenID);
             valueElement.textContent = parseFloat((amount*price).toFixed(2)).toLocaleString() + " USD";
@@ -1211,7 +1217,7 @@ const HeaderInfo = () => {
         }
 
         
-        else if (caller === 2){
+        else if (caller == 2){
             // Caller is from slider. Potentially update both sides.
             // First check the supply/borrow divs exist first 
             const supplyDiv= document.getElementById("supply_input_"+tokenID);
@@ -1236,17 +1242,17 @@ const HeaderInfo = () => {
     function displayPrice(tokenID, caller, currentTokenPrice){
         var price = document.getElementById("slider_input_"+tokenID).value;
         price = parseFloat(price);
-        if(caller === 0){
+        if(caller == 0){
             const priceElement = document.getElementById("supply_price_"+tokenID);
             priceElement.value = price;
             
         }
-        else if (caller === 1){
+        else if (caller == 1){
             const priceElement = document.getElementById("borrow_price_"+tokenID);
             priceElement.value = price
            
         }
-        else if (caller === 2){
+        else if (caller == 2){
             
             const supplyDiv = document.getElementById("supply_price_"+tokenID);
             if(supplyDiv){
@@ -1298,6 +1304,7 @@ const HeaderInfo = () => {
         const sliderPercent = document.getElementById('slider_outer_top_percent_' + tokenID);
         const sliderPriceChange = document.getElementById('slider_outer_top_priceChange_' + tokenID);
         const sliderMaxValueText = document.getElementById('slider_div_top_max_'+tokenID);
+        const sliderMaxValue = slider.max;
         var price;
         
         if(isSupplySide){
@@ -1387,7 +1394,7 @@ const HeaderInfo = () => {
         for(const index in tokenData){
             const token = tokenData[index];
             const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
-            if(supplyOuterDiv && supplyOuterDiv.style.display === "grid"){
+            if(supplyOuterDiv && supplyOuterDiv.style.display == "grid"){
                 const supplyValue = document.getElementById("supply_value_" + token.symbol);
                 supplySum += supplyValue.value;
             }
@@ -1400,7 +1407,7 @@ const HeaderInfo = () => {
         for(const index in tokenData){
             const token = tokenData[index];
             const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
-            if(borrowOuterDiv && borrowOuterDiv.style.display === "grid"){
+            if(borrowOuterDiv && borrowOuterDiv.style.display == "grid"){
                 const borrowValue = document.getElementById("borrow_value_" + token.symbol);
                 borrowSum += borrowValue.value;
                 
@@ -1437,14 +1444,14 @@ const HeaderInfo = () => {
         for(const index in tokenData){
             const token = tokenData[index];
             const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
-            if(supplyOuterDiv && supplyOuterDiv.style.display === "grid"){
+            if(supplyOuterDiv && supplyOuterDiv.style.display == "grid"){
                 const inputAmount = document.getElementById("supply_input_"+token.symbol).value;
                 const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
                 const liquidationThreshold = document.getElementById("threshold_input_"+token.symbol).value/100;
                 denominator += (currentPrice * inputAmount) * liquidationThreshold;
             }
             const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
-            if(borrowOuterDiv && borrowOuterDiv.style.display === "grid"){
+            if(borrowOuterDiv && borrowOuterDiv.style.display == "grid"){
                 const inputAmount = document.getElementById("borrow_input_"+token.symbol).value;
                 const currentPrice = document.getElementById("slider_input_"+token.symbol).value;
                 totalBorrowValue += (currentPrice * inputAmount)
@@ -1506,7 +1513,7 @@ const HeaderInfo = () => {
             const displaySlider = document.getElementById("slider_" + token.symbol);
             const borrowOuterDiv = document.getElementById("borrow_outer_div_" + token.symbol);
             
-            if(displaySlider && borrowOuterDiv && borrowOuterDiv.style.display === "none"){
+            if(displaySlider && borrowOuterDiv && borrowOuterDiv.style.display == "none"){
                 displaySlider.style.display = "none";
 
                 // Reset slider value
@@ -1529,7 +1536,7 @@ const HeaderInfo = () => {
         for(const key in tokenData){
             const token = tokenData[key];
             const sliderDivs = document.getElementById("slider_" + token.symbol);
-            if(sliderDivs && sliderDivs.style.display === "grid"){
+            if(sliderDivs && sliderDivs.style.display == "grid"){
                 remainingSliders = true;
                 break;
             }
@@ -1562,7 +1569,7 @@ const HeaderInfo = () => {
             const displaySlider = document.getElementById("slider_" + token.symbol);
             const supplyOuterDiv = document.getElementById("supply_outer_div_" + token.symbol);
             
-            if(displaySlider && (!supplyOuterDiv || supplyOuterDiv.style.display === "none")){
+            if(displaySlider && (!supplyOuterDiv || supplyOuterDiv.style.display == "none")){
                 displaySlider.style.display = "none";
 
                 // Reset slider value
@@ -1585,7 +1592,7 @@ const HeaderInfo = () => {
         for(const key in tokenData){
             const token = tokenData[key];
             const sliderDivs = document.getElementById("slider_" + token.symbol);
-            if(sliderDivs && sliderDivs.style.display === "grid"){
+            if(sliderDivs && sliderDivs.style.display == "grid"){
                 remainingSliders = true;
                 break;
             }
@@ -1947,7 +1954,7 @@ const HeaderInfo = () => {
                             <h3>Amount</h3>
                             <h3>Price (USD)</h3>
                             <h3>Value</h3>
-                            <h3> </h3>
+                            <h3></h3>
                         </div>
                         <div className="assets_supply_tokens">
                             <ul id = "assets_supply_tokens_list" className = "assets_supply_tokens_list"></ul>
