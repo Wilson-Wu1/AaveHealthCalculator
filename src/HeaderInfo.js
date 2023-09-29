@@ -321,7 +321,11 @@ const HeaderInfo = () => {
         headerTag1.style.display = "none";
         borrowInfo1.style.display = "none";
 
-        //TODO: Hide headers of sliders and switch to the nothing supplied or borrowed message
+        // Hide slider info
+        const sliderPTag = document.getElementById("values_container_empty");
+        const sliderHeaderTag = document.getElementById("values_container_header");
+        sliderPTag.style.display = "block";
+        sliderHeaderTag.style.display = "none";
     }
 
     function displaySupplyLabels(){
@@ -892,7 +896,7 @@ const HeaderInfo = () => {
             
         }
         else{
-            //TODO: Remove position info (net worth etc., total supplied, total borrowed)
+            // Remove any previous position info
             clearPositionInfo();
             displayErrorMessage(`Error: Address does not own an Aave position on the ${chain} network`);
         }
@@ -1768,7 +1772,7 @@ const HeaderInfo = () => {
                 <div className = "modal_supply_content" id = "modal_supply_content">
                     <div className="modal_supply_content_header">
                         <p>Assets to Supply</p>
-                        <button className = "modal_supply_content_header_btn" onClick={clearSupplySide}>Clear Supply</button>
+                        <button className = "modal_supply_content_header_btn" onClick={clearSupplySide}>Clear Supply</button>                 
                     </div>
 
                     <div className="modal_supply_content_assets">
