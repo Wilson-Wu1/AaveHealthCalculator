@@ -530,6 +530,7 @@ div.textbox {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px); 
+  display:flex;
   justify-content: center;
   align-items: center;
   z-index: 9999; 
@@ -556,14 +557,13 @@ div.textbox {
 
 .modal_supply_content, .modal_borrow_content{
   width: 50%;
-  height: 90%;
+  height: 85%;
   background-color: rgb(41, 46, 65);
   border: 1px solid rgba(235, 235, 239, 0.08);
   border-radius: 10px;
   padding:10px;
-
-  margin:auto;
-  margin-top:10px;
+  overflow: auto;
+  
 }
 
 .modal_supply_content_header, .modal_borrow_content_header{
@@ -715,22 +715,18 @@ div.textbox {
   background-color:rgb(41, 46, 65);
 }
 
-.modal_supply_content_assets_bottom{
+.modal_supply_content_assets_div{
   background-color:rgb(41, 46, 65);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top:45px;
-  
+  height:75px;
+  /*TODO: Apply to borrow side*/
 }
 
-.modal_borrow_content_assets_bottom{
+.modal_supply_content_assets_bottom, .modal_borrow_content_assets_bottom{
   background-color:rgb(41, 46, 65);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top:45px;
-  
+  padding-top:10px;
 }
 
 .modal_supply_content_assets_bottom_btn{

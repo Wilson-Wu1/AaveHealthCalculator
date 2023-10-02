@@ -1784,9 +1784,12 @@ const HeaderInfo = () => {
                             <div className="modal_supply_content_scrollable">
                                 <ul id = "modal_supply_content_scrollable_list" className = "modal_supply_content_scrollable_list"></ul>
                             </div>
-                            <div className = "modal_supply_content_assets_bottom">
-                                <button className = "modal_supply_content_assets_bottom_btn" onClick={setSupplyModalVisibilityFalse}>Confirm</button>
+                            <div className = "modal_supply_content_assets_div">
+                                <div className = "modal_supply_content_assets_bottom">
+                                    <button className = "modal_supply_content_assets_bottom_btn" onClick={setSupplyModalVisibilityFalse}>Confirm</button>
+                                </div>
                             </div>
+                            
                         </div>
                     </div>
 
