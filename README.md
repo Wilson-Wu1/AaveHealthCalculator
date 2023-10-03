@@ -1,6 +1,8 @@
-# [Aave Liquidation Calculator](https://main--bright-biscochitos-7ec272.netlify.app/)
+# [Aave Health Calculator](https://aavehealth.org/)
 
-The Aave Liquidation Calculator is a web-based tool that allows users to assess the risk level associated with their Aave positions on any supporting chain and Aave market. Users can input their wallet address, view their current health factor, and make adjustments to their position by changing token prices, adding or removing tokens from the supply or borrow side, and then view their updated health factor.
+**https://aavehealth.org/**
+
+The Aave Health Calculator is a web-based tool that allows users to assess the risk level associated with their Aave positions on any supporting chain and Aave market. Users can input their wallet address, view their current health factor, and make adjustments to their position by changing token prices, adding or removing tokens from the supply or borrow side, and then view their updated health factor.
 
 ## Features
 
@@ -27,7 +29,7 @@ The Aave Liquidation Calculator is a web-based tool that allows users to assess 
 
 ## Data Sources Used
 
-The Aave Liquidation Calculator leverages The Graph and Infura to obtain user Aave positions and token prices:
+The Aave Health Calculator leverages The Graph and Infura to obtain user Aave positions and token prices:
 
 - **The Graph for Aave Positions and Token Prices:**
   - GraphQL is used to query user-specific Aave position data from The Graph. Users input their wallet address, and GraphQL queries are made to Aave's subgraph to retrieve relevant information about their positions. This allows the app to calculate the current health factor associated with their Aave positions.
