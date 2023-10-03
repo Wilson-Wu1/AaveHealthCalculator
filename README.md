@@ -54,4 +54,4 @@ The Aave Health Calculator leverages The Graph and Infura to obtain user Aave po
     - [0x04c28D6fE897859153eA753f986cc249Bf064f71]()
 
 ## Other Considerations
-  - The Aave protocol considers the GHO stable-coin to have a fixed price of $1. Because of this, the price of GHO is not fetched from any data source and the app considers the price of GHO to always be fixed at $1, unless it is modified by the user. 
+  - The Aave protocol considers the [GHO stable-coin to have a fixed price of $1](https://docs-gho.vercel.app/concepts/faq#:~:text=Unlike%20many%20stablecoins%2C%20the%20oracle%20price%20for%20GHO%20is%20fixed.). Because of this, the price of GHO is not fetched from any data source and the app considers the price of GHO to always be fixed at $1, unless it is modified by the user. 
