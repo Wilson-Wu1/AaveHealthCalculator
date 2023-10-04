@@ -27,31 +27,28 @@ The Aave Health Calculator is a web-based tool that allows users to assess the r
 - **Token Adjustment:** Users can add or remove tokens from either the supply or borrow side of a position to see how it affects their health factor.
 
 ## Data Sources Used
-
-The Aave Health Calculator leverages The Graph and Infura to obtain user Aave positions and token prices:
-
 - **The Graph for Aave Positions and Token Prices:**
   - GraphQL is used to query a user's Aave position data from The Graph. Users input their wallet address, and GraphQL queries are made to Aave's subgraph to retrieve information about their positions. This allows the app to calculate the current health factor associated with their Aave positions.
   - Aave's subgraphs also provides the app with information about the tokens that Avalanche supported by the Aave protocol, and their prices on all supported networks. 
 
 - **Infura for Oracle Prices:**
-  - Certain oracle contracts do not follow the EACAggregator interface and return an error from price queries on the subgraphs https://github.com/aave/protocol-subgraphs/issues/102. As a work-around, the app relies on Infura to access oracle prices of those tokens that return an error from Aave's subgraph.
+  - Certain oracle contracts do not follow the `EACAggregator` interface and [return an error from price queries on the subgraphs](https://github.com/aave/protocol-subgraphs/issues/102). As a work-around, the app relies on Infura to access oracle prices of those tokens that return an error from Aave's subgraph.
   
   - Ethereum Oracles:
-    - [0x230E0321Cf38F09e247e50Afc7801EA2351fe56F](a)
-    - [0xb01e6C9af83879B8e06a092f0DD94309c0D497E4](a)
-    - [0x8B6851156023f4f5A66F68BEA80851c3D905Ac93](a)
-    - [0x05225Cd708bCa9253789C1374e4337a019e99D56](a)
-    - [0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731](a)
+    - `BWTC` - [0x230E0321Cf38F09e247e50Afc7801EA2351fe56F](https://etherscan.io/address/0x230E0321Cf38F09e247e50Afc7801EA2351fe56F)
+    - `LDO` - [0xb01e6C9af83879B8e06a092f0DD94309c0D497E4](https://etherscan.io/address/0xb01e6C9af83879B8e06a092f0DD94309c0D497E4)
+    - `wstETH` - [0x8B6851156023f4f5A66F68BEA80851c3D905Ac93](https://etherscan.io/address/0x8B6851156023f4f5A66F68BEA80851c3D905Ac93)
+    - `rETH` - [0x05225Cd708bCa9253789C1374e4337a019e99D56](https://etherscan.io/address/0x05225Cd708bCa9253789C1374e4337a019e99D56)
+    - `cbETH` - [0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731](https://etherscan.io/address/0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731)
   - Polygon Oracles:
-    - [0xe34949A48cd2E6f5CD41753e449bd2d43993C9AC]()
+    - `wstETH` - [0xe34949A48cd2E6f5CD41753e449bd2d43993C9AC](https://polygonscan.com/address/0xe34949A48cd2E6f5CD41753e449bd2d43993C9AC)
   - Avalanche Oracles:
-    - [0xc9245871D69BF4c36c6F2D15E0D68Ffa883FE1A7]()
+    - `sAVAX` - [0xc9245871D69BF4c36c6F2D15E0D68Ffa883FE1A7](https://snowtrace.io/address/0xc9245871D69BF4c36c6F2D15E0D68Ffa883FE1A7)
   - Optimism Oracles:
-    - [0x52d5F9f884CA21C27E2100735d793C6771eAB793]()
+    - `rETH` - [0x52d5F9f884CA21C27E2100735d793C6771eAB793](https://optimistic.etherscan.io/address/0x52d5F9f884CA21C27E2100735d793C6771eAB793)
   - Arbitrum Oracles:
-    - [0x945fD405773973d286De54E44649cc0d9e264F78]()
-    - [0x04c28D6fE897859153eA753f986cc249Bf064f71]()
+    - `wstETH` - [0x945fD405773973d286De54E44649cc0d9e264F78](https://arbiscan.io/address/0x945fD405773973d286De54E44649cc0d9e264F78)
+    - `rETH` -  [0x04c28D6fE897859153eA753f986cc249Bf064f71](https://arbiscan.io/address/0x04c28D6fE897859153eA753f986cc249Bf064f71)
 
 ## Other Considerations
-  - The Aave protocol considers the [GHO stable-coin to have a fixed price of $1](https://docs-gho.vercel.app/concepts/faq#:~:text=Unlike%20many%20stablecoins%2C%20the%20oracle%20price%20for%20GHO%20is%20fixed.). Because of this, the price of GHO is not fetched from any data source and the app considers the price of GHO to always be fixed at $1, unless it is modified by the user. 
+- The Aave protocol maintains a fixed value of $1 for the `GHO` stable-coin, as stated in the [GHO documentation](https://docs-gho.vercel.app/concepts/faq#:~:text=Unlike%20many%20stablecoins%2C%20the%20oracle%20price%20for%20GHO%20is%20fixed.). Consequently, the app enforces a $1 price for `GHO` unless the user explicitly modifies it. This fixed price for `GHO` is not fetched from any external data sources."
