@@ -47,10 +47,12 @@ const HeaderInfo = () => {
             const searchDiv = document.getElementById("search_div_search");
             const supplyDiv = document.getElementById("b_s_container_supply_btn");
             const borrowDiv = document.getElementById("b_s_container_borrow_btn");
-            //Todo: Disable the search button. Probably have to set its color because it is a div and not a button
+            // Todo: Disable the search button. Probably have to set its color because it is a div and not a button
+            // Set color of the icon iself?
             searchDiv.disabled = true;  
             supplyDiv.disabled = true;
             borrowDiv.disabled = true;
+            
 
             // Aave V3
             if(newAaveVersion == "V3"){
@@ -93,7 +95,7 @@ const HeaderInfo = () => {
         if (endpoint !== null) {
             removeAllTokenDivs();
             clearPositionInfo();
-            //Todo: THis is being called unnecessarily at the begining
+            //Todo: This is being called unnecessarily at the begining
             getMissingPrices();
             queryTokenDataFromTheGraph();
         }
@@ -557,6 +559,7 @@ const HeaderInfo = () => {
     const [oraclePrices, setOraclePrices] = useState([]);
     
     async function getMissingPrices() {
+        //TODO: SDAI on Ethereum V3 fetching 0.
         if(chain == "Ethereum" && (aaveVersion == "V3" || aaveVersion == "V2")){
             const web3ProviderUrl = `https://mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
@@ -1814,8 +1817,10 @@ const HeaderInfo = () => {
                                 <ul id = "modal_borrow_content_scrollable_list" className = "modal_borrow_content_scrollable_list">
                                 </ul>
                             </div>
-                            <div className = "modal_borrow_content_assets_bottom">
-                                <button className = "modal_borrow_content_assets_bottom_btn" onClick={setBorrowModalVisibilityFalse}>Confirm</button>
+                            <div className = "modal_borrow_content_assets_div">
+                                <div className = "modal_borrow_content_assets_bottom">
+                                    <button className = "modal_borrow_content_assets_bottom_btn" onClick={setBorrowModalVisibilityFalse}>Confirm</button>
+                                </div>
                             </div>
                          </div>
                     </div>

@@ -4,7 +4,7 @@ const NavBar = () => {
         <nav className="navbar">
             
            
-            <h1>Aave Risk Calculator</h1>
+            <h1>Aave Health Calculator</h1>
             <QuestionIcon className = "navbar_questionIcon" id = "navbar_questionIcon"/>
         </nav>
 

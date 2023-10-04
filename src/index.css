@@ -15,8 +15,8 @@ body{
   border-bottom: 1.5px solid rgba(235, 235, 239, 0.2);
   padding-top:12px;
   padding-bottom:12px;
-  margin-left:-10px;
-  margin-right:-10px;
+  
+  
 }
 .navbar h1{
   margin:0;
@@ -24,14 +24,6 @@ body{
   
   font-size: 27px;
   color:rgb(255, 255, 255);
-  
-  /*
-  background: linear-gradient(90deg, rgb(46,186,198) 16%, rgba(182, 80, 158, 1) 91%);
-  -webkit-background-clip: text; 
-  -webkit-text-fill-color: transparent; 
-  background-clip: text;
-  */
-  
 }
 
 .navbar_questionIcon{
@@ -715,7 +707,7 @@ div.textbox {
   background-color:rgb(41, 46, 65);
 }
 
-.modal_supply_content_assets_div{
+.modal_supply_content_assets_div, .modal_borrow_content_assets_div{
   background-color:rgb(41, 46, 65);
   display: flex;
   justify-content: center;
@@ -1041,8 +1033,6 @@ div.textbox {
   place-items: center;
   text-align: center;
   border-top: 1.5px solid rgba(235, 235, 239, 0.2);
-  margin-left:-10px;
-  margin-right:-10px;
 }
 
 .bottom_socials{
