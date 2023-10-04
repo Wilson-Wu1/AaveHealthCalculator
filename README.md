@@ -18,13 +18,19 @@ The Aave Health Calculator is a web-based tool that allows users to assess the r
 | Metis              || <span>&#10003;</span> |
 |Base|||
 
-- **Address Input:** Users can input their wallet address to fetch their Aave position data.
+- **Address Input:** Users can input their wallet address to fetch an Aave position.
 
-- **Health Factor Display:** Users can view the current health factor associated with the Aave position.
-
-- **Token Price Adjustment:** Users can change token prices to simulate the impact on their position's health factor.
+- **Token Price Adjustment:** Users can change token prices to simulate the impact on a position's health factor.
 
 - **Token Adjustment:** Users can add or remove tokens from either the supply or borrow side of a position to see how it affects their health factor.
+
+- **Token Liquidation Threshold Adjustment:** Users can adjust the liquidation threshold of borrowed tokens. The liquidation threshold is the percentage at which a position is defined as undercollateralised. For example, a Liquidation threshold of 80% means that if the value rises above 80% of the collateral, the position is undercollateralised and could be liquidated. Further documentation on [liquidation thresholds](https://docs.aave.com/risk/asset-risk/risk-parameters#liquidation-threshold).
+
+- **Position Information:** Once tokens have been supplied and borrowed, the app will display three important metrics about the position.
+  - **Net Worth:** The value supplied minus the value borrowed.
+  - **Health Factor:** A numeric representation of the safety of the deposited assets against the borrowed assets and its underlying value. The higher the value is, the safer the state of the funds are against liquidation. If the health factor reaches 1, the liquidation of your deposits will be triggered. Further documentation on [health factor](https://docs.aave.com/faq/borrowing#what-is-the-health-factor).
+  - **Liquidation To Value Ratio:** The Loan to Value (”LTV”) ratio defines the maximum amount of assets that can be borrowed with a specific collateral. It is expressed as a percentage (e.g., at LTV=75%, for every 1 ETH worth of collateral, borrowers will be able to borrow 0.75 ETH worth of the corresponding currency).
+
 
 ## Data Sources Used
 - **The Graph for Aave Positions and Token Prices:**
