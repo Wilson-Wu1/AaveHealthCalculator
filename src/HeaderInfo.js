@@ -18,7 +18,6 @@ const HeaderInfo = () => {
     const [modalSupplyVisible, setSupplyModalVisible] = useState(false);
     const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
     const [tokenData, setTokenData] = useState(null);
-    const [usdPriceEth, setUsdPriceEth] = useState(0);
     const [aavePosition, setAavePosition] = useState([]);
     const [endpoint , setEndpoint] = useState('https://api.thegraph.com/subgraphs/name/aave/protocol-v3')
     const [healthFactor, setHealthFactor] = useState(0);
@@ -501,6 +500,8 @@ const HeaderInfo = () => {
     async function queryTokenDataFromTheGraph(){
     
         const { request } = require('graphql-request');
+
+        //TODO: Query for decimals for Polygon V2 token prices
         const query = `
         {
             reserves(where: {isFrozen: false}) {
@@ -511,9 +512,6 @@ const HeaderInfo = () => {
               price {
                 priceInEth
               }
-            }
-            priceOracles {
-              usdPriceEth
             }
           }
         `;
@@ -527,10 +525,8 @@ const HeaderInfo = () => {
               
             }
             console.log(data.reserves);
-            setUsdPriceEth(data.priceOracles[0].usdPriceEth);
             setTokenData(data.reserves);
             setTokenDataChanged(true);
-           
         } 
         catch (error) {
             console.error('Error fetching token info:', error);
@@ -627,29 +623,51 @@ const HeaderInfo = () => {
             setOraclePrices(tempOraclePrices);
            
         }
-        else if(chain == "Polygon" && aaveVersion == "V3"){
-            const web3ProviderUrl = `https://polygon-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
-            const web3 = new Web3(web3ProviderUrl);
-            const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
-            const oracleAddresses = ['0xe34949A48cd2E6f5CD41753e449bd2d43993C9AC'];
-    
-            // For each oracle, retrieve the latest token price.
-            var tempOraclePrices = [];
-            for(const index in oracleAddresses){
-                const oracle = oracleAddresses[index];
-                const contract = new web3.eth.Contract(contractABI, oracle);
-                try{
-                    const result = await contract.methods.latestAnswer().call();
-                    tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
-                    
-                } 
-                catch (error){  
-                    displayErrorMessage('Error fetching oracle token info. ' + error);
+        else if(chain == "Polygon"){
+            //Polygon V3
+            if(aaveVersion == "V3"){
+                const web3ProviderUrl = `https://polygon-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
+                const web3 = new Web3(web3ProviderUrl);
+                const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
+                const oracleAddresses = ['0xe34949A48cd2E6f5CD41753e449bd2d43993C9AC'];
+        
+                // For each oracle, retrieve the latest token price.
+                var tempOraclePrices = [];
+                for(const index in oracleAddresses){
+                    const oracle = oracleAddresses[index];
+                    const contract = new web3.eth.Contract(contractABI, oracle);
+                    try{
+                        const result = await contract.methods.latestAnswer().call();
+                        tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
+                        
+                    } 
+                    catch (error){  
+                        displayErrorMessage('Error fetching oracle token info. ' + error);
+                    }
                 }
+                setOraclePrices(tempOraclePrices);
             }
-            setOraclePrices(tempOraclePrices);
+            // Polygon V2
+            else{
+                //TODO: Fetch price of eth. divide prices of polygon tokens by price of eth.
+                // const web3ProviderUrl = `https://polygon-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
+                // const web3 = new Web3(web3ProviderUrl);
+                // const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
+                // const ethOracleAddress = '';
+                // const contract = new web3.eth.Contract(contractABI, ethOracleAddress);
+                // try{
+                //     const result = await contract.methods.latestAnswer().call();
+                //     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
+                    
+                // } 
+                // catch (error){  
+                //     displayErrorMessage('Error fetching oracle token info. ' + error);
+                // }
+            }
+            
             
         }
+        
         else if(chain == "Avalanche" && (aaveVersion == "V3" || aaveVersion == "V2")){
             
             const web3ProviderUrl = `https://avalanche-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
