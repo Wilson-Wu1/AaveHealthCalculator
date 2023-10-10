@@ -41,7 +41,7 @@ The Aave Health Calculator is a web-based tool that allows users to assess the r
   - Certain oracle contracts do not follow the `EACAggregator` interface and [return an error from price queries on the subgraphs](https://github.com/aave/protocol-subgraphs/issues/102). As a work-around, the app relies on Infura to access oracle prices of those tokens that return an error from Aave's subgraph.
   
   - Ethereum Oracles:
-    - `BWTC` - [0x230E0321Cf38F09e247e50Afc7801EA2351fe56F](https://etherscan.io/address/0x230E0321Cf38F09e247e50Afc7801EA2351fe56F)
+    - `wBTC` - [0x230E0321Cf38F09e247e50Afc7801EA2351fe56F](https://etherscan.io/address/0x230E0321Cf38F09e247e50Afc7801EA2351fe56F)
     - `LDO` - [0xb01e6C9af83879B8e06a092f0DD94309c0D497E4](https://etherscan.io/address/0xb01e6C9af83879B8e06a092f0DD94309c0D497E4)
     - `wstETH` - [0x8B6851156023f4f5A66F68BEA80851c3D905Ac93](https://etherscan.io/address/0x8B6851156023f4f5A66F68BEA80851c3D905Ac93)
     - `rETH` - [0x05225Cd708bCa9253789C1374e4337a019e99D56](https://etherscan.io/address/0x05225Cd708bCa9253789C1374e4337a019e99D56)
