@@ -57,4 +57,4 @@ The Aave Health Calculator is a web-based tool that allows users to assess the r
     - `rETH` -  [0x04c28D6fE897859153eA753f986cc249Bf064f71](https://arbiscan.io/address/0x04c28D6fE897859153eA753f986cc249Bf064f71)
 
 ## Other Considerations
-- The Aave protocol maintains a fixed value of $1 for the `GHO` stable-coin, as stated in the [GHO documentation](https://docs-gho.vercel.app/concepts/faq#:~:text=Unlike%20many%20stablecoins%2C%20the%20oracle%20price%20for%20GHO%20is%20fixed.). Consequently, the app enforces a $1 price for `GHO` unless the user explicitly modifies it. This fixed price for `GHO` is not fetched from any external data sources."
+- The Aave protocol maintains a fixed value of $1 for the `GHO` stable-coin, as stated in the [GHO documentation](https://docs-gho.vercel.app/concepts/faq#:~:text=Unlike%20many%20stablecoins%2C%20the%20oracle%20price%20for%20GHO%20is%20fixed.). Consequently, the app enforces a $1 price for `GHO` unless the user explicitly modifies it. This fixed price for `GHO` is not fetched from any external data sources.
