@@ -11,20 +11,44 @@ import {ReactComponent as MetisSymbol} from './images/metis.svg'
 
 import Web3 from 'web3';
 const HeaderInfo = () => {
-
-
     const [chain, setChain] = useState("Ethereum")
     const [aaveVersion, setAaveVersion] = useState("V3");
     const [modalSupplyVisible, setSupplyModalVisible] = useState(false);
     const [modalBorrowVisible, setBorrowModalVisible] = useState(false);
     const [tokenData, setTokenData] = useState(null);
     const [aavePosition, setAavePosition] = useState([]);
-    const [endpoint , setEndpoint] = useState('https://api.thegraph.com/subgraphs/name/aave/protocol-v3')
+    const [endpoint, setEndpoint] = useState(getSubgraphEndpoint("Ethereum", "V3"));
     const [healthFactor, setHealthFactor] = useState(0);
     const [queryCalled, setQueryCalled] = useState(false);
     const [missingPricesFilled, setMissingPricesFilled] = useState(false);
     const [oraclePricesChanged, setOraclePricesChanged] = useState(false);
     const [tokenDataChanged, setTokenDataChanged] = useState(false);
+    
+    function getSubgraphEndpoint(networkName, version) {
+      switch (networkName) {
+        case "Ethereum":
+          return version == "V3"
+            ? `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/Cd2gEDVeqnjBn1hSeqFMitw8Q1iiyV9FYUZkLNRcL87g`
+            : `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/8wR23o1zkS4gpLqLNU4kG3JHYVucqGyopL5utGxP2q1N`;
+        case "Arbitrum":
+          return `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/DLuE98kEb5pQNXAcKFQGQgfSQ57Xdou4jnVbAEqMfy3B`;
+        case "Avalanche":
+          return version == "V3"
+            ? `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/2h9woxy8RTjHu1HJsCEnmzpPHFArU33avmUh4f71JpVn`
+            : `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/EZvK18pMhwiCjxwesRLTg81fP33WnR6BnZe5Cvma3H1C`;
+        case "Optimism":
+          return `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/DSfLz8oQBUeU5atALgUFQKMTSYV9mZAVYp4noLSXAfvb`;
+        case "Polygon":
+          return version == "V3"
+            ? `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/Co2URyXjnxaw8WqxKyVHdirq9Ahhm5vcTs4dMedAq211`
+            : `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/H1Et77RZh3XEf27vkAmJyzgCME2RSFLtDS2f4PPW6CGp`;
+        case "Metis":
+          return `https://andromeda.thegraph.metis.io/subgraphs/name/aave/protocol-v3-metis`;
+        // default to ETH V3
+        default:
+          return `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/Cd2gEDVeqnjBn1hSeqFMitw8Q1iiyV9FYUZkLNRcL87g`;
+      }
+    }
 
     function changeNetwork(newNetwork, newAaveVersion){
         // Only continue if the network and version has changed. Otherwise do nothing
@@ -52,31 +76,7 @@ const HeaderInfo = () => {
             supplyDiv.disabled = true;
             borrowDiv.disabled = true;
             
-
-            // Aave V3
-            if(newAaveVersion == "V3"){
-                var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
-                // Metis network endpoint is different from others.
-                if(newNetwork == "Metis"){
-                    tempNewEndpoint = "https://andromeda.thegraph.metis.io/subgraphs/name/aave/protocol-v3-metis"
-                }
-                else if(newNetwork != "Ethereum"){
-                    tempNewEndpoint += ('-'+(newNetwork.toLowerCase()));
-                }
-            }
-            // Aave V2
-            else{
-                var tempNewEndpoint = 'https://api.thegraph.com/subgraphs/name/aave/protocol-v3';
-                // Matic network endpoint is different from others.
-                if(newNetwork == "Polygon"){
-                    tempNewEndpoint = "https://api.thegraph.com/subgraphs/name/aave/aave-v2-matic";
-                }
-                else if (newNetwork != "Ethereum"){
-                    tempNewEndpoint += ('-'+(newNetwork.toLowerCase()));
-                }
-                
-            }
-            setEndpoint(tempNewEndpoint);
+            setEndpoint(getSubgraphEndpoint(newNetwork, newAaveVersion));
         }
     }
 
@@ -1672,7 +1672,6 @@ const HeaderInfo = () => {
         
 
 
-        getMissingPrices();
         queryTokenDataFromTheGraph();
         handleResize();
 
