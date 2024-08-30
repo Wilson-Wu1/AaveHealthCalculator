@@ -1674,7 +1674,6 @@ const HeaderInfo = () => {
         
 
 
-        getMissingPrices();
         queryTokenDataFromTheGraph();
         handleResize();
 
