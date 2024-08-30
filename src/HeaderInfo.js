@@ -11,8 +11,6 @@ import {ReactComponent as MetisSymbol} from './images/metis.svg'
 
 import Web3 from 'web3';
 const HeaderInfo = () => {
-
-
     const [chain, setChain] = useState("Ethereum")
     const [aaveVersion, setAaveVersion] = useState("V3");
     const [modalSupplyVisible, setSupplyModalVisible] = useState(false);
