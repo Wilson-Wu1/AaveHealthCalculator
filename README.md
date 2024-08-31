@@ -15,7 +15,7 @@ The Aave Health Calculator is a web-based tool that allows users to assess the r
 | Avalanche          | Needs to be fixed | <span>&#10003;</span> |
 | Optimism           || <span>&#10003;</span> |
 | Arbitrum           || <span>&#10003;</span> |
-| Metis              || <span>&#10003;</span> |
+| Metis              || Needs to be fixed |
 |Base|||
 
 - **Address Input:** Users can input their wallet address to fetch an Aave position.
