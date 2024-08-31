@@ -10,9 +10,9 @@ The Aave Health Calculator is a web-based tool that allows users to assess the r
 
 | Supported Chains   | Aave Markets V2  | Aave Markets V3  |
 |--------------------|------------------|------------------|
-| Ethereum           | <span>&#10003;</span> | <span>&#10003;</span> |
+| Ethereum           | Needs to be fixed | <span>&#10003;</span> |
 | Polygon            | Needs to be fixed | <span>&#10003;</span> |
-| Avalanche          | <span>&#10003;</span> | <span>&#10003;</span> |
+| Avalanche          | Needs to be fixed | <span>&#10003;</span> |
 | Optimism           || <span>&#10003;</span> |
 | Arbitrum           || <span>&#10003;</span> |
 | Metis              || <span>&#10003;</span> |
