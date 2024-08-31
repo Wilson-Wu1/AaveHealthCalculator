@@ -1870,7 +1870,7 @@ const HeaderInfo = () => {
                         <button onClick={ () => changeNetwork("Polygon", "V3") }>
                             <p>Polygon</p>
                         </button>
-                        <button onClick={ () => changeNetwork("Metis", "V3") }>
+                        {/* <button onClick={ () => changeNetwork("Metis", "V3") }>
                             <p>Metis</p>
                         </button>
                         <button onClick={ () => changeNetwork("Ethereum", "V2") }>
@@ -1881,7 +1881,7 @@ const HeaderInfo = () => {
                         </button>
                         <button onClick={ () => changeNetwork("Avalanche", "V2") }>
                             <p>Avalanche V2</p>
-                        </button>
+                        </button> */}
                     </div>
                 </div>
                 
