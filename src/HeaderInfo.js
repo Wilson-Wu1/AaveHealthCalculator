@@ -946,6 +946,14 @@ const HeaderInfo = () => {
         setSupplyModalVisible(false); 
     }
     function setSupplyModalVisibilityTrue(){
+        if (window.gtag) {
+            window.gtag("event", "supply_click", {
+                event_category: "User Interaction",
+                event_label: "Supply Button",
+            });
+        } else {
+            console.error("Google Analytics is not initialized");
+        }
         // Re-enable supply buttons
         for(const index in tokenData){
             const token = tokenData[index];
