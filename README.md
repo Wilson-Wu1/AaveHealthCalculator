@@ -15,8 +15,8 @@ The Aave Health Calculator is a web-based tool that allows users to assess the r
 | Avalanche          | Needs to be fixed | <span>&#10003;</span> |
 | Optimism           || <span>&#10003;</span> |
 | Arbitrum           || <span>&#10003;</span> |
+| Base               || <span>&#10003;</span> |
 | Metis              || Needs to be fixed |
-|Base|||
 
 - **Address Input:** Users can input their wallet address to fetch an Aave position.
 
@@ -46,6 +46,12 @@ The Aave Health Calculator is a web-based tool that allows users to assess the r
     - `wstETH` - [0x8B6851156023f4f5A66F68BEA80851c3D905Ac93](https://etherscan.io/address/0x8B6851156023f4f5A66F68BEA80851c3D905Ac93)
     - `rETH` - [0x05225Cd708bCa9253789C1374e4337a019e99D56](https://etherscan.io/address/0x05225Cd708bCa9253789C1374e4337a019e99D56)
     - `cbETH` - [0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731](https://etherscan.io/address/0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731)
+    - `ETHx` - [0xd7b163B671f8cE9379DF8Ff7F75fA72Ccec1841c](https://etherscan.io/address/0xd7b163B671f8cE9379DF8Ff7F75fA72Ccec1841c)
+    - `ezETH` - [0xF3d49021fF3bbBFDfC1992A4b09E5D1d141D044C](https://etherscan.io/address/0xF3d49021fF3bbBFDfC1992A4b09E5D1d141D044C)
+    - `osETH` - [0x2b86D519eF34f8Adfc9349CDeA17c09Aa9dB60E2](https://etherscan.io/address/0x2b86D519eF34f8Adfc9349CDeA17c09Aa9dB60E2)
+    - `rsETH` - [0x7292C95A5f6A501a9c4B34f6393e221F2A0139c3](https://etherscan.io/address/0x7292C95A5f6A501a9c4B34f6393e221F2A0139c3)
+    - `tETH` - [0x85968026294b8f8Fb86d6bF3Cda079f9376aD05A](https://etherscan.io/address/0x85968026294b8f8Fb86d6bF3Cda079f9376aD05A)
+    - `weETH` - [0x87625393534d5C102cADB66D37201dF24cc26d4C](https://etherscan.io/address/0x87625393534d5C102cADB66D37201dF24cc26d4C)
   - Polygon Oracles:
     - `wstETH` - [0xe34949A48cd2E6f5CD41753e449bd2d43993C9AC](https://polygonscan.com/address/0xe34949A48cd2E6f5CD41753e449bd2d43993C9AC)
   - Avalanche Oracles:
@@ -55,6 +61,13 @@ The Aave Health Calculator is a web-based tool that allows users to assess the r
   - Arbitrum Oracles:
     - `wstETH` - [0x945fD405773973d286De54E44649cc0d9e264F78](https://arbiscan.io/address/0x945fD405773973d286De54E44649cc0d9e264F78)
     - `rETH` -  [0x04c28D6fE897859153eA753f986cc249Bf064f71](https://arbiscan.io/address/0x04c28D6fE897859153eA753f986cc249Bf064f71)
+  - Base Oracles:
+    - `weETH` - [0xFc4d1d7a8FD1E6719e361e16044b460737F12C44](https://basescan.org/address/0xFc4d1d7a8FD1E6719e361e16044b460737F12C44)
+    - `cbBTC` - [0x64c911996D3c6aC71f9b455B1E8E7266BcbD848F](https://basescan.org/address/0x64c911996D3c6aC71f9b455B1E8E7266BcbD848F)
+    - `wstETH` - [0x56038D3998C42db18ba3B821bD1EbaB9B678e657](https://basescan.org/address/0x56038D3998C42db18ba3B821bD1EbaB9B678e657)
+    - `cbETH` - [0x8e11Ad4531826ff47BD8157a2c705F5422Da6A61](https://basescan.org/address/0x8e11Ad4531826ff47BD8157a2c705F5422Da6A61)
+    - `wrsETH` - [0x567E7f3DB2CD4C81872F829C8ab6556616818580](https://basescan.org/address/0x567E7f3DB2CD4C81872F829C8ab6556616818580)
+    - `ezETH` - [0x438e24f5FCDC1A66ecb25D19B5543e0Cb91A44D4](https://basescan.org/address/0x438e24f5FCDC1A66ecb25D19B5543e0Cb91A44D4)
 
 ## Other Considerations
 - The Aave protocol maintains a fixed value of $1 for the `GHO` stable-coin, as stated in the [GHO documentation](https://docs-gho.vercel.app/concepts/faq#:~:text=Unlike%20many%20stablecoins%2C%20the%20oracle%20price%20for%20GHO%20is%20fixed.). Consequently, the app enforces a $1 price for `GHO` unless the user explicitly modifies it. This fixed price for `GHO` is not fetched from any external data sources.

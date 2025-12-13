@@ -8,6 +8,7 @@ import {ReactComponent as OptimismSymbol} from './images/optimism.svg'
 import {ReactComponent as AvalancheSymbol} from './images/avalanche.svg'
 import {ReactComponent as PolygonSymbol} from './images/polygon.svg'
 import {ReactComponent as MetisSymbol} from './images/metis.svg'
+import {ReactComponent as BaseSymbol} from './images/base.svg'
 
 import Web3 from 'web3';
 const HeaderInfo = () => {
@@ -42,6 +43,8 @@ const HeaderInfo = () => {
           return version == "V3"
             ? `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/Co2URyXjnxaw8WqxKyVHdirq9Ahhm5vcTs4dMedAq211`
             : `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/H1Et77RZh3XEf27vkAmJyzgCME2RSFLtDS2f4PPW6CGp`;
+        case "Base":
+            return `https://gateway.thegraph.com/api/${process.env.REACT_APP_SUBGRAPH_KEY}/subgraphs/id/GQFbb95cE6d8mV989mL5figjaGaKCQB3xqYrr1bRyXqF`;
         case "Metis":
           return `https://andromeda.thegraph.metis.io/subgraphs/name/aave/protocol-v3-metis`;
         // default to ETH V3
@@ -87,7 +90,8 @@ const HeaderInfo = () => {
         Polygon: <PolygonSymbol />,
         Optimism: <OptimismSymbol />,
         Metis: <MetisSymbol />,
-        Avalanche: <AvalancheSymbol />
+        Avalanche: <AvalancheSymbol />,
+        Base: <BaseSymbol />
     };
       
     useEffect(() => {
@@ -547,11 +551,12 @@ const HeaderInfo = () => {
         }
     }
 
-    const missingEthereumSymbols = ['WBTC', "LDO", "wstETH", "rETH", "cbETH"];
+    const missingEthereumSymbols = ['WBTC','LDO','wstETH','rETH','cbETH','ETHx','ezETH','osETH','rsETH','tETH','weETH'];
     const missingArbitrumSymbols = ['wstETH','rETH'];
     const missingAvalancheSymbols = ['sAVAX'];
     const missingPolygonSymbols = ['wstETH'];
     const missingOptimismSymbols = ['rETH'];
+    const missingBaseSymbols = ['weETH','cbBTC','wstETH','cbETH','wrsETH','ezETH'];
     const [oraclePrices, setOraclePrices] = useState([]);
     
     async function getMissingPrices() {
@@ -560,8 +565,7 @@ const HeaderInfo = () => {
             const web3ProviderUrl = `https://mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
             const web3 = new Web3(web3ProviderUrl);
             const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
-            const oracleAddresses = ['0x230E0321Cf38F09e247e50Afc7801EA2351fe56F', '0xb01e6C9af83879B8e06a092f0DD94309c0D497E4', '0x8B6851156023f4f5A66F68BEA80851c3D905Ac93', '0x05225Cd708bCa9253789C1374e4337a019e99D56','0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731'];
-    
+            const oracleAddresses = ['0x230E0321Cf38F09e247e50Afc7801EA2351fe56F', '0xb01e6C9af83879B8e06a092f0DD94309c0D497E4', '0x8B6851156023f4f5A66F68BEA80851c3D905Ac93', '0x05225Cd708bCa9253789C1374e4337a019e99D56','0x5f4d15d761528c57a5C30c43c1DAb26Fc5452731','0xd7b163B671f8cE9379DF8Ff7F75fA72Ccec1841c','0xF3d49021fF3bbBFDfC1992A4b09E5D1d141D044C','0x2b86D519eF34f8Adfc9349CDeA17c09Aa9dB60E2','0x7292C95A5f6A501a9c4B34f6393e221F2A0139c3','0x85968026294b8f8Fb86d6bF3Cda079f9376aD05A','0x87625393534d5C102cADB66D37201dF24cc26d4C'];
             // For each oracle, retrieve the latest token price.
             var tempOraclePrices = [];
             for(const index in oracleAddresses){
@@ -605,6 +609,30 @@ const HeaderInfo = () => {
             const web3 = new Web3(web3ProviderUrl);
             const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
             const oracleAddresses = ['0x52d5F9f884CA21C27E2100735d793C6771eAB793'];
+    
+            // For each oracle, retrieve the latest token price.
+            var tempOraclePrices = [];
+            for(const index in oracleAddresses){
+                const oracle = oracleAddresses[index];
+                const contract = new web3.eth.Contract(contractABI, oracle);
+                try{
+                    const result = await contract.methods.latestAnswer().call();
+                    tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
+                    
+                } 
+                catch (error){
+                    displayErrorMessage('Error fetching oracle token info. ' + error);  
+                }
+            }
+            setOraclePrices(tempOraclePrices);
+           
+        }
+        else if(chain == "Base"){
+   
+            const web3ProviderUrl = `https://base-mainnet.infura.io/v3/${process.env.REACT_APP_API_KEY}`;
+            const web3 = new Web3(web3ProviderUrl);
+            const contractABI = [{"inputs":[{"internalType":"address","name":"pegToBaseAggregatorAddress","type":"address"},{"internalType":"address","name":"assetToPegAggregatorAddress","type":"address"},{"internalType":"uint8","name":"decimals","type":"uint8"}],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"DecimalsAboveLimit","type":"error"},{"inputs":[],"name":"DecimalsNotEqual","type":"error"},{"inputs":[],"name":"ASSET_TO_PEG","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DENOMINATOR","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MAX_DECIMALS","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PEG_TO_BASE","outputs":[{"internalType":"contract IChainlinkAggregator","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"latestAnswer","outputs":[{"internalType":"int256","name":"","type":"int256"}],"stateMutability":"view","type":"function"}];
+            const oracleAddresses = ['0xFc4d1d7a8FD1E6719e361e16044b460737F12C44','0x64c911996D3c6aC71f9b455B1E8E7266BcbD848F','0x56038D3998C42db18ba3B821bD1EbaB9B678e657','0x8e11Ad4531826ff47BD8157a2c705F5422Da6A61','0x567E7f3DB2CD4C81872F829C8ab6556616818580','0x438e24f5FCDC1A66ecb25D19B5543e0Cb91A44D4'];
     
             // For each oracle, retrieve the latest token price.
             var tempOraclePrices = [];
@@ -726,6 +754,13 @@ const HeaderInfo = () => {
             
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingOptimismSymbols[index]);
+                foundObject.price.priceInUSD = oraclePrices[index];
+            }
+        }
+        else if(chain == "Base"){
+            
+            for(const index in oraclePrices){
+                const foundObject = tokenData.find((item) => item.symbol === missingBaseSymbols[index]);
                 foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
@@ -1877,6 +1912,9 @@ const HeaderInfo = () => {
                         </button>
                         <button onClick={ () => changeNetwork("Polygon", "V3") }>
                             <p>Polygon</p>
+                        </button>
+                        <button onClick={ () => changeNetwork("Base", "V3") }>
+                            <p>Base</p>
                         </button>
                         {/* <button onClick={ () => changeNetwork("Metis", "V3") }>
                             <p>Metis</p>
