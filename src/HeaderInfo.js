@@ -576,7 +576,7 @@ const HeaderInfo = () => {
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
                 } 
                 catch (error){  
-                    displayErrorMessage('Error fetching oracle token info. ' + error);
+                    displayErrorMessage('Error fetching oracle token info for Ethereum V3. ' + error);
                 }
             }
             setOraclePrices(tempOraclePrices);
@@ -598,9 +598,10 @@ const HeaderInfo = () => {
                     tempOraclePrices.push((Number(result) / 100000000).toFixed(2));
                 } 
                 catch (error){  
-                    displayErrorMessage('Error fetching oracle token info. ' + error);
+                    displayErrorMessage('Error fetching oracle token info for Arbitrum V3. ' + error);
                 }
             }
+
             setOraclePrices(tempOraclePrices);
         }
         else if(chain == "Optimism"){
@@ -621,7 +622,7 @@ const HeaderInfo = () => {
                     
                 } 
                 catch (error){
-                    displayErrorMessage('Error fetching oracle token info. ' + error);  
+                    displayErrorMessage('Error fetching oracle token info for Optimism. ' + error);  
                 }
             }
             setOraclePrices(tempOraclePrices);
@@ -645,7 +646,7 @@ const HeaderInfo = () => {
                     
                 } 
                 catch (error){
-                    displayErrorMessage('Error fetching oracle token info. ' + error);  
+                    displayErrorMessage('Error fetching oracle token info for Base. ' + error);  
                 }
             }
             setOraclePrices(tempOraclePrices);
