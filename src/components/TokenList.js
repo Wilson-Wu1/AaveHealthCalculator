@@ -27,14 +27,14 @@ export default function TokenList({
             <Box
               key={token.symbol}
               p={4}
-              borderWidth="2px"
+              borderWidth="1px"
               borderRadius="lg"
               bg={isSelected ? '#1e1e1e' : '#1e1e1e'}
               borderColor={isSelected ? 'blue.400' : 'gray.600'}
               _hover={{ 
                 borderColor: isDisabled ? 'gray.600' : (isSelected ? 'blue.300' : 'blue.500'),
                 cursor: isDisabled ? 'not-allowed' : 'pointer',
-                transform: isDisabled ? 'none' : 'translateY(-2px)',
+      
                 boxShadow: isDisabled ? 'none' : 'lg'
               }}
               transition="all 0.2s"

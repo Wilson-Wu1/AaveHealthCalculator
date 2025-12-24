@@ -37,13 +37,13 @@ export function getSubgraphEndpoint(networkName, version) {
 }
 
 export const iconComponents = {
-  Ethereum: <EthereumSymbol />,
-  Arbitrum: <ArbitrumSymbol />,
-  Polygon: <PolygonSymbol />,
-  Optimism: <OptimismSymbol />,
-  Metis: <MetisSymbol />,
-  Avalanche: <AvalancheSymbol />,
-  Base: <BaseSymbol />
+  Ethereum: <EthereumSymbol style={{ width: '100%', height: '100%' }} />,
+  Arbitrum: <ArbitrumSymbol style={{ width: '100%', height: '100%' }} />,
+  Polygon: <PolygonSymbol style={{ width: '100%', height: '100%' }} />,
+  Optimism: <OptimismSymbol style={{ width: '100%', height: '100%' }} />,
+  Metis: <MetisSymbol style={{ width: '100%', height: '100%' }} />,
+  Avalanche: <AvalancheSymbol style={{ width: '100%', height: '100%' }} />,
+  Base: <BaseSymbol style={{ width: '100%', height: '100%' }} />
 };
 
 export const MISSING_SYMBOLS = {

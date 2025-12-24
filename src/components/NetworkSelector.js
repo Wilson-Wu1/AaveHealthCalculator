@@ -22,8 +22,10 @@ export default function NetworkSelector({ chain, aaveVersion, onNetworkChange, o
           minW="200px"
         >
           <HStack spacing={2}>
-            <Box w="20px" h="20px">
-              {iconComponents[chain]}
+            <Box w="20px" h="20px" display="flex" alignItems="center" justifyContent="center">
+              <Box as="span" w="100%" h="100%" display="flex" alignItems="center" justifyContent="center">
+                {iconComponents[chain]}
+              </Box>
             </Box>
             <Text>{chain} Market</Text>
             <Text fontSize="sm" color="gray.500">
@@ -39,8 +41,10 @@ export default function NetworkSelector({ chain, aaveVersion, onNetworkChange, o
               bg={chain === network ? 'blue.500' : 'transparent'}
             >
               <HStack spacing={2}>
-                <Box w="20px" h="20px">
-                  {iconComponents[network]}
+                <Box w="20px" h="20px" display="flex" alignItems="center" justifyContent="center">
+                  <Box as="span" w="100%" h="100%" display="flex" alignItems="center" justifyContent="center">
+                    {iconComponents[network]}
+                  </Box>
                 </Box>
                 <Text>{network}</Text>
               </HStack>

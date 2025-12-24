@@ -26,12 +26,12 @@ export default function BorrowModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
       <ModalOverlay bg="blackAlpha.700" backdropFilter="blur(4px)" />
-      <ModalContent bg="#1e1e1e" borderWidth="1px" borderColor="gray.700">
+      <ModalContent bg="#1e1e1e" borderWidth=".5px" borderColor="gray.700">
         <ModalHeader 
           fontSize="xl" 
           fontWeight="bold"
           pb={3}
-          borderBottomWidth="1px"
+          borderBottomWidth=".5px"
           borderColor="gray.700"
         >
           Assets to Borrow

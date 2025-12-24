@@ -18,10 +18,11 @@ import { useDisclosure } from '@chakra-ui/react';
 
 const HeaderInfo = ({ onMetricsChange }) => {
   const [chain, setChain] = useState("Ethereum");
-  const [aaveVersion, setAaveVersion] = useState("V3");
+    const [aaveVersion, setAaveVersion] = useState("V3");
   const [endpoint, setEndpoint] = useState(() => getSubgraphEndpoint("Ethereum", "V3"));
   const [errorMessage, setErrorMessage] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const {
     isOpen: isSupplyModalOpen,
@@ -53,8 +54,8 @@ const HeaderInfo = ({ onMetricsChange }) => {
   } = useTokenManagement();
 
   const { healthFactor, netWorth, ltv } = useHealthFactor(supplyTokens, borrowTokens);
-
-  useEffect(() => {
+      
+    useEffect(() => {
     if (onMetricsChange) {
       onMetricsChange({ netWorth, healthFactor, ltv });
     }
@@ -66,6 +67,7 @@ const HeaderInfo = ({ onMetricsChange }) => {
       setEndpoint(getSubgraphEndpoint(newNetwork, aaveVersion));
       clearAllTokens();
       clearPosition();
+      setHasSearched(false);
     }
   }, [chain, aaveVersion, clearAllTokens, clearPosition]);
 
@@ -75,10 +77,12 @@ const HeaderInfo = ({ onMetricsChange }) => {
       setEndpoint(getSubgraphEndpoint(chain, newVersion));
       clearAllTokens();
       clearPosition();
+      setHasSearched(false);
     }
   }, [chain, aaveVersion, clearAllTokens, clearPosition]);
 
   const handleAddressSearch = useCallback(async (address) => {
+    setHasSearched(true);
     await fetchPosition(address);
   }, [fetchPosition]);
 
@@ -102,18 +106,18 @@ const HeaderInfo = ({ onMetricsChange }) => {
           updateBorrowToken(token.symbol, { amount });
         }
       });
-    } else if (position && position.length === 0) {
+    } else if (hasSearched && position && position.length === 0) {
       setErrorMessage(`Address does not own an Aave position on the ${chain} network`);
     }
-  }, [position, tokenData, addSupplyToken, addBorrowToken, updateSupplyToken, updateBorrowToken, clearAllTokens, chain]);
-
-  useEffect(() => {
+  }, [position, tokenData, addSupplyToken, addBorrowToken, updateSupplyToken, updateBorrowToken, clearAllTokens, chain, hasSearched]);
+    
+    useEffect(() => {
     if (tokenDataError) {
       setErrorMessage(tokenDataError);
     }
   }, [tokenDataError]);
 
-  useEffect(() => {
+    useEffect(() => {
     if (positionError) {
       setErrorMessage(positionError);
     }
@@ -132,7 +136,7 @@ const HeaderInfo = ({ onMetricsChange }) => {
     const exists = borrowTokens.find(t => t.symbol === token.symbol);
     if (exists) {
       removeBorrowToken(token.symbol);
-    } else {
+        } else {
       addBorrowToken(token);
     }
   }, [borrowTokens, addBorrowToken, removeBorrowToken]);
@@ -214,7 +218,7 @@ const HeaderInfo = ({ onMetricsChange }) => {
   const isLoading = tokenDataLoading || positionLoading;
   const isMobile = useBreakpointValue({ base: true, lg: false });
 
-  return (
+    return ( 
     <Box>
       <LoadingOverlay isOpen={isLoading} message={isLoading ? "Loading..." : ""} />
       <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />
@@ -309,5 +313,5 @@ const HeaderInfo = ({ onMetricsChange }) => {
     </Box>
   );
 };
-
+ 
 export default HeaderInfo;
