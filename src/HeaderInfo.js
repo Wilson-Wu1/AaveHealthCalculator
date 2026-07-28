@@ -728,40 +728,40 @@ const HeaderInfo = () => {
         if(chain == "Ethereum" && (aaveVersion == "V3"|| aaveVersion == "V2")){
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingEthereumSymbols[index]);
-                foundObject.price.priceInUSD = oraclePrices[index];
+                if(foundObject) foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
         else if(chain == "Arbitrum"){
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingArbitrumSymbols[index]);
-                foundObject.price.priceInUSD = oraclePrices[index];
+                if(foundObject) foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
         else if(chain == "Avalanche" && (aaveVersion == "V3"|| aaveVersion == "V2")){
             for(const index in oraclePrices){
                 
                 const foundObject = tokenData.find((item) => item.symbol === missingAvalancheSymbols[index]);
-                foundObject.price.priceInUSD = oraclePrices[index];
+                if(foundObject) foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
         else if(chain == "Polygon" && aaveVersion == "V3"){
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingPolygonSymbols[index]);
-                foundObject.price.priceInUSD = oraclePrices[index];
+                if(foundObject) foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
         else if(chain == "Optimism"){
             
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingOptimismSymbols[index]);
-                foundObject.price.priceInUSD = oraclePrices[index];
+                if(foundObject) foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
         else if(chain == "Base"){
             
             for(const index in oraclePrices){
                 const foundObject = tokenData.find((item) => item.symbol === missingBaseSymbols[index]);
-                foundObject.price.priceInUSD = oraclePrices[index];
+                if(foundObject) foundObject.price.priceInUSD = oraclePrices[index];
             }
         }
         // Set $GHO token price to $1, since it does not use an Oracle
